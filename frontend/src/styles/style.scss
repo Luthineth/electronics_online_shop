@@ -1,0 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Handjet:wght@400;500;800&family=Montserrat&display=swap');
+
+:root{
+  background: #faf8f5;
+  color: #333;
+  font-family: "Montserrat", sans-serif;
+}
+.container_centered{
+  padding: 0 10px;
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 1380px;
+  display: flex;
+}
+.container_footer{
+  width: 100%;
+  text-align: center;
+  background: #e6e6e6;
+  padding-top: .95rem
+}
