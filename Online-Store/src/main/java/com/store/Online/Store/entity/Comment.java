@@ -3,14 +3,12 @@ package com.store.Online.Store.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @Table(name = "comment")
 public class Comment {
@@ -18,7 +16,7 @@ public class Comment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "comment_id")
-    private Long id;
+    private Long commentId;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -38,5 +36,24 @@ public class Comment {
     private String imageUrl;
 
     public Comment(){
+    }
+    public Comment(User userId, Product productId, String text, Integer rating, String imageUrl) {
+        this.userId = userId;
+        this.productId = productId;
+        this.text = text;
+        this.rating = rating;
+        this.imageUrl = imageUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "commentId=" + commentId +
+                ", userId=" + userId +
+                ", productId=" + productId +
+                ", text='" + text + '\'' +
+                ", rating=" + rating +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
     }
 }

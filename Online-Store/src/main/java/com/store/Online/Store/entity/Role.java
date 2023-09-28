@@ -1,10 +1,10 @@
 package com.store.Online.Store.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -12,9 +12,8 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
-@ToString
-@Table(name = "role")
 @AllArgsConstructor
+@Table(name = "role")
 public class Role {
 
     @Id
@@ -25,10 +24,27 @@ public class Role {
     @Column(name = "role_name")
     private String roleName;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "roleId")
     private Collection<User> user;
 
     public Role() {
     }
 
+    public Role(String roleName){
+        this.roleName=roleName;
+    }
+
+    public Role(Long id,String roleName){
+        this.roleName=roleName;
+        this.roleId=id;
+    }
+
+    @Override
+    public String toString(){
+        return "Role{" +
+                "roleId=" + roleId +
+                ", roleName='" + roleName + '\'' +
+                '}';
+    }
 }

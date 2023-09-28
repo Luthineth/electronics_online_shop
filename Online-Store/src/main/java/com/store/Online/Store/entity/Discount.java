@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,7 +12,6 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @Table(name = "discount")
 public class Discount {
@@ -27,9 +25,21 @@ public class Discount {
     private BigDecimal discountPercentage;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "productDiscount")
+    @OneToMany(mappedBy = "discountId")
     private Collection<Product> products;
 
     public Discount(){
+    }
+
+    public Discount(BigDecimal discountPercentage) {
+        this.discountPercentage = discountPercentage;
+    }
+
+    @Override
+    public String toString() {
+        return "Discount{" +
+                "discountId=" + discountId +
+                ", discountPercentage=" + discountPercentage +
+                '}';
     }
 }

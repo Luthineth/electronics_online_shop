@@ -3,7 +3,6 @@ package com.store.Online.Store.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,7 +12,6 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @Table(name = "orders")
 public class Order {
@@ -21,21 +19,33 @@ public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
-    private Long id;
+    private Long orderId;
+
+
+    @Column(name = "total_price", nullable = false)
+    private BigDecimal totalPrice;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User userId;
 
-    @Column(name = "order_date", nullable = false)
-    private Date orderDate;
-
-    @Column(name = "total_price", nullable = false)
-    private BigDecimal totalPrice;
-
     @OneToMany(mappedBy = "orderId")
     private Collection<OrderItem> orderItems;
+
     public Order(){
 
+    }
+
+    public Order(BigDecimal totalPrice, User userId) {
+        this.totalPrice = totalPrice;
+        this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "orderId=" + orderId +
+                ", totalPrice=" + totalPrice +
+                '}';
     }
 }

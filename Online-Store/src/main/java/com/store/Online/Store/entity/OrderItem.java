@@ -3,14 +3,12 @@ package com.store.Online.Store.entity;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @Table(name = "order_item")
 public class OrderItem {
@@ -18,7 +16,7 @@ public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_id")
-    private Long id;
+    private Long orderItemId;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
@@ -32,5 +30,21 @@ public class OrderItem {
     private Integer quantity;
 
     public OrderItem(){
+    }
+
+    public OrderItem(Order orderId, Product productId, Integer quantity) {
+        this.orderId = orderId;
+        this.productId = productId;
+        this.quantity = quantity;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderItem{" +
+                "orderItemId=" + orderItemId +
+                ", orderId=" + orderId +
+                ", productId=" + productId +
+                ", quantity=" + quantity +
+                '}';
     }
 }

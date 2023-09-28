@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,7 +12,6 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @Table(name = "product")
 public class Product {
@@ -23,14 +21,14 @@ public class Product {
     @Column(name = "product_id")
     private Long productId;
 
-    @Column(name = "product_name", nullable = false,unique = true,length = 255)
+    @Column(name = "product_name", nullable = false,unique = true)
     private String productName;
 
     @Column(name = "description",nullable = false)
     private String description;
 
     @Column(name = "stock_quantity", nullable = false)
-    private Long stockQuantity;
+    private int stockQuantity;
 
     @Column(name = "price", nullable = false)
     private BigDecimal price;
@@ -43,8 +41,9 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "discount_id")
-    private Discount productDiscount;
+    private Discount discountId;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "productId")
     private Collection<OrderItem> orderItems;
 
@@ -56,5 +55,27 @@ public class Product {
     @OneToMany(mappedBy = "productId")
     private Collection<Comment> comments;
     public Product(){
+    }
+
+    public Product(String productName, String description, int stockQuantity, BigDecimal price, BigDecimal priceWithDiscount, Discount discountId){
+        this.productName = productName;
+        this.description = description;
+        this.price = price;
+        this.stockQuantity = stockQuantity;
+        this.priceWithDiscount = priceWithDiscount;
+        this.discountId = discountId;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productId=" + productId +
+                ", productName='" + productName + '\'' +
+                ", description='" + description + '\'' +
+                ", stockQuantity=" + stockQuantity +
+                ", price=" + price +
+                ", priceWithDiscount=" + priceWithDiscount +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
     }
 }

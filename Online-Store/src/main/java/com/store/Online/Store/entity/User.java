@@ -1,9 +1,9 @@
 package com.store.Online.Store.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,7 +16,6 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
 @Table(name = "users")
 public class User implements UserDetails {
@@ -24,7 +23,7 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long id;
+    private Long userId;
 
     @Column(name = "first_name", nullable = false)
     private String firstName;
@@ -42,12 +41,34 @@ public class User implements UserDetails {
     @JoinColumn(name="role_id")
     private Role roleId;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "userId")
     private Collection<Order> order;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "userId")
     private Collection<Comment> comments;
+
     public User(){
+    }
+
+    public User(String firstName, String secondName, String email, String passwordHash, Role roleId){
+        this.firstName=firstName;
+        this.secondName=secondName;
+        this.email=email;
+        this.passwordHash=passwordHash;
+        this.roleId=roleId;
+    }
+
+    @Override
+    public String toString(){
+        return "User{" +
+                "userId=" + userId +
+                ", firstName='" + firstName + '\'' +
+                ", secondName='" + secondName + '\'' +
+                ", email='" + email + '\'' +
+                ", passwordHash='" + passwordHash + '\'' +
+                '}';
     }
 
     @Override
