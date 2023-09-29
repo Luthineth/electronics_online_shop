@@ -21,6 +21,8 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
+    @Column(name = "order_date", nullable = false)
+    private Date orderDate;
 
     @Column(name = "total_price", nullable = false)
     private BigDecimal totalPrice;
@@ -36,7 +38,8 @@ public class Order {
 
     }
 
-    public Order(BigDecimal totalPrice, User userId) {
+    public Order(Date orderDate, BigDecimal totalPrice, User userId) {
+        this.orderDate = orderDate;
         this.totalPrice = totalPrice;
         this.userId = userId;
     }
@@ -45,6 +48,7 @@ public class Order {
     public String toString() {
         return "Order{" +
                 "orderId=" + orderId +
+                ", orderDate=" + orderDate +
                 ", totalPrice=" + totalPrice +
                 '}';
     }
