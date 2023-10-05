@@ -1,6 +1,7 @@
 package com.store.Online.Store.config.jwt;
 
 import com.store.Online.Store.entity.Role;
+import com.store.Online.Store.exception.InvalidJwtTokenException;
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -70,7 +71,7 @@ public class JwtTokenUtil {
             Jws<Claims> claimsJws = Jwts.parser().setSigningKey(secret).parseClaimsJws(token);
             return !claimsJws.getBody().getExpiration().before(new Date());
         }catch (JwtException | IllegalArgumentException e) {
-            throw new IndexOutOfBoundsException("Expired or invalid token");
+            throw new InvalidJwtTokenException("Expired or invalid token");
         }
     }
     public String resolveToken(HttpServletRequest request){
