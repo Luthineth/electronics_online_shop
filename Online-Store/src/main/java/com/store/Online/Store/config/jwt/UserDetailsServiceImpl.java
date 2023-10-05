@@ -1,6 +1,5 @@
-package com.store.Online.Store.config;
+package com.store.Online.Store.config.jwt;
 
-import com.store.Online.Store.entity.User;
 import com.store.Online.Store.repository.userRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,9 +21,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
-
-//        return new org.springframework.security.core.userdetails.User(
-//                user.getEmail(), user.getPassword(), user.getAuthorities());
     }
 
 }
