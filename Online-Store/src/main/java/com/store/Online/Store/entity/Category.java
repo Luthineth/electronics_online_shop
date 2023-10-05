@@ -18,7 +18,7 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "category_id")
-    private Long categoryId;
+    private long categoryId;
 
     @Column(name = "category_name", nullable = false)
     private String categoryName;
@@ -28,12 +28,14 @@ public class Category {
     private Category parentCategoryId;
 
     @JsonIgnore
+    @OneToMany(mappedBy = "parentCategoryId")
+    private Collection<Category> subCategories;
+
+    @JsonIgnore
     @OneToMany(mappedBy = "categoryId")
     private Collection<Category> categoryCollection;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "parentCategoryId")
-    private Collection<Category> parentCategories;
+
     public Category(){
     }
 
