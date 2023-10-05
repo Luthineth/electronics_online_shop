@@ -106,4 +106,7 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+//    public String generateJwtToken(JwtTokenUtil jwtTokenUtil) {
+//        return jwtTokenUtil.generateToken(this);
+//    }
 }
