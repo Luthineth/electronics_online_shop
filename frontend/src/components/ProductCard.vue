@@ -1,8 +1,9 @@
 <script setup>
+
 </script>
 
 <template>
-<div>jfedrus</div>
+<div>product</div>
 </template>
 
 <style scoped lang="scss">

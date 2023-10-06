@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="wrapper__links">
-                <v-icon icon="mdi-magnify"></v-icon>
+                <v-icon icon="mdi-magnify" @click="showSearchBar"></v-icon>
                 <v-icon icon="mdi-account-outline"></v-icon>
             </div>
         </div>
@@ -30,6 +30,7 @@
 
 <script setup>
 import {ref} from "vue";
+import {isSearchBarShown} from "../utils/utils.js";
 
 let itemCount = ref(3)
 let userAuthorized = ref(false)
@@ -37,6 +38,10 @@ let userAuthorized = ref(false)
 const updateItemCount = () => {
     itemCount.value += 1;
     userAuthorized.value = !userAuthorized.value
+};
+
+const showSearchBar = () => {
+    isSearchBarShown.value = true
 };
 </script>
 

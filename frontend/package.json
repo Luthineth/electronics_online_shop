@@ -15,7 +15,8 @@
     "vue": "^3.3.4",
     "vue-material-design-icons": "^5.2.0",
     "vue-router": "^4.2.4",
-    "vuetify": "^3.3.11"
+    "vuetify": "^3.3.11",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.2.3",

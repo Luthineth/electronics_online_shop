@@ -2,7 +2,8 @@
     <div class="container">
         <div class="container_centered">
             <a class="logo">E-shop.</a>
-            <SearchBar></SearchBar>
+            <SearchBar v-if="isSearchBarShown"/>
+            <NavBarButtons v-else/>
         </div>
     </div>
 </template>
@@ -10,6 +11,7 @@
 <script setup>
 import NavBarButtons from "./NavBarButtons.vue";
 import SearchBar from "./SearchBar.vue";
+import {isSearchBarShown} from "../utils/utils.js";
 </script>
 
 <style scoped lang="scss">
@@ -23,6 +25,8 @@ import SearchBar from "./SearchBar.vue";
     align-items: flex-end;
 }
 .logo{
+    width: 10vw;
+    max-width: 100px;
     margin-right: 1.9rem;
     margin-bottom: .475rem;
     font-size: 25px;
