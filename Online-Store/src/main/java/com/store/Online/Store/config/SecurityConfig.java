@@ -7,6 +7,7 @@ import com.store.Online.Store.config.jwt.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -43,9 +44,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                    .antMatchers("/authenticate").permitAll() // Allow access to authentication endpoint
-                    .antMatchers("/login").permitAll() // Allow access to login endpoint
-                    .anyRequest().authenticated() // All other requests require authentication
+                    .antMatchers("/authenticate").permitAll()
+                    .antMatchers("/login").permitAll()
+                    .antMatchers("/comments/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/products/**").permitAll() // Allow GET requests to "/products"
+                    .antMatchers(HttpMethod.POST, "/products").authenticated() // Require authentication for POST requests to "/products"
+                    .antMatchers(HttpMethod.PUT, "/products").authenticated() // Require authentication for PUT requests to "/products"
+                    .antMatchers(HttpMethod.DELETE, "/products/**").authenticated() // Require authentication for DELETE requests to "/products"
+                .anyRequest().authenticated()
                 .and ()
                 .cors(Customizer.withDefaults())
                 .apply(new JwtSecurityConfigurer(jwtTokenUtil));
