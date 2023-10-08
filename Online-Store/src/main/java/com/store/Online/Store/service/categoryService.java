@@ -2,9 +2,11 @@ package com.store.Online.Store.service;
 
 import com.store.Online.Store.entity.Category;
 
+import java.util.List;
+
 public interface categoryService {
 
-    public Category getCategoryTree(Long parentId);
+    List<Category> getSubCategories(Long categoryId);
 
     public void moveCategory(Long categoryId, Long newParentCategoryId);
 
