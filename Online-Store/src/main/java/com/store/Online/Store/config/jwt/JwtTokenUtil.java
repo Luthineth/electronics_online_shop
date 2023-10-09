@@ -50,7 +50,7 @@ public class JwtTokenUtil {
 
         return Jwts.builder()
                 .setSubject(email)
-                .claim("role", role)
+                .claim("role", role.getRoleName())
                 .setIssuedAt(now)
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, secret)
