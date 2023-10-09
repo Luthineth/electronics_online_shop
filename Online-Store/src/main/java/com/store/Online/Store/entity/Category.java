@@ -3,6 +3,7 @@ package com.store.Online.Store.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -11,6 +12,7 @@ import java.util.Collection;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "category")
 public class Category {
@@ -29,20 +31,11 @@ public class Category {
 
     @JsonIgnore
     @OneToMany(mappedBy = "parentCategoryId")
-    private Collection<Category> subCategories;
+    private Collection<Category> parentCategories;
 
     @JsonIgnore
     @OneToMany(mappedBy = "categoryId")
     private Collection<Category> categoryCollection;
-
-
-    public Category(){
-    }
-
-    public Category(String categoryName, Category parentCategoryId) {
-        this.categoryName = categoryName;
-        this.parentCategoryId = parentCategoryId;
-    }
 
     @Override
     public String toString() {
