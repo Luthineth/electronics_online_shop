@@ -44,13 +44,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                    .antMatchers("/authenticate").permitAll()
-                    .antMatchers("/login").permitAll()
-                    .antMatchers("/comments/**").permitAll()
-                    .antMatchers(HttpMethod.GET, "/products/**").permitAll() // Allow GET requests to "/products"
-                    .antMatchers(HttpMethod.POST, "/products").authenticated() // Require authentication for POST requests to "/products"
-                    .antMatchers(HttpMethod.PUT, "/products").authenticated() // Require authentication for PUT requests to "/products"
-                    .antMatchers(HttpMethod.DELETE, "/products/**").authenticated() // Require authentication for DELETE requests to "/products"
+                    .antMatchers("/authenticate","/login").permitAll()
+
+                    .antMatchers(HttpMethod.GET, "/products/**").permitAll()
+
+                    .antMatchers(HttpMethod.GET, "/categories/**").permitAll()
+
+                    .antMatchers(HttpMethod.GET, "/comments/**").permitAll()
+                    .antMatchers(HttpMethod.POST, "/comments").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/comments/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.DELETE, "/comments/**").hasRole("ADMIN")
+
+                    .antMatchers("/products_category/**").permitAll()
                 .anyRequest().authenticated()
                 .and ()
                 .cors(Customizer.withDefaults())
