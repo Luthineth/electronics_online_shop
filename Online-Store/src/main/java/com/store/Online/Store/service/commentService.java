@@ -13,7 +13,7 @@ public interface commentService {
 
     public Comment addComment(CommentRequest comment);
 
-    public void deleteComment(long commentId);
+    public void deleteComment(Long commentId);
 
     public void deleteImage(Long commentId);
 
