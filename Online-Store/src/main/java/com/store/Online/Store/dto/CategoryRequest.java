@@ -1,24 +1,17 @@
 package com.store.Online.Store.dto;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class CategoryRequest {
 
-    private Integer parentCategoryId;
+    private Long parentCategoryId;
 
-    private Integer categoryId;
+    private Long categoryId;
 
     private String nameCategory;
 
-    public CategoryRequest(Integer parentCategoryId, Integer categoryId, String nameCategory) {
-        this.parentCategoryId = parentCategoryId;
-        this.categoryId = categoryId;
-        this.nameCategory = nameCategory;
-    }
 }
