@@ -24,17 +24,42 @@ public class ProductServiceImpl implements productService {
 
     @Override
     public Optional<Product> getProductById(Long productId) {
-        try {
-            return productRepository.findByProductId(productId);
-        } catch (EmptyResultDataAccessException e) {
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        if (!optionalProduct.isPresent()) {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
+        return optionalProduct;
     }
 
     @Override
     public void saveProduct(ProductRequest productRequest) {
         Product product = new Product();
+        updateProductAttributes(product, productRequest);
+        productRepository.save(product);
+    }
 
+    @Override
+    public void updateProduct(Long productId, ProductRequest productRequest) {
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            updateProductAttributes(product, productRequest);
+            productRepository.save(product);
+        } else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
+        }
+    }
+
+    @Override
+    public void deleteProduct(Long productId) {
+        if (productRepository.existsById(productId)) {
+            productRepository.deleteById(productId);
+        } else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
+        }
+    }
+
+    private void updateProductAttributes(Product product, ProductRequest productRequest) {
         product.setProductName(productRequest.getProductName());
         product.setDescription(productRequest.getDescription());
         product.setStockQuantity(productRequest.getStockQuantity());
@@ -45,41 +70,5 @@ public class ProductServiceImpl implements productService {
         Discount defaultDiscount = new Discount();
         defaultDiscount.setDiscountId(1L);
         product.setDiscountId(defaultDiscount);
-
-        productRepository.save(product);
     }
-
-    @Override
-    public void updateProduct(Long productId, ProductRequest productRequest) {
-        Optional<Product> optionalProduct = productRepository.findById(productId);
-
-        if (optionalProduct.isPresent()) {
-            Product product = optionalProduct.get();
-
-            product.setProductName(productRequest.getProductName());
-            product.setDescription(productRequest.getDescription());
-            product.setStockQuantity(productRequest.getStockQuantity());
-            product.setPrice(productRequest.getPrice());
-            product.setPriceWithDiscount(productRequest.getPriceWithDiscount());
-            product.setImageUrl(productRequest.getImageUrl());
-
-            Discount defaultDiscount = new Discount();
-            defaultDiscount.setDiscountId(1L);
-            product.setDiscountId(defaultDiscount);
-
-            productRepository.save(product);
-        } else {
-            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
-        }
-    }
-
-    @Override
-    public void deleteProduct(Long productId) {
-        try {
-            productRepository.deleteById(productId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
-        }
-    }
-
 }
