@@ -2,6 +2,7 @@ package com.store.Online.Store.repository;
 
 import com.store.Online.Store.entity.Comment;
 import com.store.Online.Store.entity.Product;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -14,6 +15,8 @@ import java.util.List;
 public interface commentRepository extends JpaRepository<Comment, Long> {
 
     List<Comment> findByProductId(Product productId);
+    List<Comment> findByProductId(Product productId, Sort sort);
+
 
     @Modifying
     @Query("UPDATE Comment c SET c.imageUrl = null WHERE c.commentId = :commentId")
