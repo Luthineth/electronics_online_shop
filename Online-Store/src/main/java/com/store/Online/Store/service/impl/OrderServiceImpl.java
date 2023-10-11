@@ -5,7 +5,9 @@ import com.store.Online.Store.entity.Order;
 import com.store.Online.Store.entity.OrderItem;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.entity.User;
+import com.store.Online.Store.exception.InvalidOrderQuantityException;
 import com.store.Online.Store.exception.UserNotFoundException;
+import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.repository.orderItemRepository;
 import com.store.Online.Store.repository.orderRepository;
 import com.store.Online.Store.repository.productRepository;
@@ -30,9 +32,9 @@ public class OrderServiceImpl implements orderService {
     private final userRepository userRepository;
 
     private final orderItemRepository orderItemRepository;
-    private final EmailService emailService;
+    private final EmailServiceImpl emailService;
 
-    public OrderServiceImpl(com.store.Online.Store.repository.orderRepository orderRepository, com.store.Online.Store.repository.productRepository productRepository, com.store.Online.Store.repository.userRepository userRepository, com.store.Online.Store.repository.orderItemRepository orderItemRepository, EmailService emailService) {
+    public OrderServiceImpl(com.store.Online.Store.repository.orderRepository orderRepository, com.store.Online.Store.repository.productRepository productRepository, com.store.Online.Store.repository.userRepository userRepository, com.store.Online.Store.repository.orderItemRepository orderItemRepository, EmailServiceImpl emailService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -52,7 +54,7 @@ public class OrderServiceImpl implements orderService {
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
         } else {
-          throw new UserNotFoundException("Нет пользователя");
+          throw new UserNotFoundException("User not found with email " + userEmail);
         }
         order.setUserId(user);
 
@@ -62,7 +64,8 @@ public class OrderServiceImpl implements orderService {
         StringBuilder descriptionBuilder = new StringBuilder();
 
         for (OrderItemRequest orderItemRequest : orderItems) {
-            Product product = productRepository.findById(orderItemRequest.getProductId()).orElse(null);
+            Product product = productRepository.findById(orderItemRequest.getProductId())
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + orderItemRequest.getProductId()));
 
             if (product != null) {
                 OrderItem orderItem = new OrderItem();
@@ -78,10 +81,9 @@ public class OrderServiceImpl implements orderService {
                 BigDecimal productTotalPrice = product.getPriceWithDiscount().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity()));
                 totalPrice = totalPrice.add(productTotalPrice);
                 orderItemRepository.save(orderItem);
-
-
             }
         }
+
         order.setTotalPrice(totalPrice);
         orderRepository.save(order);
 
@@ -90,6 +92,9 @@ public class OrderServiceImpl implements orderService {
 
             if (product != null) {
                 int newStockQuantity = product.getStockQuantity() - orderItemRequest.getQuantity();
+                if (newStockQuantity < 0) {
+                    throw new InvalidOrderQuantityException("Invalid order quantity for product with ID: " + product.getProductId());
+                }
                 product.setStockQuantity(newStockQuantity);
                 productRepository.updateStockQuantity(product.getProductId(), newStockQuantity);
             }
