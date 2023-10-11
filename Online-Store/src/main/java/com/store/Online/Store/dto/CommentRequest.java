@@ -10,8 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class CommentRequest {
 
-    private Long userId;
-
     private Long productId;
 
     private String text;
