@@ -2,6 +2,7 @@ package com.store.Online.Store.service.impl;
 
 import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Product;
+import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.service.productCategoryService;
 import com.store.Online.Store.repository.productCategoryRepository;
 import com.store.Online.Store.repository.categoryRepository;
@@ -26,7 +27,12 @@ public class ProductCategoryServiceImpl implements productCategoryService {
 
     @Override
     public List<Product> getProductsByCategoryAndSubcategories(Long categoryId) {
-        List<Product> products = productCategoryRepository.findProductsByCategoryId(categoryId);
+        List<Product> products = productCategoryRepository.findByCategoryId(categoryId);
+
+        if (products.isEmpty()) {
+            throw new ProductNotFoundException("No products found for category with ID: " + categoryId);
+        }
+
         return getProductsRecursively(categoryId, products);
     }
 
@@ -34,13 +40,12 @@ public class ProductCategoryServiceImpl implements productCategoryService {
     public List<Product> getProductsRecursively(Long categoryId, List<Product> products) {
         List<Product> allProducts = new ArrayList<>(products);
 
-        List<Category> subcategories = categoryRepository.findProductsByCategoryId(categoryId);
+        List<Category> subcategories = categoryRepository.findSubCategories(categoryId);
         for (Category subcategory : subcategories) {
-            List<Product> productsForSubcategory = productCategoryRepository.findProductsByCategoryId(subcategory.getCategoryId());
+            List<Product> productsForSubcategory = productCategoryRepository.findByCategoryId(subcategory.getCategoryId());
             allProducts.addAll(getProductsRecursively(subcategory.getCategoryId(), productsForSubcategory));
         }
 
         return allProducts;
-
     }
 }
