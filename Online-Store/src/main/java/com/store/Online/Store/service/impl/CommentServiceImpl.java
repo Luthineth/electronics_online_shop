@@ -6,13 +6,15 @@ import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.entity.User;
 import com.store.Online.Store.exception.CommentNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
-import com.store.Online.Store.exception.UserCreationException;
+import com.store.Online.Store.exception.UserNotFoundException;
+import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.repository.commentRepository;
 import com.store.Online.Store.service.productService;
-import com.store.Online.Store.service.userService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -22,14 +24,14 @@ public class CommentServiceImpl implements commentService{
 
     private final commentRepository commentRepository;
     private final productService productService;
-    private final userService userService;
+    private final userRepository userRepository;
 
 
     @Autowired
-    public CommentServiceImpl(commentRepository commentrepository, productService productService, com.store.Online.Store.service.userService userService){
+    public CommentServiceImpl(commentRepository commentrepository, productService productService, userRepository userRepository){
         this.commentRepository =commentrepository;
         this.productService = productService;
-        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -46,13 +48,17 @@ public class CommentServiceImpl implements commentService{
     @Override
     public Comment addComment(CommentRequest commentRequest) {
         Comment comment = new Comment();
-        Optional<User> userOptional = userService.getUserId(commentRequest.getUserId());
 
-        if (userOptional.isPresent()) {
-            comment.setUserId(userOptional.get());
+        User user;
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = auth.getName();
+        Optional<User> optionalUser = userRepository.findByEmail(userEmail);
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
         } else {
-             throw new UserCreationException("User not found with ID: " + userOptional);
+            throw new UserNotFoundException("User not found with email " + userEmail);
         }
+        comment.setUserId(user);
 
         Optional<Product> productOptional = productService.getProductById(commentRequest.getProductId());
         if (productOptional.isPresent()) {
