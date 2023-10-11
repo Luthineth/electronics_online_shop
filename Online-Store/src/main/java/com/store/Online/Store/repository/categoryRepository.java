@@ -11,8 +11,7 @@ import java.util.List;
 @Repository
 public interface categoryRepository extends JpaRepository<Category,Long> {
 
-    @Query("SELECT c FROM Category c JOIN FETCH c.subCategories WHERE c.categoryId = :parentId")
-    Category findCategoryTree(@Param("parentId") Long parentId);
-
-    List <Category> findProductsByCategoryId(Long categoryId);
+    @Query("SELECT c FROM Category c " +
+            "WHERE c.parentCategoryId.categoryId = :categoryId")
+    List<Category> findSubCategories(@Param("categoryId") Long categoryId);
 }
