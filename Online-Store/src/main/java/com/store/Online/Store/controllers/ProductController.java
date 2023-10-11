@@ -3,6 +3,7 @@ package com.store.Online.Store.controllers;
 import com.store.Online.Store.dto.ProductRequest;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.service.productService;
+import com.store.Online.Store.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +23,16 @@ public class ProductController {
         this.productService = productService;
     }
 
-
     @GetMapping("/{productId}")
     public ResponseEntity<?> getProductById(@PathVariable Long productId) {
-        Optional<Product> product = productService.getProductById(productId);
-
-        return product.map(ResponseEntity::ok)
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        try {
+            Optional<Product> product = productService.getProductById(productId);
+            return ResponseEntity.ok(product);
+        } catch (ProductNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+        }
     }
 
     @PostMapping
