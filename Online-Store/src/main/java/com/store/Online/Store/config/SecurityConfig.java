@@ -56,6 +56,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.DELETE, "/comments/**").hasRole("ADMIN")
 
                     .antMatchers("/products_category/**").permitAll()
+
+                    .antMatchers("/orders").authenticated()
                 .anyRequest().authenticated()
                 .and ()
                 .cors(Customizer.withDefaults())
