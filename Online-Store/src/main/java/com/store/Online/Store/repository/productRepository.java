@@ -13,14 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@Transactional
 public interface productRepository extends JpaRepository<Product,Long> {
 
-    Optional<Product> findByProductId(Long productId);
-
-    @NonNull
-    List<Product> findAll();
-
-    @Transactional
     @Modifying
     @Query("UPDATE Product p SET p.stockQuantity = :newStockQuantity WHERE p.productId = :productId")
     void updateStockQuantity(@Param("productId") Long productId, @Param("newStockQuantity") int newStockQuantity);
