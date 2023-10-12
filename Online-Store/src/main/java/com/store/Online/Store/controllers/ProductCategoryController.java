@@ -4,6 +4,7 @@ import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.service.productCategoryService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,12 +33,13 @@ public class ProductCategoryController {
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) Boolean inStock,
-            @RequestParam(required = false) Integer minRating) {
+            @RequestParam(required = false) Integer minRating,
+            @RequestParam(required = false) Sort.Direction price) {
         try {
             List<Product> products = productCategoryService.getProductsByCategoryAndSubcategories(categoryId);
 
-            if (minPrice != null || maxPrice != null || inStock != null || minRating != null) {
-                products = productService.searchProducts(minPrice, maxPrice, inStock, minRating, products);
+            if (minPrice != null || maxPrice != null || inStock != null || minRating != null || price != null) {
+                products = productService.searchProducts(minPrice, maxPrice, inStock, minRating, price, products);
             }
             return ResponseEntity.ok(products);
         } catch (ProductNotFoundException e) {

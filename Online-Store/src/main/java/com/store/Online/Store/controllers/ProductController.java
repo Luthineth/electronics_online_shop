@@ -24,7 +24,7 @@ public class ProductController {
     @GetMapping("/{productId}")
     public ResponseEntity<?> getProductById(
             @PathVariable Long productId,
-            @RequestParam(defaultValue = "ASC") Sort.Direction direction){
+            @RequestParam(defaultValue = "DESC") Sort.Direction direction){
         try {
             ProductRequest productRequest = productService.getProductRequestById(productId,direction);
                 return ResponseEntity.ok(productRequest);

@@ -82,24 +82,32 @@ public class ProductServiceImpl implements productService {
     }
 
     @Override
-    public List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, List<Product> products) {
+    public List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, Sort.Direction price, List<Product> products) {
         List<Product> filteredProducts = new ArrayList<>();
 
         for (Product product : products) {
             boolean isInRange = isProductInRange(product, minPrice, maxPrice);
             boolean isStockValid = (inStock == null) || (inStock && product.getStockQuantity() > 0);
             boolean isRatingValid = (minRating == null) || (calculateAverageRating(product) != null && calculateAverageRating(product) >= minRating);
+
             if (isInRange && isStockValid && isRatingValid) {
                 filteredProducts.add(product);
             }
         }
 
+        if (price != null) {
+            filteredProducts.sort((product1, product2) -> {
+                BigDecimal price1 = product1.getPrice();
+                BigDecimal price2 = product2.getPrice();
+                return price == Sort.Direction.ASC ? price1.compareTo(price2) : price2.compareTo(price1);
+            });
+        }
         return filteredProducts;
     }
 
     private boolean isProductInRange(Product product, BigDecimal minPrice, BigDecimal maxPrice) {
         if (minPrice != null && maxPrice != null) {
-            BigDecimal productPrice = product.getPrice();
+            BigDecimal productPrice = product.getPriceWithDiscount();
             return productPrice.compareTo(minPrice) >= 0 && productPrice.compareTo(maxPrice) <= 0;
         }
         return true;

@@ -20,5 +20,5 @@ public interface productService {
 
     void deleteProduct(Long productId);
 
-    List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, List<Product> products);
+    List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, Sort.Direction price, List<Product> products);
 }
