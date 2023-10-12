@@ -15,13 +15,8 @@ import java.util.List;
 @Transactional
 public interface productRepository extends JpaRepository<Product,Long> {
 
-    List<Product> findByStockQuantityGreaterThan(int stockQuantity);
-
     @Modifying
     @Query("UPDATE Product p SET p.stockQuantity = :newStockQuantity WHERE p.productId = :productId")
     void updateStockQuantity(@Param("productId") Long productId, @Param("newStockQuantity") int newStockQuantity);
 
-    List<Product> findByStockQuantityGreaterThanAndPriceBetween(int i, BigDecimal minPrice, BigDecimal maxPrice);
-
-    List<Product> findByStockQuantityAndPriceBetween(int i, BigDecimal minPrice, BigDecimal maxPrice);
 }
