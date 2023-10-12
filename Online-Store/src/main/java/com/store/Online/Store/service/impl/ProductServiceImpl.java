@@ -1,28 +1,34 @@
 package com.store.Online.Store.service.impl;
 
+import com.store.Online.Store.dto.CommentRequest;
 import com.store.Online.Store.dto.ProductRequest;
+import com.store.Online.Store.entity.Comment;
 import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.repository.productRepository;
+import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
 
 @Service
 public class ProductServiceImpl implements productService {
 
     private final productRepository productRepository;
+    private final commentService commentService;
 
     @Autowired
-    public ProductServiceImpl(productRepository productRepository) {
+    public ProductServiceImpl(productRepository productRepository, commentService commentService) {
         this.productRepository = productRepository;
+        this.commentService = commentService;
     }
 
     @Override
@@ -32,6 +38,19 @@ public class ProductServiceImpl implements productService {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
         return optionalProduct;
+    }
+
+    @Override
+    public ProductRequest getProductRequestById(Long productId, Sort.Direction direction) {
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            List<CommentRequest> comments = commentService.getCommentsByProductId(productId, direction);
+            ProductRequest productDto = mapToProductDto(product);
+            productDto.setComments(comments);
+            return productDto;
+        }
+        throw new ProductNotFoundException("Product with ID " + productId + " not found.");
     }
 
     @Override
@@ -63,14 +82,14 @@ public class ProductServiceImpl implements productService {
     }
 
     @Override
-    public List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, List<Product> products) {
+    public List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, List<Product> products) {
         List<Product> filteredProducts = new ArrayList<>();
 
         for (Product product : products) {
             boolean isInRange = isProductInRange(product, minPrice, maxPrice);
             boolean isStockValid = (inStock == null) || (inStock && product.getStockQuantity() > 0);
-
-            if (isInRange && isStockValid) {
+            boolean isRatingValid = (minRating == null) || (calculateAverageRating(product) != null && calculateAverageRating(product) >= minRating);
+            if (isInRange && isStockValid && isRatingValid) {
                 filteredProducts.add(product);
             }
         }
@@ -83,12 +102,26 @@ public class ProductServiceImpl implements productService {
             BigDecimal productPrice = product.getPrice();
             return productPrice.compareTo(minPrice) >= 0 && productPrice.compareTo(maxPrice) <= 0;
         }
-        return true; // If no price range specified, consider it in range
+        return true;
     }
 
-    @Override
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public Double calculateAverageRating(Product product) {
+        Collection<CommentRequest> comments = commentService.getCommentsByProductId(product.getProductId());
+        if (comments == null || comments.isEmpty()) {
+            return null;
+        }
+
+        int sum = 0;
+        int count = 0;
+
+        for (CommentRequest comment : comments) {
+            if (comment.getRating() != null) {
+                sum += comment.getRating();
+                count++;
+            }
+        }
+
+        return count > 0 ? (double) sum / count : null;
     }
 
     private void updateProductAttributes(Product product, ProductRequest productRequest) {
@@ -102,5 +135,15 @@ public class ProductServiceImpl implements productService {
         Discount defaultDiscount = new Discount();
         defaultDiscount.setDiscountId(1L);
         product.setDiscountId(defaultDiscount);
+    }
+    public ProductRequest mapToProductDto(Product product) {
+        ProductRequest productDto = new ProductRequest();
+        productDto.setProductName(product.getProductName());
+        productDto.setDescription(product.getDescription());
+        productDto.setStockQuantity(product.getStockQuantity());
+        productDto.setPrice(product.getPrice());
+        productDto.setPriceWithDiscount(product.getPriceWithDiscount());
+        productDto.setImageUrl(product.getImageUrl());
+        return productDto;
     }
 }

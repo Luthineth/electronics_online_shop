@@ -31,12 +31,13 @@ public class ProductCategoryController {
             @PathVariable Long categoryId,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice,
-            @RequestParam(required = false) Boolean inStock) {
+            @RequestParam(required = false) Boolean inStock,
+            @RequestParam(required = false) Integer minRating) {
         try {
             List<Product> products = productCategoryService.getProductsByCategoryAndSubcategories(categoryId);
 
-            if (minPrice != null || maxPrice != null || inStock != null) {
-                products = productService.searchProducts(minPrice, maxPrice, inStock, products);
+            if (minPrice != null || maxPrice != null || inStock != null || minRating != null) {
+                products = productService.searchProducts(minPrice, maxPrice, inStock, minRating, products);
             }
             return ResponseEntity.ok(products);
         } catch (ProductNotFoundException e) {
