@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
 public class CategoryController {
 
     private final categoryService categoryService;
@@ -21,13 +20,11 @@ public class CategoryController {
     }
 
 
-    @GetMapping("/{categoryId}")
-    public ResponseEntity<?> getSubCategories(@PathVariable Long categoryId) {
+    @GetMapping("/categories")
+    public ResponseEntity<?> getAllSubCategories() {
         try {
-            List<Category> subCategories = categoryService.getSubCategories(categoryId);
+            List<Category> subCategories = categoryService.getSubCategories();
             return ResponseEntity.ok(subCategories);
-        } catch (CategoryNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while retrieving subcategories.");
         }
