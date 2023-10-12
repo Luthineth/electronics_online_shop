@@ -7,15 +7,17 @@ import com.store.Online.Store.entity.User;
 import com.store.Online.Store.exception.CommentNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.exception.UserNotFoundException;
+import com.store.Online.Store.repository.productRepository;
 import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.repository.commentRepository;
-import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,26 +25,39 @@ import java.util.Optional;
 public class CommentServiceImpl implements commentService{
 
     private final commentRepository commentRepository;
-    private final productService productService;
+    private final productRepository productRepository;
     private final userRepository userRepository;
 
 
     @Autowired
-    public CommentServiceImpl(commentRepository commentrepository, productService productService, userRepository userRepository){
+    public CommentServiceImpl(commentRepository commentrepository, productRepository productRepository, userRepository userRepository){
         this.commentRepository =commentrepository;
-        this.productService = productService;
+        this.productRepository = productRepository;
         this.userRepository = userRepository;
     }
 
     @Override
-    public List<Comment> getCommentsByProductIdSortedByRating(Long productId) {
-        Optional<Product> productOptional = productService.getProductById(productId);
+    public List<CommentRequest> getCommentsByProductId(Long productId) {
+        Optional<Product> productOptional = productRepository.findById(productId);
         Product product = productOptional.orElse(null);
 
         if (product == null) {
-           throw new ProductNotFoundException("Error id product");
+            throw new ProductNotFoundException("Error id product");
         }
-        return commentRepository.findByProductId(product);
+
+        List<Comment> comments = commentRepository.findByProductId(product);
+        return mapToCommentRequestList(comments);
+    }
+
+    @Override
+    public List<CommentRequest> getCommentsByProductId(Long productId, Sort.Direction direction) {
+        Optional<Product> productOptional = productRepository.findById(productId);
+        Product product = productOptional.orElseThrow(() -> new ProductNotFoundException("Error id product"));
+
+        Sort sort = Sort.by(direction, "rating");
+
+        List<Comment> comments = commentRepository.findByProductId(product, sort);
+        return mapToCommentRequestList(comments);
     }
 
     @Override
@@ -60,7 +75,7 @@ public class CommentServiceImpl implements commentService{
         }
         comment.setUserId(user);
 
-        Optional<Product> productOptional = productService.getProductById(commentRequest.getProductId());
+        Optional<Product> productOptional = productRepository.findById(commentRequest.getProductId());
         if (productOptional.isPresent()) {
             comment.setProductId(productOptional.get());
         } else {
@@ -91,14 +106,20 @@ public class CommentServiceImpl implements commentService{
         commentRepository.deleteById(commentId);
     }
 
-    @Override
-    public List<Comment> getCommentsByProductIdSortedByRating(Long productId, Sort.Direction direction) {
-        Optional<Product> productOptional = productService.getProductById(productId);
-        Product product = productOptional.orElseThrow(() -> new ProductNotFoundException("Error id product"));
-
-        Sort sort = Sort.by(direction, "rating");
-
-        return commentRepository.findByProductId(product, sort);
+    private List<CommentRequest> mapToCommentRequestList(List<Comment> comments) {
+        List<CommentRequest> commentRequests = new ArrayList<>();
+        for (Comment comment : comments) {
+            commentRequests.add(mapToCommentRequest(comment));
+        }
+        return commentRequests;
     }
 
+    private CommentRequest mapToCommentRequest(Comment comment) {
+        return CommentRequest.builder()
+                .firstName(comment.getUserId().getFirstName())
+                .text(comment.getText())
+                .rating(comment.getRating())
+                .imageUrl(comment.getImageUrl())
+                .build();
+    }
 }
