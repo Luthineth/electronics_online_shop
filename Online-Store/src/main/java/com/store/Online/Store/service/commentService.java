@@ -9,13 +9,13 @@ import java.util.List;
 
 public interface commentService {
 
-    public List<Comment> getCommentsByProductIdSortedByRating(Long productId);
+    List<CommentRequest> getCommentsByProductId(Long productId);
 
-    public Comment addComment(CommentRequest comment);
+    List<CommentRequest> getCommentsByProductId(Long productId, Sort.Direction direction);
 
-    public void deleteComment(Long commentId);
+    Comment addComment(CommentRequest comment);
 
-    public void deleteImage(Long commentId);
+    void deleteComment(Long commentId);
 
-    List<Comment> getCommentsByProductIdSortedByRating(Long productId, Sort.Direction direction);
+    void deleteImage(Long commentId);
 }
