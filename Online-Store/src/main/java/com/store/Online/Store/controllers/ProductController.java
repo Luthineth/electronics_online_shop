@@ -1,18 +1,14 @@
 package com.store.Online.Store.controllers;
 
 import com.store.Online.Store.dto.ProductRequest;
-import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.service.productService;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/products")
@@ -26,13 +22,15 @@ public class ProductController {
     }
 
     @GetMapping("/{productId}")
-    public ResponseEntity<?> getProductById(@PathVariable Long productId) {
+    public ResponseEntity<?> getProductById(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "ASC") Sort.Direction direction){
         try {
-            Optional<Product> product = productService.getProductById(productId);
-            return ResponseEntity.ok(product);
-        } catch (ProductNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (Exception e) {
+            ProductRequest productRequest = productService.getProductRequestById(productId,direction);
+                return ResponseEntity.ok(productRequest);
+            } catch (ProductNotFoundException e){
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
