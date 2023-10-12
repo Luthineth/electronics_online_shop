@@ -20,18 +20,10 @@ public class CategoryServiceImpl implements categoryService {
         this.categoryRepository = categoryRepository;
     }
 
+
     @Override
-    public List<Category> getSubCategories(Long categoryId) {
-        categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category not found with ID: " + categoryId));
-
-        List<Category> subCategories = categoryRepository.findSubCategories(categoryId);
-
-        if (subCategories.isEmpty()) {
-            throw new SubCategoryNotFoundException("No subcategories found for category with ID: " + categoryId);
-        }
-
-        return subCategories;
+    public List<Category> getSubCategories() {
+        return categoryRepository.findAll();
     }
 
     @Override
