@@ -7,10 +7,13 @@ import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.repository.productRepository;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 public class ProductServiceImpl implements productService {
@@ -57,6 +60,35 @@ public class ProductServiceImpl implements productService {
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
+    }
+
+    @Override
+    public List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, List<Product> products) {
+        List<Product> filteredProducts = new ArrayList<>();
+
+        for (Product product : products) {
+            boolean isInRange = isProductInRange(product, minPrice, maxPrice);
+            boolean isStockValid = (inStock == null) || (inStock && product.getStockQuantity() > 0);
+
+            if (isInRange && isStockValid) {
+                filteredProducts.add(product);
+            }
+        }
+
+        return filteredProducts;
+    }
+
+    private boolean isProductInRange(Product product, BigDecimal minPrice, BigDecimal maxPrice) {
+        if (minPrice != null && maxPrice != null) {
+            BigDecimal productPrice = product.getPrice();
+            return productPrice.compareTo(minPrice) >= 0 && productPrice.compareTo(maxPrice) <= 0;
+        }
+        return true; // If no price range specified, consider it in range
+    }
+
+    @Override
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
     }
 
     private void updateProductAttributes(Product product, ProductRequest productRequest) {

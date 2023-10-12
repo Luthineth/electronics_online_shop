@@ -5,18 +5,23 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 @Transactional
 public interface productRepository extends JpaRepository<Product,Long> {
 
+    List<Product> findByStockQuantityGreaterThan(int stockQuantity);
+
     @Modifying
     @Query("UPDATE Product p SET p.stockQuantity = :newStockQuantity WHERE p.productId = :productId")
     void updateStockQuantity(@Param("productId") Long productId, @Param("newStockQuantity") int newStockQuantity);
+
+    List<Product> findByStockQuantityGreaterThanAndPriceBetween(int i, BigDecimal minPrice, BigDecimal maxPrice);
+
+    List<Product> findByStockQuantityAndPriceBetween(int i, BigDecimal minPrice, BigDecimal maxPrice);
 }
