@@ -1,18 +1,18 @@
 package com.store.Online.Store.service;
 
+import com.store.Online.Store.dto.CategoryRequest;
 import com.store.Online.Store.entity.Category;
 
+import java.net.CacheRequest;
 import java.util.List;
 
 public interface categoryService {
 
-    void moveCategory(Long categoryId, Long newParentCategoryId);
-
     void deleteCategory(Long categoryId);
 
-    Category updateCategory(Category category);
+    Category updateCategory(Long categoryId,CategoryRequest categoryRequest);
 
     List<Category> getSubCategories();
 
-    Category addCategory(Category category);
+    Category addCategory(CategoryRequest categoryRequest);
 }
