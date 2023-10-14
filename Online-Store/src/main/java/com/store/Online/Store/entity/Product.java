@@ -3,6 +3,7 @@ package com.store.Online.Store.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.Collection;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "product")
 public class Product {
 
@@ -48,14 +50,13 @@ public class Product {
     private Collection<OrderItem> orderItems;
 
     @JsonIgnore
-    @OneToMany(mappedBy = "productId")
+    @OneToMany(mappedBy = "productId", cascade = CascadeType.ALL)
     private Collection<ProductCategory> productCategoryCollection;
 
     @JsonIgnore
     @OneToMany(mappedBy = "productId")
     private Collection<Comment> comments;
-    public Product(){
-    }
+
 
     public Product(String productName, String description, int stockQuantity, BigDecimal price, BigDecimal priceWithDiscount, Discount discountId){
         this.productName = productName;
