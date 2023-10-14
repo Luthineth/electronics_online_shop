@@ -106,6 +106,13 @@ public class CommentServiceImpl implements commentService{
         commentRepository.deleteById(commentId);
     }
 
+    @Override
+    public void deleteProductComments(Long productId) {
+        Optional<Product> productOptional = productRepository.findById(productId);
+        Product product = productOptional.orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
+
+        commentRepository.deleteByProductId(product);
+    }
     private List<CommentRequest> mapToCommentRequestList(List<Comment> comments) {
         List<CommentRequest> commentRequests = new ArrayList<>();
         for (Comment comment : comments) {
