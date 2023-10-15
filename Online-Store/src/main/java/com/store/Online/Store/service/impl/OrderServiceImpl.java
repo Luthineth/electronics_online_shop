@@ -17,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +43,7 @@ public class OrderServiceImpl implements orderService {
         this.emailService = emailService;
     }
 
+    @Transactional
     @Override
     public void createOrder(List<OrderItemRequest> orderItems) {
         Order order = new Order();
