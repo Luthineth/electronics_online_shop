@@ -4,9 +4,7 @@ import com.store.Online.Store.dto.CommentRequest;
 import com.store.Online.Store.entity.Comment;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.entity.User;
-import com.store.Online.Store.exception.CommentNotFoundException;
-import com.store.Online.Store.exception.ProductNotFoundException;
-import com.store.Online.Store.exception.UserNotFoundException;
+import com.store.Online.Store.exception.*;
 import com.store.Online.Store.repository.productRepository;
 import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.commentService;
@@ -17,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +27,6 @@ public class CommentServiceImpl implements commentService{
     private final productRepository productRepository;
     private final userRepository userRepository;
 
-
     @Autowired
     public CommentServiceImpl(commentRepository commentrepository, productRepository productRepository, userRepository userRepository){
         this.commentRepository =commentrepository;
@@ -39,11 +37,7 @@ public class CommentServiceImpl implements commentService{
     @Override
     public List<CommentRequest> getCommentsByProductId(Long productId) {
         Optional<Product> productOptional = productRepository.findById(productId);
-        Product product = productOptional.orElse(null);
-
-        if (product == null) {
-            throw new ProductNotFoundException("Error id product");
-        }
+        Product product = productOptional.orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
 
         List<Comment> comments = commentRepository.findByProductId(product);
         return mapToCommentRequestList(comments);
@@ -60,6 +54,7 @@ public class CommentServiceImpl implements commentService{
         return mapToCommentRequestList(comments);
     }
 
+    @Transactional
     @Override
     public Comment addComment(CommentRequest commentRequest) {
         Comment comment = new Comment();
@@ -85,27 +80,43 @@ public class CommentServiceImpl implements commentService{
         comment.setText(commentRequest.getText());
         comment.setRating(commentRequest.getRating());
         comment.setImageUrl(commentRequest.getImageUrl());
-        return commentRepository.save(comment);
+
+        try {
+            return commentRepository.save(comment);
+        } catch (Exception e) {
+            throw new CommentAdditionException("Failed to add comment" + e.getMessage());
+        }
     }
 
+    @Transactional
     @Override
     public void deleteImage(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
             throw new CommentNotFoundException("Comment not found with ID: " + commentId);
         }
 
-        commentRepository.deleteImageByCommentId(commentId);
+        try {
+            commentRepository.deleteImageByCommentId(commentId);
+        } catch (Exception e) {
+            throw new CommentDeletionException("Failed to delete image comment" + e.getMessage());
+        }
     }
 
+    @Transactional
     @Override
     public void deleteComment(Long commentId) {
         if (!commentRepository.existsById(commentId)) {
             throw new CommentNotFoundException("Comment not found with ID: " + commentId);
         }
 
-        commentRepository.deleteById(commentId);
+        try {
+            commentRepository.deleteById(commentId);
+        } catch (Exception e) {
+            throw new CommentDeletionException("Failed to delete comment" + e.getMessage());
+        }
     }
 
+    @Transactional
     @Override
     public void deleteProductComments(Long productId) {
         Optional<Product> productOptional = productRepository.findById(productId);
