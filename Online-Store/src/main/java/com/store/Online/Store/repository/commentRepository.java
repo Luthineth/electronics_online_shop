@@ -17,6 +17,7 @@ public interface commentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByProductId(Product productId);
     List<Comment> findByProductId(Product productId, Sort sort);
 
+    void deleteByProductId(Product productId);
 
     @Modifying
     @Query("UPDATE Comment c SET c.imageUrl = null WHERE c.commentId = :commentId")

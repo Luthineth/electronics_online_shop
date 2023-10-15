@@ -2,6 +2,7 @@ package com.store.Online.Store.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "order_item")
 public class OrderItem {
 
@@ -28,9 +30,6 @@ public class OrderItem {
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
-
-    public OrderItem(){
-    }
 
     public OrderItem(Order orderId, Product productId, Integer quantity) {
         this.orderId = orderId;

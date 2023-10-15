@@ -37,8 +37,8 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> saveProduct(@RequestBody ProductRequest productRequest) {
-        productService.saveProduct(productRequest);
+    public ResponseEntity<?> addProduct(@RequestBody ProductRequest productRequest) {
+        productService.addProduct(productRequest);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
@@ -55,4 +55,5 @@ public class ProductController {
         productService.deleteProduct(productId);
         return ResponseEntity.ok().build();
     }
+
 }

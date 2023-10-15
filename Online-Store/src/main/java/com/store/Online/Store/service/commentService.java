@@ -18,4 +18,6 @@ public interface commentService {
     void deleteComment(Long commentId);
 
     void deleteImage(Long commentId);
+
+    void deleteProductComments(Long productId);
 }

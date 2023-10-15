@@ -2,18 +2,23 @@ package com.store.Online.Store.service.impl;
 
 import com.store.Online.Store.dto.CommentRequest;
 import com.store.Online.Store.dto.ProductRequest;
-import com.store.Online.Store.entity.Comment;
+import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
+import com.store.Online.Store.entity.ProductCategory;
+import com.store.Online.Store.exception.CategoryNotFoundException;
+import com.store.Online.Store.exception.DiscountNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
-import com.store.Online.Store.repository.productRepository;
+import com.store.Online.Store.repository.*;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,12 +28,20 @@ import java.util.Optional;
 public class ProductServiceImpl implements productService {
 
     private final productRepository productRepository;
+    private final productCategoryRepository productCategoryRepository;
+    private final categoryRepository categoryRepository;
+    private final discountRepository discountRepository;
     private final commentService commentService;
+    private final orderItemRepository orderItemRepository;
 
     @Autowired
-    public ProductServiceImpl(productRepository productRepository, commentService commentService) {
+    public ProductServiceImpl(productRepository productRepository, com.store.Online.Store.repository.productCategoryRepository productCategoryRepository, com.store.Online.Store.repository.categoryRepository categoryRepository, com.store.Online.Store.repository.discountRepository discountRepository, commentService commentService, com.store.Online.Store.repository.orderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
+        this.productCategoryRepository = productCategoryRepository;
+        this.categoryRepository = categoryRepository;
+        this.discountRepository = discountRepository;
         this.commentService = commentService;
+        this.orderItemRepository = orderItemRepository;
     }
 
     @Override
@@ -46,36 +59,82 @@ public class ProductServiceImpl implements productService {
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
             List<CommentRequest> comments = commentService.getCommentsByProductId(productId, direction);
-            ProductRequest productDto = mapToProductDto(product);
-            productDto.setComments(comments);
-            return productDto;
+            ProductRequest productRequest = mapToProductDto(product);
+            productRequest.setComments(comments);
+            return productRequest;
         }
         throw new ProductNotFoundException("Product with ID " + productId + " not found.");
     }
 
+    @Transactional
     @Override
-    public void saveProduct(ProductRequest productRequest) {
+    public void addProduct(ProductRequest productRequest) {
         Product product = new Product();
-        updateProductAttributes(product, productRequest);
+        product.setProductName(productRequest.getProductName());
+        product.setDescription(productRequest.getDescription());
+        product.setStockQuantity(productRequest.getStockQuantity());
+        product.setPrice(productRequest.getPrice());
+        product.setPriceWithDiscount(productRequest.getPrice());
+        product.setImageUrl(productRequest.getImageUrl());
+
+        Discount defaultDiscount = new Discount();
+        defaultDiscount.setDiscountId(1L);
+        product.setDiscountId(defaultDiscount);
         productRepository.save(product);
     }
 
+    @Transactional
     @Override
     public void updateProduct(Long productId, ProductRequest productRequest) {
         Optional<Product> optionalProduct = productRepository.findById(productId);
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
-            updateProductAttributes(product, productRequest);
+
+            product.setProductName(productRequest.getProductName());
+            product.setDescription(productRequest.getDescription());
+            product.setStockQuantity(productRequest.getStockQuantity());
+            product.setPrice(productRequest.getPrice());
+            product.setImageUrl(productRequest.getImageUrl());
+
+            updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
+
+
+            List<Long> categoryIds = productRequest.getCategoryId();
+
+            if (categoryIds != null) {
+
+                productCategoryRepository.deleteByProductId(product);
+
+                for (Long categoryId : categoryIds) {
+                    Category category = categoryRepository.findById(categoryId)
+                            .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
+
+                    ProductCategory productCategory = new ProductCategory(product, category);
+                    productCategoryRepository.save(productCategory);
+                }
+            }
+
             productRepository.save(product);
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
     }
 
+    @Transactional
     @Override
     public void deleteProduct(Long productId) {
         if (productRepository.existsById(productId)) {
+            Product product = productRepository.findById(productId).
+                    orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
+
+            orderItemRepository.deleteByProductId(product);
+
+            commentService.deleteProductComments(productId);
+
+            productCategoryRepository.deleteByProductId(product);
+
             productRepository.deleteById(productId);
+
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
@@ -132,26 +191,27 @@ public class ProductServiceImpl implements productService {
         return count > 0 ? (double) sum / count : null;
     }
 
-    private void updateProductAttributes(Product product, ProductRequest productRequest) {
-        product.setProductName(productRequest.getProductName());
-        product.setDescription(productRequest.getDescription());
-        product.setStockQuantity(productRequest.getStockQuantity());
-        product.setPrice(productRequest.getPrice());
-        product.setPriceWithDiscount(productRequest.getPriceWithDiscount());
-        product.setImageUrl(productRequest.getImageUrl());
-
-        Discount defaultDiscount = new Discount();
-        defaultDiscount.setDiscountId(1L);
-        product.setDiscountId(defaultDiscount);
-    }
     public ProductRequest mapToProductDto(Product product) {
-        ProductRequest productDto = new ProductRequest();
-        productDto.setProductName(product.getProductName());
-        productDto.setDescription(product.getDescription());
-        productDto.setStockQuantity(product.getStockQuantity());
-        productDto.setPrice(product.getPrice());
-        productDto.setPriceWithDiscount(product.getPriceWithDiscount());
-        productDto.setImageUrl(product.getImageUrl());
-        return productDto;
+        ProductRequest productRequest = new ProductRequest();
+        productRequest.setProductName(product.getProductName());
+        productRequest.setDescription(product.getDescription());
+        productRequest.setStockQuantity(product.getStockQuantity());
+        productRequest.setPrice(product.getPrice());
+        productRequest.setPriceWithDiscount(product.getPriceWithDiscount());
+        productRequest.setImageUrl(product.getImageUrl());
+        return productRequest;
+    }
+
+    private void updatePriceWithDiscount(Product product, BigDecimal discountPercentage) {
+        Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
+                .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
+
+        BigDecimal originalPrice = product.getPrice();
+        BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
+                .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+        BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
+
+        product.setDiscountId(discount);
+        product.setPriceWithDiscount(discountedPrice);
     }
 }
