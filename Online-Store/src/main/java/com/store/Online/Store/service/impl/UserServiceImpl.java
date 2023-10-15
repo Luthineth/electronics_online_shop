@@ -17,6 +17,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +43,7 @@ public class UserServiceImpl implements userService {
         this.jwtTokenUtil    = jwtTokenUtil;
     }
 
+    @Transactional
     @Override
     public void register(UserRequest userRequest){
 
