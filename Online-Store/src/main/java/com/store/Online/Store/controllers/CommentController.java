@@ -25,12 +25,14 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addComment(@RequestBody CommentRequest comment) {
+    public ResponseEntity<?> addComment(@RequestBody CommentRequest commentRequest) {
         try {
-            Comment addedComment = commentService.addComment(comment);
+            Comment addedComment = commentService.addComment(commentRequest);
             return ResponseEntity.ok(addedComment);
-        } catch (UserCreationException | ProductNotFoundException e) {
+        } catch (UserNotFoundException | ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (CommentAdditionException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding a comment.");
         }
@@ -38,7 +40,7 @@ public class CommentController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional
-    @PutMapping("/{commentId}")
+    @PutMapping("/{commentId}/image")
     public ResponseEntity<?> deleteImage(@PathVariable Long commentId) {
         try {
             commentService.deleteImage(commentId);
