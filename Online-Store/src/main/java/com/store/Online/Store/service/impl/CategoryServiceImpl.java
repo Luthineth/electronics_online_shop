@@ -28,7 +28,7 @@ public class CategoryServiceImpl implements categoryService {
         try {
             return categoryRepository.findAll();
         } catch (Exception e) {
-            throw new CategoryNotFoundException("Failed to retrieve subcategories" + e.getMessage());
+            throw new CategoryNotFoundException("Failed to retrieve subcategories. Reason: " + e.getMessage());
         }
     }
 
@@ -41,7 +41,7 @@ public class CategoryServiceImpl implements categoryService {
         try {
             return categoryRepository.save(category);
         } catch (Exception e) {
-            throw new CategoryAdditionException("Failed to add category" + e.getMessage());
+            throw new CategoryAdditionException("Failed to add category. Reason: " + e.getMessage());
         }
     }
 
@@ -72,7 +72,7 @@ public class CategoryServiceImpl implements categoryService {
         try {
             return categoryRepository.save(category);
         } catch (Exception e) {
-        throw new CategoryUpdateException("Failed to update category" + e.getMessage());
+            throw new CategoryUpdateException("Failed to update category. Reason: " + e.getMessage());
         }
     }
 
@@ -90,7 +90,7 @@ public class CategoryServiceImpl implements categoryService {
         try {
             categoryRepository.delete(category);
         } catch (Exception e) {
-            throw new CategoryDeletionException("Failed to delete category" + e.getMessage());
+            throw new CategoryDeletionException("Failed to delete category. Reason: " + e.getMessage());
         }
     }
 

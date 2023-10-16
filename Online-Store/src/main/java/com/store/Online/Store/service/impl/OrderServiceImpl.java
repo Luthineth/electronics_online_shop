@@ -6,6 +6,7 @@ import com.store.Online.Store.entity.OrderItem;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.entity.User;
 import com.store.Online.Store.exception.InvalidOrderQuantityException;
+import com.store.Online.Store.exception.OrderCreationException;
 import com.store.Online.Store.exception.UserNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.repository.orderItemRepository;
@@ -21,7 +22,6 @@ import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrderServiceImpl implements orderService {
@@ -35,7 +35,9 @@ public class OrderServiceImpl implements orderService {
     private final orderItemRepository orderItemRepository;
     private final EmailServiceImpl emailService;
 
-    public OrderServiceImpl(com.store.Online.Store.repository.orderRepository orderRepository, com.store.Online.Store.repository.productRepository productRepository, com.store.Online.Store.repository.userRepository userRepository, com.store.Online.Store.repository.orderItemRepository orderItemRepository, EmailServiceImpl emailService) {
+    public OrderServiceImpl(orderRepository orderRepository, productRepository productRepository,
+                            userRepository userRepository, orderItemRepository orderItemRepository,
+                            EmailServiceImpl emailService) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -46,23 +48,12 @@ public class OrderServiceImpl implements orderService {
     @Transactional
     @Override
     public void createOrder(List<OrderItemRequest> orderItems) {
-        Order order = new Order();
-        User user;
-        order.setOrderDate(new Date());
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userEmail = auth.getName();
-        Optional<User> optionalUser = userRepository.findByEmail(userEmail);
-        if (optionalUser.isPresent()) {
-            user = optionalUser.get();
-        } else {
-          throw new UserNotFoundException("User not found with email " + userEmail);
-        }
+        Order order = createOrderEntity();
+        User user = getUser();
         order.setUserId(user);
 
         BigDecimal totalPrice = BigDecimal.ZERO;
         int itemNumber = 1;
-
         StringBuilder descriptionBuilder = new StringBuilder();
 
         for (OrderItemRequest orderItemRequest : orderItems) {
@@ -87,7 +78,12 @@ public class OrderServiceImpl implements orderService {
         }
 
         order.setTotalPrice(totalPrice);
-        orderRepository.save(order);
+        try {
+            orderRepository.save(order);
+        } catch (Exception e) {
+            throw new OrderCreationException("Failed to create the order. Please try again later.");
+        }
+
 
         for (OrderItemRequest orderItemRequest : orderItems) {
             Product product = productRepository.findById(orderItemRequest.getProductId()).orElse(null);
@@ -114,6 +110,20 @@ public class OrderServiceImpl implements orderService {
 
         String subject = "Ваш заказ и его стоимость";
 
-        emailService.sendEmail(userEmail,subject,body);
+        emailService.sendEmail(user.getEmail(),subject,body);
+    }
+
+
+    private Order createOrderEntity() {
+        Order order = new Order();
+        order.setOrderDate(new Date());
+        return order;
+    }
+
+    private User getUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String userEmail = auth.getName();
+        return userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email " + userEmail));
     }
 }

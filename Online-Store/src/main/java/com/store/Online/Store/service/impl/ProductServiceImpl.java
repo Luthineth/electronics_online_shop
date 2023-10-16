@@ -6,9 +6,7 @@ import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.entity.ProductCategory;
-import com.store.Online.Store.exception.CategoryNotFoundException;
-import com.store.Online.Store.exception.DiscountNotFoundException;
-import com.store.Online.Store.exception.ProductNotFoundException;
+import com.store.Online.Store.exception.*;
 import com.store.Online.Store.repository.*;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
@@ -46,75 +44,101 @@ public class ProductServiceImpl implements productService {
 
     @Override
     public Optional<Product> getProductById(Long productId) {
-        Optional<Product> optionalProduct = productRepository.findById(productId);
-        if (!optionalProduct.isPresent()) {
-            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
+        try {
+            return productRepository.findById(productId);
+        } catch (Exception e) {
+            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
         }
-        return optionalProduct;
     }
 
     @Override
     public ProductRequest getProductRequestById(Long productId, Sort.Direction direction) {
-        Optional<Product> optionalProduct = productRepository.findById(productId);
+        Optional<Product> optionalProduct;
+        try {
+            optionalProduct = productRepository.findById(productId);
+        } catch (Exception e) {
+            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
+        }
+
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
-            List<CommentRequest> comments = commentService.getCommentsByProductId(productId, direction);
-            ProductRequest productRequest = mapToProductDto(product);
-            productRequest.setComments(comments);
-            return productRequest;
+            try {
+                List<CommentRequest> comments = commentService.getCommentsByProductId(productId, direction);
+                ProductRequest productRequest = mapToProductDto(product);
+                productRequest.setComments(comments);
+                return productRequest;
+            } catch (Exception e) {
+                throw new ProductNotFoundException("Failed to retrieve comments for product with ID: " + productId);
+            }
+        } else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
-        throw new ProductNotFoundException("Product with ID " + productId + " not found.");
     }
 
     @Transactional
     @Override
     public void addProduct(ProductRequest productRequest) {
-        Product product = new Product();
-        product.setProductName(productRequest.getProductName());
-        product.setDescription(productRequest.getDescription());
-        product.setStockQuantity(productRequest.getStockQuantity());
-        product.setPrice(productRequest.getPrice());
-        product.setPriceWithDiscount(productRequest.getPrice());
-        product.setImageUrl(productRequest.getImageUrl());
+        try {
+            Product product = new Product();
+            product.setProductName(productRequest.getProductName());
+            product.setDescription(productRequest.getDescription());
+            product.setStockQuantity(productRequest.getStockQuantity());
+            product.setPrice(productRequest.getPrice());
+            product.setPriceWithDiscount(productRequest.getPrice());
+            product.setImageUrl(productRequest.getImageUrl());
 
-        Discount defaultDiscount = new Discount();
-        defaultDiscount.setDiscountId(1L);
-        product.setDiscountId(defaultDiscount);
-        productRepository.save(product);
+            Discount defaultDiscount = new Discount();
+            defaultDiscount.setDiscountId(1L);
+            product.setDiscountId(defaultDiscount);
+            productRepository.save(product);
+        } catch (Exception e) {
+            throw new ProductAdditionException("Failed to add product: " + e.getMessage());
+        }
     }
 
     @Transactional
     @Override
     public void updateProduct(Long productId, ProductRequest productRequest) {
-        Optional<Product> optionalProduct = productRepository.findById(productId);
+        Optional<Product> optionalProduct;
+        try {
+            optionalProduct = productRepository.findById(productId);
+        } catch (Exception e) {
+            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
+        }
+
         if (optionalProduct.isPresent()) {
-            Product product = optionalProduct.get();
+            try {
+                Product product = optionalProduct.get();
 
-            product.setProductName(productRequest.getProductName());
-            product.setDescription(productRequest.getDescription());
-            product.setStockQuantity(productRequest.getStockQuantity());
-            product.setPrice(productRequest.getPrice());
-            product.setImageUrl(productRequest.getImageUrl());
+                product.setProductName(productRequest.getProductName());
+                product.setDescription(productRequest.getDescription());
+                product.setStockQuantity(productRequest.getStockQuantity());
+                product.setPrice(productRequest.getPrice());
+                product.setImageUrl(productRequest.getImageUrl());
 
-            updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
+                updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
 
 
-            List<Long> categoryIds = productRequest.getCategoryId();
+                List<Long> categoryIds = productRequest.getCategoryId();
 
-            if (categoryIds != null) {
+                if (categoryIds != null) {
 
-                productCategoryRepository.deleteByProductId(product);
+                    productCategoryRepository.deleteByProductId(product);
 
-                for (Long categoryId : categoryIds) {
-                    Category category = categoryRepository.findById(categoryId)
-                            .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
+                    for (Long categoryId : categoryIds) {
+                        Category category = categoryRepository.findById(categoryId)
+                                .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
 
-                    ProductCategory productCategory = new ProductCategory(product, category);
-                    productCategoryRepository.save(productCategory);
+                        ProductCategory productCategory = new ProductCategory(product, category);
+                        productCategoryRepository.save(productCategory);
+                    }
                 }
-            }
 
-            productRepository.save(product);
+
+                productRepository.save(product);
+            }catch (Exception e){
+                throw new ProductUpdateException("Failed to update product: " + e.getMessage());
+            }
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
@@ -124,17 +148,20 @@ public class ProductServiceImpl implements productService {
     @Override
     public void deleteProduct(Long productId) {
         if (productRepository.existsById(productId)) {
-            Product product = productRepository.findById(productId).
-                    orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
+            try {
+                Product product = productRepository.findById(productId).
+                        orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
 
-            orderItemRepository.deleteByProductId(product);
+                orderItemRepository.deleteByProductId(product);
 
-            commentService.deleteProductComments(productId);
+                commentService.deleteProductComments(productId);
 
-            productCategoryRepository.deleteByProductId(product);
+                productCategoryRepository.deleteByProductId(product);
 
-            productRepository.deleteById(productId);
-
+                productRepository.deleteById(productId);
+            } catch (Exception e) {
+                throw new ProductDeletionException("Failed to delete product: " + e.getMessage());
+            }
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
@@ -203,15 +230,19 @@ public class ProductServiceImpl implements productService {
     }
 
     private void updatePriceWithDiscount(Product product, BigDecimal discountPercentage) {
-        Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
-                .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
+        try {
+            Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
+                    .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
 
-        BigDecimal originalPrice = product.getPrice();
-        BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
-                .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
-        BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
+            BigDecimal originalPrice = product.getPrice();
+            BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
+                    .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+            BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
 
-        product.setDiscountId(discount);
-        product.setPriceWithDiscount(discountedPrice);
+            product.setDiscountId(discount);
+            product.setPriceWithDiscount(discountedPrice);
+        } catch (Exception e) {
+            throw new DiscountNotFoundException("Failed to update product price with discount: " + e.getMessage());
+        }
     }
 }

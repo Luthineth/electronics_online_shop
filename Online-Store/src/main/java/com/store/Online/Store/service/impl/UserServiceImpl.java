@@ -7,6 +7,7 @@ import com.store.Online.Store.entity.User;
 import com.store.Online.Store.config.jwt.JwtTokenUtil;
 import com.store.Online.Store.exception.RoleDefinitionException;
 import com.store.Online.Store.exception.UserCreationException;
+import com.store.Online.Store.exception.UserNotFoundException;
 import com.store.Online.Store.repository.roleRepository;
 import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.userService;
@@ -89,11 +90,13 @@ public class UserServiceImpl implements userService {
         }
     }
     @Override
-    public Optional<User> getUserId(Long userId){
+    public Optional<User> getUserId(Long userId) {
         try {
             return userRepository.findByUserId(userId);
         } catch (EmptyResultDataAccessException e) {
-            throw new UserCreationException("Product with ID " + userId + " not found.");
+            throw new UserNotFoundException("User not found with ID: " + userId);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to retrieve user with ID " + userId + ": " + e.getMessage(), e);
         }
     }
 
