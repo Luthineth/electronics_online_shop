@@ -37,6 +37,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (RoleDefinitionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
         }
     }
 
@@ -51,6 +53,8 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
         }
     }
 }

@@ -2,6 +2,7 @@ package com.store.Online.Store.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.Date;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "orders")
 public class Order {
 
@@ -33,10 +35,6 @@ public class Order {
 
     @OneToMany(mappedBy = "orderId")
     private Collection<OrderItem> orderItems;
-
-    public Order(){
-
-    }
 
     public Order(Date orderDate, BigDecimal totalPrice, User userId) {
         this.orderDate = orderDate;

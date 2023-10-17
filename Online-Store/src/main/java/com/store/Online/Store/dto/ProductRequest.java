@@ -23,7 +23,11 @@ public class ProductRequest {
 
     private BigDecimal priceWithDiscount;
 
+    private BigDecimal discountPercentage;
+
     private String imageUrl;
 
     private List<CommentRequest> comments;
+
+    private List<Long> categoryId;
 }

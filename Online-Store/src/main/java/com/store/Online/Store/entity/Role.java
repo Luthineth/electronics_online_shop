@@ -4,6 +4,7 @@ package com.store.Online.Store.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.Collection;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "role")
 public class Role {
 
@@ -27,9 +29,6 @@ public class Role {
     @JsonIgnore
     @OneToMany(mappedBy = "roleId")
     private Collection<User> user;
-
-    public Role() {
-    }
 
     public Role(String roleName){
         this.roleName=roleName;

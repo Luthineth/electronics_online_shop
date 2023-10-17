@@ -14,7 +14,7 @@ public interface productService {
 
     ProductRequest getProductRequestById(Long productId, Sort.Direction direction);
 
-    void saveProduct(ProductRequest product);
+    void addProduct(ProductRequest product);
 
     void updateProduct(Long id, ProductRequest product);
 
