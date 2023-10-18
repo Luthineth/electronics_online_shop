@@ -7,38 +7,42 @@
                         v-model="name.value.value"
                         :counter="10"
                         :error-messages="name.errorMessage.value"
-                        label="Name"
+                        label="Имя"
+                        variant="underlined"
                     ></v-text-field>
 
                     <v-text-field
-                        v-model="name.value.value"
+                        v-model="lastName.value.value"
                         :counter="10"
-                        :error-messages="name.errorMessage.value"
-                        label="Last Name"
+                        :error-messages="lastName.errorMessage.value"
+                        label="Фамилия"
+                        variant="underlined"
                     ></v-text-field>
 
                     <v-text-field
                         v-model="email.value.value"
                         :error-messages="email.errorMessage.value"
                         label="E-mail"
+                        variant="underlined"
                     ></v-text-field>
 
                     <v-text-field
-                        v-model="name.value.value"
+                        v-model="password.value.value"
                         :counter="10"
-                        :error-messages="name.errorMessage.value"
+                        :error-messages="password.errorMessage.value"
                         label="Password"
+                        variant="underlined"
                     ></v-text-field>
 
                     <v-btn
                         class="me-4"
                         type="submit"
                     >
-                        submit
+                        Сохранить
                     </v-btn>
 
                     <v-btn @click="handleReset">
-                        clear
+                        Очистить
                     </v-btn>
                 </form>
             </div>
@@ -60,49 +64,35 @@ const { handleSubmit, handleReset } = useForm({
         name (value) {
             if (value?.length >= 2) return true
 
-            return 'Name needs to be at least 2 characters.'
+            return 'Имя должно содержать минимум 2 символа.'
         },
-        phone (value) {
-            if (value?.length > 9 && /[0-9-]+/.test(value)) return true
+        lastName (value) {
+            if (value?.length >= 2) return true
 
-            return 'Phone number needs to be at least 9 digits.'
+            return 'Фамилия должна содержать минимум 2 символа.'
         },
         email (value) {
             if (/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
 
-            return 'Must be a valid e-mail.'
+            return 'Введите e-mail правильно.'
         },
-        select (value) {
-            if (value) return true
+        password (value) {
+            if (/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/.test(value)) return true
 
-            return 'Select an item.'
-        },
-        checkbox (value) {
-            if (value === '1') return true
-
-            return 'Must be checked.'
+            return 'Пароль должен содержать минимум 1 заглавную букву, 1 строчную букву, 1 цифру, ' +
+                '1 специальный символ. Длина не менее 8 символов.'
         },
     },
 })
 const name = useField('name')
-const phone = useField('phone')
+const lastName = useField('lastName')
 const email = useField('email')
-const select = useField('select')
-const checkbox = useField('checkbox')
-
-const items = ref([
-    'Item 1',
-    'Item 2',
-    'Item 3',
-    'Item 4',
-])
+const password = useField('password')
 
 const submit = handleSubmit(values => {
     alert(JSON.stringify(values, null, 2))
 })
 const isLogin = ref(true);
-const loginEmail = ref('');
-const loginPassword = ref('');
 
 const login = () => {
 };
