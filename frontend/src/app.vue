@@ -2,7 +2,6 @@
     <NavBar/>
     <router-view/>
     <ButtonBackToTop/>
-    <MainFooter/>
 </template>
 
 <script setup>

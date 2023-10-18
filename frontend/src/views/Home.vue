@@ -1,9 +1,15 @@
-<script setup>
-</script>
-
 <template>
-<div>jfedrus</div>
+  <router-link to="/product_category/1">
+      bubgasgs
+  </router-link>
+    <router-link to="/product_category/2">
+        bubgasgs
+    </router-link>
 </template>
+
+<script setup>
+
+</script>
 
 <style scoped lang="scss">
 

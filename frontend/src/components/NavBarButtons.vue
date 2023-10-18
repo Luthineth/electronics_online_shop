@@ -11,7 +11,7 @@
                     <v-icon icon="mdi-logout"></v-icon>
                     Doe J.
                 </router-link>
-                <router-link to="/" v-else>
+                <router-link to="/login" v-else>
                     <v-icon icon="mdi-login"></v-icon>
                     Войти
                 </router-link>

@@ -17,6 +17,8 @@ const vuetify = createVuetify({
     },
 })
 
+
+
 const app = createApp(App)
 
 app

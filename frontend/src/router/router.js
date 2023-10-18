@@ -1,12 +1,24 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import NotFound from '../views/NotFound.vue'
+import Authorization from "../views/Authorization.vue";
+import ProductCategory from "../views/ProductCategory.vue";
 
 const routes = [
     {
         path: '/',
         name: 'Home',
         component: Home
+    },
+    {
+        path: '/product_category/:id',
+        name: 'product_category',
+        component: ProductCategory
+    },
+    {
+        path: '/login',
+        name: 'Authorization',
+        component: Authorization
     },
     {
         path: '/:pathMatch(.*)',
