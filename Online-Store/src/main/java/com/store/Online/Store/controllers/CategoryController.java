@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/categories")
 public class CategoryController {
 
     private final categoryService categoryService;
@@ -22,9 +21,7 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-
-
-    @GetMapping("/categories")
+    @GetMapping("/main")
     public ResponseEntity<?> getAllSubCategories() {
         try {
             List<Category> subCategories = categoryService.getSubCategories();
@@ -36,6 +33,7 @@ public class CategoryController {
         }
     }
 
+    @RequestMapping("/categories")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> addCategory(@RequestBody CategoryRequest categoryRequest) {
@@ -50,7 +48,7 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{categoryId}")
+    @PutMapping("/categories/{categoryId}")
     public ResponseEntity<?> updateCategory(@PathVariable Long categoryId, @RequestBody CategoryRequest categoryRequest) {
         try {
             Category updatedCategory = categoryService.updateCategory(categoryId, categoryRequest);
@@ -65,7 +63,7 @@ public class CategoryController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{categoryId}")
+    @DeleteMapping("/categories/{categoryId}")
     public ResponseEntity<?> deleteCategory(@PathVariable Long categoryId) {
         try {
             categoryService.deleteCategory(categoryId);
