@@ -2,6 +2,7 @@ package com.store.Online.Store.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -13,6 +14,7 @@ import java.util.Date;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "orders")
 public class Order {
 
@@ -21,6 +23,8 @@ public class Order {
     @Column(name = "order_id")
     private Long orderId;
 
+    @Column(name = "order_date", nullable = false)
+    private Date orderDate;
 
     @Column(name = "total_price", nullable = false)
     private BigDecimal totalPrice;
@@ -32,11 +36,8 @@ public class Order {
     @OneToMany(mappedBy = "orderId")
     private Collection<OrderItem> orderItems;
 
-    public Order(){
-
-    }
-
-    public Order(BigDecimal totalPrice, User userId) {
+    public Order(Date orderDate, BigDecimal totalPrice, User userId) {
+        this.orderDate = orderDate;
         this.totalPrice = totalPrice;
         this.userId = userId;
     }
@@ -45,6 +46,7 @@ public class Order {
     public String toString() {
         return "Order{" +
                 "orderId=" + orderId +
+                ", orderDate=" + orderDate +
                 ", totalPrice=" + totalPrice +
                 '}';
     }

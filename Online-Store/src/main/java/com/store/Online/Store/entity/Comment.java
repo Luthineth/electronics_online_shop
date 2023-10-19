@@ -2,6 +2,7 @@ package com.store.Online.Store.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -10,6 +11,7 @@ import javax.persistence.*;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "comment")
 public class Comment {
 
@@ -35,8 +37,6 @@ public class Comment {
     @Column(name = "image_url")
     private String imageUrl;
 
-    public Comment(){
-    }
     public Comment(User userId, Product productId, String text, Integer rating, String imageUrl) {
         this.userId = userId;
         this.productId = productId;

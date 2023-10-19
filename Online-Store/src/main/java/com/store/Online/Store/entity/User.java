@@ -3,6 +3,7 @@ package com.store.Online.Store.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -17,6 +18,7 @@ import java.util.List;
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "users")
 public class User implements UserDetails {
 
@@ -48,9 +50,6 @@ public class User implements UserDetails {
     @JsonIgnore
     @OneToMany(mappedBy = "userId")
     private Collection<Comment> comments;
-
-    public User(){
-    }
 
     public User(String firstName, String secondName, String email, String passwordHash, Role roleId){
         this.firstName=firstName;
@@ -106,4 +105,7 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+//    public String generateJwtToken(JwtTokenUtil jwtTokenUtil) {
+//        return jwtTokenUtil.generateToken(this);
+//    }
 }
