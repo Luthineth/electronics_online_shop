@@ -2,10 +2,44 @@
     <div class="authorization-container">
         <v-card variant="outlined" class="authorization-card">
             <div v-if="isLogin">
-                <form @submit.prevent="submit">
+                <form @submit.prevent="submit" class="form__login">
+                    <v-card-title>Вход в учетную запись</v-card-title>
+                    <v-text-field
+                        v-model="email.value.value"
+                        :error-messages="email.errorMessage.value"
+                        label="E-mail"
+                        variant="underlined"
+                    ></v-text-field>
+
+                    <v-text-field
+                        v-model="password.value.value"
+                        :error-messages="password.errorMessage.value"
+                        label="Пароль"
+                        variant="underlined"
+                    ></v-text-field>
+                    <v-card-actions class="d-flex justify-center">
+                        <v-btn
+                            class="me-4"
+                            color="black"
+                            variant="tonal"
+                            type="submit"
+                        >
+                            <v-icon icon="mdi-login"></v-icon>
+                            Войти
+                        </v-btn>
+
+                        <v-btn @click="handleReset">
+                            <v-icon icon="mdi-close"></v-icon>
+                            Очистить
+                        </v-btn>
+                    </v-card-actions>
+                </form>
+            </div>
+            <div v-else>
+                <form @submit.prevent="submit" class="form__signup">
+                    <v-card-title>Регистрация</v-card-title>
                     <v-text-field
                         v-model="name.value.value"
-                        :counter="10"
                         :error-messages="name.errorMessage.value"
                         label="Имя"
                         variant="underlined"
@@ -13,7 +47,6 @@
 
                     <v-text-field
                         v-model="lastName.value.value"
-                        :counter="10"
                         :error-messages="lastName.errorMessage.value"
                         label="Фамилия"
                         variant="underlined"
@@ -28,29 +61,31 @@
 
                     <v-text-field
                         v-model="password.value.value"
-                        :counter="10"
                         :error-messages="password.errorMessage.value"
-                        label="Password"
+                        label="Пароль"
                         variant="underlined"
                     ></v-text-field>
+                    <v-card-actions class="d-flex justify-center">
+                        <v-btn
+                            class="me-4"
+                            color="black"
+                            variant="tonal"
+                            type="submit"
+                        >
+                            <v-icon icon="mdi-check"></v-icon>
+                            Сохранить
+                        </v-btn>
 
-                    <v-btn
-                        class="me-4"
-                        type="submit"
-                    >
-                        Сохранить
-                    </v-btn>
-
-                    <v-btn @click="handleReset">
-                        Очистить
-                    </v-btn>
+                        <v-btn @click="handleReset">
+                            <v-icon icon="mdi-close"></v-icon>
+                            Очистить
+                        </v-btn>
+                    </v-card-actions>
                 </form>
             </div>
-            <div v-else>
-                <h2>Sign Up</h2>
-                <!-- Signup form -->
+            <div class="text-center">
+                <button @click="toggleForm" class="change-form-type">{{ isLogin ? 'Нет аккаунта? Присоединиться' : 'Есть аккаунт? Войти' }}</button>
             </div>
-            <button @click="toggleForm">{{ isLogin ? 'Switch to Sign Up' : 'Switch to Login' }}</button>
         </v-card>
     </div>
 </template>
@@ -72,7 +107,7 @@ const { handleSubmit, handleReset } = useForm({
             return 'Фамилия должна содержать минимум 2 символа.'
         },
         email (value) {
-            if (/^[a-z.-]+@[a-z.-]+\.[a-z]+$/i.test(value)) return true
+            if (/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(value)) return true
 
             return 'Введите e-mail правильно.'
         },
@@ -106,6 +141,7 @@ const toggleForm = () => {
 
 <style scoped lang="scss">
 .authorization-container {
+    height: 80vh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -114,5 +150,12 @@ const toggleForm = () => {
     width: 50vw;
     max-width: 500px;
     padding: 20px;
+}
+.v-card-title{
+    padding: 0;
+    text-align: center;
+}
+.change-form-type{
+    text-decoration: underline;
 }
 </style>
