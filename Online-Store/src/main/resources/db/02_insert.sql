@@ -1,15 +1,12 @@
--- Заполнение таблицы Role (Роли)
 INSERT INTO Role (role_name) VALUES
                                  ('ADMIN'),
                                  ('USER');
 
--- Заполнение таблицы Users (Пользователи)
 INSERT INTO Users (first_name, second_name, email, password_hash, role_id) VALUES
                                                                                ('Artem', 'Lihachev', 'sofaross228@gmail.com', '$2a$10$FL10Q5wfqzeWKC9cV/q73uSMgsOgL3fOrtnLq4vmenVXQ7YQCVH4G', 1),
                                                                                ('Katerina', 'Katerina', 'Qwerty@gmail.com', '$2a$10$FL10Q5wfqzeWKC9cV/q73uSMgsOgL3fOrtnLq4vmenVXQ7YQCVH4G', 2),
                                                                                ('Bob', 'Johnson', 'bob.johnson@example.com', 'password', 2);
 
--- Заполнение таблицы Category (Категории товаров)
 INSERT INTO Category (category_name, parent_category_id) VALUES
                                                              ('Смартфоны', NULL),
                                                              ('АудиоТехника', NULL),
@@ -21,14 +18,12 @@ INSERT INTO Category (category_name, parent_category_id) VALUES
                                                              ('Портативные колонки', 2),
                                                              ('Наушники', 2);
 
--- Заполнение таблицы Discount (Скидки)
 INSERT INTO Discount (discount_percent) VALUES
                                             (0.0),
                                             (10.00),
                                             (15.00),
                                             (20.00);
 
--- Вставка данных в таблицу Product
 INSERT INTO Product (discount_id, product_name, description, stock_quantity, price, discount_price, image_url) VALUES
                                                                                                                    (1, 'Смартфон Apple iPhone 14',     'У iPhone 14 Pro 6,1--дюймовая панель. Пиковая яркость — 2000 нит. Используется небольшой вырез с датчиком фронтальной камеры и системой Face ID. Кроме того, он способен визуально уменьшаться и увеличиваться. Предусмотрен режим Always-on Display (экран всегда включен).
                                         Аппаратная основа — A16 Bionic. Это 4-нм SoC с производительным GPU и дополнительным процессором Image Signal Proccessor для повышения качества снимков.
@@ -52,7 +47,6 @@ INSERT INTO Product (discount_id, product_name, description, stock_quantity, pri
                                         Умная колонка Яндекс Станция 2 оснащена интерактивным топпером с стиле переливающейся лавы-лампы. Такая опция будет кстати на вечеринках и понравится детям. Благодаря 4 встроенным микрофонам колонка услышит вашу команду, даже если она размещена в шумном помещении. Подключайте совместимые умные устройства в умный дом с Алисой и управляйте ими при помощи Станции 2. Также умная колонка работает по протоколу Zegbee, поэтому вы можете напрямую подключать к ней совместимые Zegbee устройства брендов: Яндекс, Aqara, iFEEL, IKEA, Life Control, Perenio, Xiaomi Mijia.',
                                                                                                                     120, 17999.00, 14399.20, 'alica_image.jpg');
 
--- Вставка связей между товарами и категориями в таблицу Product_Category
 INSERT INTO Product_Category (product_id, category_id) VALUES
                                                            (1, 4),
                                                            (2, 4),
@@ -64,36 +58,25 @@ INSERT INTO Product_Category (product_id, category_id) VALUES
                                                            (7, 8);
 
 
--- Заполнение таблицы Comment (Комментарии)
 INSERT INTO Comment (user_id, product_id, text, rating, image_url) VALUES
-                                                                       (1, 1, 'Отличный смартфон, работает быстро и камера супер!', 5, 'image.txt'),
-                                                                       (2, 1, 'заблокирована еСим', 1, NULL),
-                                                                       (3, 2, 'Смартфон понравился, особенно аккумулятор', 5, NULL),
-                                                                       (1, 2, 'камера Звук!!!! очень порадовал ,быстродействие', 5, NULL),
-                                                                       (2, 2, 'Отличное видео и фото', 5, NULL),
-                                                                       (1, 4, 'Отличные наушники, звук чистый и громкий', 5, NULL),
-                                                                       (3, 5, 'Чехол качественный, приятный на ощупь', 4, 'image.txt');
+    (1, 1, 'Отличный смартфон, работает быстро и камера супер!', 5, 'image.txt'),
+    (2, 1, 'заблокирована еСим', 1, NULL),
+    (3, 2, 'Смартфон понравился, особенно аккумулятор', 5, NULL),
+    (1, 2, 'камера Звук!!!! очень порадовал ,быстродействие', 5, NULL),
+    (2, 2, 'Отличное видео и фото', 5, NULL),
+    (1, 4, 'Отличные наушники, звук чистый и громкий', 5, NULL),
+    (3, 5, 'Чехол качественный, приятный на ощупь', 4, 'image.txt');
 
--- Заполнение таблицы Orders (Заказы)
+
 INSERT INTO Orders (user_id, order_date, total_price)
 VALUES
     (1, '2023-10-10', 150000.00),
     (2, '2023-10-11', 85000.00),
     (2, '2023-10-12', 65000.00);
 
--- Заполнение таблицы Order_Item (Товары в заказе) для заказа с order_id 1
 INSERT INTO Order_Item (order_id, product_id, quantity)
 VALUES
     (1, 1, 2),
     (1, 3, 1);
 
--- Заполнение таблицы Order_Item (Товары в заказе) для заказа с order_id 2
-INSERT INTO Order_Item (order_id, product_id, quantity)
-VALUES
-    (2, 2, 1),
-    (2, 5, 3);
 
-INSERT INTO Order_Item (order_id, product_id, quantity)
-VALUES
-    (3, 4, 2),
-    (3, 6, 1);
