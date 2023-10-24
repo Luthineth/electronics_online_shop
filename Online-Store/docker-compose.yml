@@ -1,32 +1,29 @@
-version: "3.9"
-
+version: '3.8'
 
 services:
+
   db:
-    image: postgres:16.0
-    container_name: db
-    hostname: db
+    image: postgres:latest
+    container_name: online_store_db
+    hostname: online_store_db
     environment:
-      POSTGRES_DB: store
       POSTGRES_USER: postgres
+      POSTGRES_DB: online_store
       POSTGRES_PASSWORD: 1234
+      POSTGRES_SCHEMA: PUBLIC
     volumes:
       - ./src/main/resources/db/:/docker-entrypoint-initdb.d/
     ports:
-      - "5432:5432"
-    networks:
-      myNetwork:
+      - "15432:5432"
+    restart: unless-stopped
 
 
   backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: backend
     depends_on:
       - db
     ports:
-      - "8081:8080"
-    networks:
-      myNetwork:
-
-networks:
-  myNetwork:
+      - "8080:8080"
