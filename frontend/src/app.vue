@@ -6,6 +6,5 @@
 
 <script setup>
 import NavBar from "./components/NavBar.vue";
-import MainFooter from "./components/MainFooter.vue";
 import ButtonBackToTop from "./components/ButtonBackToTop.vue";
 </script>

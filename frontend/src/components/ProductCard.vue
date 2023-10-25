@@ -1,31 +1,3 @@
-<script setup>
-import {ref} from "vue";
-const { product } = defineProps(['product']);
-const {
-    productName,
-    productId,
-    description,
-    stockQuantity,
-    price,
-    priceWithDiscount,
-    imageUrl,
-} = product
-
-const admin = false
-let isDescriptionShown = ref(false)
-const descriptionSmall = description.length <= 300 ? description : description.slice(0, 300) + "..."
-
-function getProductStockStatus(stockQuantity) {
-    if (typeof stockQuantity === 'number') {
-        if (stockQuantity === 0) return "Нет в наличии"
-        if (stockQuantity > 5) return "В наличии"
-        if (stockQuantity >= 1 && stockQuantity <= 5) return "Мало"
-        return stockQuantity
-    }
-    return "Нет данных";
-}
-</script>
-
 <template>
     <div class="product">
         <v-card
@@ -87,6 +59,34 @@ function getProductStockStatus(stockQuantity) {
         </div>
     </div>
 </template>
+
+<script setup>
+import {ref} from "vue";
+const { product } = defineProps(['product']);
+const {
+    productName,
+    productId,
+    description,
+    stockQuantity,
+    price,
+    priceWithDiscount,
+    imageUrl,
+} = product
+
+const admin = false
+let isDescriptionShown = ref(false)
+const descriptionSmall = description.length <= 300 ? description : description.slice(0, 300) + "..."
+
+function getProductStockStatus(stockQuantity) {
+    if (typeof stockQuantity === 'number') {
+        if (stockQuantity === 0) return "Нет в наличии"
+        if (stockQuantity > 5) return "В наличии"
+        if (stockQuantity >= 1 && stockQuantity <= 5) return "Мало"
+        return stockQuantity
+    }
+    return "Нет данных";
+}
+</script>
 
 <style scoped lang="scss">
 .product{

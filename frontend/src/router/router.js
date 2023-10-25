@@ -3,6 +3,7 @@ import Home from '../views/Home.vue'
 import NotFound from '../views/NotFound.vue'
 import Authorization from "../views/Authorization.vue";
 import ProductCategory from "../views/ProductCategory.vue";
+import ProductInfo from "../views/ProductInfo.vue";
 
 const routes = [
     {
@@ -14,6 +15,11 @@ const routes = [
         path: '/product_category/:id',
         name: 'product_category',
         component: ProductCategory
+    },
+    {
+        path: '/product/:id',
+        name: 'product',
+        component: ProductInfo
     },
     {
         path: '/login',
