@@ -6,11 +6,7 @@
                 Каталог
             </router-link>
             <div class="dropdown-content" :class="{ open: isOpen }">
-                <ul>
-                    <li>Item 1 hggj</li>
-                    <li>Item 2</li>
-                    <li>Item 3</li>
-                </ul>
+                <HierarchicalCategoriesList :hierarchyProductTree="hierarchy" v-if="hierarchy"/>
             </div>
         </div>
         <router-link to="/frsdejn">О нас</router-link>
@@ -40,11 +36,14 @@
 </template>
 
 <script setup>
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
 import {isSearchBarShown} from "../utils/utils.js";
+import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
 
 let itemCount = ref(3)
 let userAuthorized = ref(false)
+let categories = ref([])
+let hierarchy = ref([])
 
 const updateItemCount = () => {
     itemCount.value += 1;
@@ -63,6 +62,34 @@ const showDropdown = () => {
 const hideDropdown = () => {
     isOpen.value = false;
 };
+
+function buildHierarchyTree(categories){
+    const categoryMap = new Map();
+    categories.forEach((category) => {
+        categoryMap.set(category.categoryId, { ...category, children: [] });
+    });
+
+    const hierarchyTree = [];
+    categories.forEach((category) => {
+        if (category.parentCategoryId === null) {
+            hierarchyTree.push(categoryMap.get(category.categoryId));
+        } else {
+            const parentCategory = categoryMap.get(category.parentCategoryId.categoryId);
+            if (parentCategory) {
+                parentCategory.children.push(categoryMap.get(category.categoryId));
+            }
+        }
+    });
+
+    return hierarchyTree
+}
+
+
+onMounted(async () => {
+    categories.value = await fetch(`http://localhost:8080/main`)
+        .then(res => res.json())
+    hierarchy = buildHierarchyTree(categories.value)
+});
 </script>
 
 <style scoped lang="scss">
@@ -109,16 +136,5 @@ a:hover {
 .open {
     display: block;
     background-color: #faf8f5;
-}
-
-ul {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 10px;
-    background-color: #e2e2e2;
-}
-li {
-    padding: 10px;
-    margin: 0;
 }
 </style>

@@ -2,7 +2,7 @@
     <div class="landing">
         <div class="centered">
             <h1 class="error-title">404</h1>
-            <h2 class="error-message">Страница не найдена</h2>
+            <h2 class="error-message">Тут пока пусто:(</h2>
             <v-btn
                     variant="outlined"
                     @click="$router.push('/')"
