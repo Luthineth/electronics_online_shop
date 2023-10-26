@@ -9,7 +9,7 @@
                 src="imageUrl"
             />
             <div class="product__description">
-                <h3>{{ productName }}</h3>
+                <h3><router-link :to="'/products/' + productId">{{ productName }}</router-link></h3>
                 <v-card-text class="description__text">
                     {{ isDescriptionShown? description : descriptionSmall }}
                 </v-card-text>
