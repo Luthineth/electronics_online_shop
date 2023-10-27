@@ -33,42 +33,40 @@
             </div>
         </div>
         <div class="product__comments">
-            <div>
-                <v-card
-                    class="pa-2 mb-9"
-                    variant="outlined"
-                >
-                    <v-textarea label="Напишите, что вам понравилось в товаре (или не понравилось)"></v-textarea>
-                    <v-file-input
-                        :rules="rules"
-                        accept="image/png, image/jpeg, image/bmp"
-                        placeholder="Выберите изображение"
-                        prepend-icon="mdi-camera"
-                        label="Добавьте фото к отзыву"
-                    ></v-file-input>
-                    <v-rating
-                        :model-value="6"
-                        color="yellow-darken-3"
-                        size="small"
-                    />
-                    <v-card-actions class="d-flex justify-center">
-                        <v-btn
-                            class="me-4"
-                            color="black"
-                            variant="tonal"
-                            type="submit"
-                        >
-                            <v-icon icon="mdi-check"></v-icon>
-                            Сохранить
-                        </v-btn>
-
-                        <v-btn @click="handleReset">
-                            <v-icon icon="mdi-close"></v-icon>
-                            Очистить
-                        </v-btn>
-                    </v-card-actions>
-                </v-card>
-            </div>
+            <v-card
+                class="pa-2 mb-9"
+                variant="outlined"
+                max-width="1000px"
+            >
+                <v-rating
+                    v-model="rating"
+                    color="yellow-darken-3"
+                    size="small"
+                />
+                <v-textarea
+                    v-model="commentText"
+                    label="Напишите, что вам понравилось в товаре (или не понравилось)"
+                />
+                <v-file-input
+                    class="imageInput"
+                    :rules="rules"
+                    accept=".png, .jpeg, .bmp"
+                    placeholder="Выберите изображение"
+                    prepend-icon="mdi-camera-plus-outline"
+                    label="Добавьте фото к отзыву"
+                ></v-file-input>
+                <v-card-actions class="d-flex justify-center">
+                    <v-btn
+                        class="me-4"
+                        color="black"
+                        variant="tonal"
+                        @click="saveRating"
+                    >
+                        <v-icon icon="mdi-check"></v-icon>
+                        Сохранить
+                    </v-btn>
+                </v-card-actions>
+            </v-card>
             <Comments v-if="product.comments.length !== 0" :comments="product.comments"/>
             <h4 v-else>Никто еще не оставил комментарий к этому товару, будьте первым!</h4>
         </div>
@@ -83,6 +81,9 @@ import Comments from "../components/Comments.vue";
 const productId = router.currentRoute.value.params.id
 const isFetchError = ref(false);
 const product = ref([])
+const rating = ref(null)
+const commentText = ref('')
+
 let rules = [
     value => {
         return !value || !value.length || value[0].size < 2000000 || 'Avatar size should be less than 2 MB!'
@@ -122,20 +123,16 @@ onMounted(async () => {
     justify-content: center;
     gap: 50px;
 }
-
 .product__info {
     display: grid;
     width: 100%;
     max-width: 1000px;
-    grid-template-columns: 1fr 1fr; /* Split into two columns */
-    gap: 10px; /* Add some space between grid items */
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
-
-/* Additional CSS for styling, you can customize as needed */
 .product__image {
     padding: 10px;
 }
-
 .product__details {
     padding: 10px;
 }

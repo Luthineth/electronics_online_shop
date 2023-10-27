@@ -34,6 +34,6 @@ li{
     cursor: pointer;
 }
 .categoryName:hover {
-    color: red;
+    color: darkgreen;
 }
 </style>

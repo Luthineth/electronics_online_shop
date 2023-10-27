@@ -94,7 +94,7 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 a:hover {
-  color: red;
+  color: darkgreen;
 }
 .mainNav{
   padding: 0 10px 10px 10px;
