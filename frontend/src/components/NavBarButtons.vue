@@ -53,7 +53,10 @@ let hierarchy = ref([])
 
 const updateItemCount = () => {
     itemCount.value += 1;
-    userAuthorized.value = !userAuthorized.value
+};
+
+const checkAuthorisation = () => {
+    return localStorage.getItem('token') !== null;
 };
 
 const returnUserName = () => {
@@ -68,7 +71,7 @@ const userLogOut = () => {
     localStorage.removeItem("firstName")
     localStorage.removeItem("secondName")
 
-    userAuthorized.value = !userAuthorized.value
+    userAuthorized.value = false
 };
 
 const showSearchBar = () => {
@@ -107,6 +110,7 @@ function buildHierarchyTree(categories){
 
 
 onMounted(async () => {
+    userAuthorized.value = checkAuthorisation()
     categories.value = await fetch(`http://localhost:8080/main`)
         .then(res => res.json())
     hierarchy = buildHierarchyTree(categories.value)
