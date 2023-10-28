@@ -1,99 +1,135 @@
 <template>
+    <div class="alert-container">
+        <v-alert
+            closable
+            icon="mdi-alert-circle-outline"
+            variant="tonal"
+            color="error"
+            v-if="logInError || signUpError"
+        >
+         {{ logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'}}
+        </v-alert>
+    </div>
     <div class="authorization-container">
-        <v-card variant="outlined" class="authorization-card">
-            <div v-if="isLogin">
-                <form @submit.prevent="submit" class="form__login">
-                    <v-card-title>Вход в учетную запись</v-card-title>
-                    <v-text-field
-                        v-model="email.value.value"
-                        :error-messages="email.errorMessage.value"
-                        label="E-mail"
-                        variant="underlined"
-                    ></v-text-field>
+        <v-card
+            variant="outlined"
+            class="authorization-card"
+        >
+            <div
+                v-if="isLogin"
+                key="logInContainer"
+            >
+                <v-card-title>Вход в учетную запись</v-card-title>
 
-                    <v-text-field
-                        v-model="password.value.value"
-                        :error-messages="password.errorMessage.value"
-                        label="Пароль"
-                        variant="underlined"
-                    ></v-text-field>
-                    <v-card-actions class="d-flex justify-center">
-                        <v-btn
-                            class="me-4"
-                            color="black"
-                            variant="tonal"
-                            type="submit"
-                        >
-                            <v-icon icon="mdi-login"></v-icon>
-                            Войти
-                        </v-btn>
+                <v-text-field
+                    v-model="email.value.value"
+                    label="E-mail"
+                    variant="underlined"
+                />
 
-                        <v-btn @click="handleReset">
-                            <v-icon icon="mdi-close"></v-icon>
-                            Очистить
-                        </v-btn>
-                    </v-card-actions>
-                </form>
+                <v-text-field
+                    v-model="password.value.value"
+                    label="Пароль"
+                    variant="underlined"
+                    type="password"
+                />
+
+                <v-card-actions class="d-flex justify-center">
+                    <v-btn
+                        class="me-4"
+                        color="black"
+                        variant="tonal"
+                        @click="userLogIn()"
+                    >
+                        <v-icon icon="mdi-login"/>
+                        Войти
+                    </v-btn>
+
+                    <v-btn @click="handleReset">
+                        <v-icon icon="mdi-close"/>
+                        Очистить
+                    </v-btn>
+                </v-card-actions>
             </div>
-            <div v-else>
-                <form @submit.prevent="submit" class="form__signup">
+            <div
+                v-else
+                key="signUpContainer"
+            >
+                <form
+                    @submit.prevent="userSignUp()"
+                    class="form__signup"
+                >
                     <v-card-title>Регистрация</v-card-title>
+
                     <v-text-field
                         v-model="name.value.value"
                         :error-messages="name.errorMessage.value"
                         label="Имя"
                         variant="underlined"
-                    ></v-text-field>
+                    />
 
                     <v-text-field
                         v-model="lastName.value.value"
                         :error-messages="lastName.errorMessage.value"
                         label="Фамилия"
                         variant="underlined"
-                    ></v-text-field>
+                    />
 
                     <v-text-field
                         v-model="email.value.value"
                         :error-messages="email.errorMessage.value"
                         label="E-mail"
                         variant="underlined"
-                    ></v-text-field>
+                    />
 
                     <v-text-field
                         v-model="password.value.value"
                         :error-messages="password.errorMessage.value"
                         label="Пароль"
                         variant="underlined"
-                    ></v-text-field>
+                    />
+
                     <v-card-actions class="d-flex justify-center">
                         <v-btn
                             class="me-4"
                             color="black"
                             variant="tonal"
-                            type="submit"
+                            @click="userSignUp()"
                         >
-                            <v-icon icon="mdi-check"></v-icon>
+                            <v-icon icon="mdi-check"/>
                             Сохранить
                         </v-btn>
 
                         <v-btn @click="handleReset">
-                            <v-icon icon="mdi-close"></v-icon>
+                            <v-icon icon="mdi-close"/>
                             Очистить
                         </v-btn>
                     </v-card-actions>
                 </form>
             </div>
+
             <div class="text-center">
-                <button @click="toggleForm" class="change-form-type">{{ isLogin ? 'Нет аккаунта? Присоединиться' : 'Есть аккаунт? Войти' }}</button>
+                <button
+                    @click="toggleForm"
+                    class="change-form-type"
+                >
+                    {{ isLogin ? 'Нет аккаунта? Присоединиться' : 'Есть аккаунт? Войти' }}
+                </button>
             </div>
         </v-card>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useField, useForm } from 'vee-validate'
+import {ref} from 'vue';
+import {useField, useForm} from 'vee-validate'
 import axios from "axios";
+import router from "../router/router";
+import {userAuthorized} from "../utils/utils";
+
+const isLogin = ref(true);
+const logInError = ref(false);
+const signUpError = ref(false);
 
 const { handleSubmit, handleReset } = useForm({
     validationSchema: {
@@ -125,18 +161,48 @@ const lastName = useField('lastName')
 const email = useField('email')
 const password = useField('password')
 
-const submit = handleSubmit(values => {
-    alert(JSON.stringify(values, null, 2))
+const userLogIn = async () => {
+    const user = {
+        email: email.value.value,
+        password: password.value.value,
+    }
+    await axios
+        .post(`http://localhost:8080/login`, user)
+        .catch(() => {
+            logInError.value = true
+        })
+        .then(async (res) => {
+            localStorage.setItem('token', res.data.token)
+            localStorage.setItem('firstName', res.data.firstName)
+            localStorage.setItem('secondName', res.data.secondName)
+
+            userAuthorized.value = !userAuthorized.value
+
+            await router.push('/')
+        })
+}
+
+const userSignUp = handleSubmit(async () => {
+    const user = {
+        firstName: name.value.value,
+        secondName: lastName.value.value,
+        email: email.value.value,
+        password: password.value.value,
+    }
+    await axios
+        .post(`http://localhost:8080/authenticate`, user)
+        .catch(() => {
+            signUpError.value = true
+        })
+        .then(() => {
+            if (signUpError.value === false) toggleForm();
+        })
 })
-const isLogin = ref(true);
-
-const login = () => {
-};
-
-
 
 const toggleForm = () => {
     isLogin.value = !isLogin.value;
+    logInError.value = false
+    signUpError.value = false
 };
 </script>
 
@@ -158,5 +224,17 @@ const toggleForm = () => {
 }
 .change-form-type{
     text-decoration: underline;
+}
+.alert-container{
+    position: fixed;
+    top: 90px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.v-alert{
+    max-width: fit-content;
 }
 </style>

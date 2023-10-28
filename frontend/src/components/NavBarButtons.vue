@@ -14,11 +14,18 @@
     <div class="actions">
         <div class="actions__container">
             <div class="wrapper__links">
-                <router-link to="/" v-if="userAuthorized">
+                <router-link
+                    to="/login"
+                    v-if="userAuthorized"
+                    @click="userLogOut()"
+                >
                     <v-icon icon="mdi-logout"></v-icon>
-                    Doe J.
+                    {{ returnUserName() }}
                 </router-link>
-                <router-link to="/login" v-else>
+                <router-link
+                    to="/login"
+                    v-else
+                >
                     <v-icon icon="mdi-login"></v-icon>
                     Войти
                 </router-link>
@@ -37,16 +44,30 @@
 
 <script setup>
 import {onMounted, ref} from "vue";
-import {isSearchBarShown} from "../utils/utils.js";
+import {isSearchBarShown, userAuthorized} from "../utils/utils.js";
 import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
 
 let itemCount = ref(3)
-let userAuthorized = ref(false)
 let categories = ref([])
 let hierarchy = ref([])
 
 const updateItemCount = () => {
     itemCount.value += 1;
+    userAuthorized.value = !userAuthorized.value
+};
+
+const returnUserName = () => {
+    const firstName = localStorage.getItem('firstName').charAt(0)
+    const secondName = localStorage.getItem('secondName')
+
+    return `${secondName} ${firstName}.`
+};
+
+const userLogOut = () => {
+    localStorage.removeItem("token")
+    localStorage.removeItem("firstName")
+    localStorage.removeItem("secondName")
+
     userAuthorized.value = !userAuthorized.value
 };
 

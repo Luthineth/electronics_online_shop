@@ -42,8 +42,8 @@
                     </div>
                 </div>
                 <v-btn
-                    variant="text"
-                    color="red"
+                    variant="tonal"
+                    color="green"
                     :disabled="stockQuantity === 0"
                 >
                     в корзину
