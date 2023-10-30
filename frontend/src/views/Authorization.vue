@@ -45,7 +45,7 @@
                         Войти
                     </v-btn>
 
-                    <v-btn @click="handleReset">
+                    <v-btn @click="handleReset; logInError = false">
                         <v-icon icon="mdi-close"/>
                         Очистить
                     </v-btn>
@@ -100,7 +100,7 @@
                             Сохранить
                         </v-btn>
 
-                        <v-btn @click="handleReset">
+                        <v-btn @click="handleReset; signUpError = false">
                             <v-icon icon="mdi-close"/>
                             Очистить
                         </v-btn>
@@ -224,17 +224,5 @@ const toggleForm = () => {
 }
 .change-form-type{
     text-decoration: underline;
-}
-.alert-container{
-    position: fixed;
-    top: 90px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.v-alert{
-    max-width: fit-content;
 }
 </style>

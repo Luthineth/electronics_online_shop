@@ -24,3 +24,15 @@ a {
   background: #e6e6e6;
   padding-top: .95rem
 }
+.alert-container{
+  position: fixed;
+  top: 90px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.v-alert{
+  max-width: fit-content;
+}

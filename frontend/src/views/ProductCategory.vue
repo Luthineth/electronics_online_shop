@@ -15,11 +15,6 @@ const isFetchError = ref(false);
 const products = ref([])
 
 onMounted(async () => {
-    products.value = await fetch(`http://localhost:8080/products_category/${categoryId}`)
-        .then(res => res.json())
-});
-
-onMounted(async () => {
     try {
         const response = await fetch(`http://localhost:8080/products_category/${categoryId}`);
 

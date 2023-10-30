@@ -29,10 +29,10 @@
                     <v-icon icon="mdi-login"></v-icon>
                     Войти
                 </router-link>
-                <div @click="updateItemCount()">
+                <router-link to="/cart">
                     <v-icon icon="mdi-cart-outline"></v-icon>
-                    ({{ itemCount }})
-                </div>
+                    ({{ cartItemCount }})
+                </router-link>
             </div>
             <div class="wrapper__links">
                 <v-icon icon="mdi-magnify" @click="showSearchBar"></v-icon>
@@ -44,16 +44,12 @@
 
 <script setup>
 import {onMounted, ref} from "vue";
-import {isSearchBarShown, userAuthorized} from "../utils/utils.js";
+import {isSearchBarShown, cartItemCount, userAuthorized} from "../utils/utils.js";
 import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
+import store from "../stores/store";
 
-let itemCount = ref(3)
 let categories = ref([])
 let hierarchy = ref([])
-
-const updateItemCount = () => {
-    itemCount.value += 1;
-};
 
 const checkAuthorisation = () => {
     return localStorage.getItem('token') !== null;
@@ -108,8 +104,9 @@ function buildHierarchyTree(categories){
     return hierarchyTree
 }
 
-
 onMounted(async () => {
+    await store.dispatch("load");
+    cartItemCount.value = store.state.cart.length
     userAuthorized.value = checkAuthorisation()
     categories.value = await fetch(`http://localhost:8080/main`)
         .then(res => res.json())

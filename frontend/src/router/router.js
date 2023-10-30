@@ -4,6 +4,7 @@ import NotFound from '../views/NotFound.vue'
 import Authorization from "../views/Authorization.vue";
 import ProductCategory from "../views/ProductCategory.vue";
 import ProductInfo from "../views/ProductInfo.vue";
+import Cart from "../views/Cart.vue";
 
 const routes = [
     {
@@ -20,6 +21,11 @@ const routes = [
         path: '/products/:id',
         name: 'product',
         component: ProductInfo
+    },
+    {
+        path: '/cart',
+        name: 'cart',
+        component: Cart
     },
     {
         path: '/login',

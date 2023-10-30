@@ -1,4 +1,15 @@
 <template>
+    <div class="alert-container">
+        <v-alert
+            closable
+            icon="mdi-alert-circle-outline"
+            variant="tonal"
+            color="error"
+            v-if="addToCartError"
+        >
+            Товар уже раскупили:(
+        </v-alert>
+    </div>
     <div class="product">
         <v-card
             class="product__info"
@@ -45,6 +56,7 @@
                     variant="tonal"
                     color="green"
                     :disabled="stockQuantity === 0"
+                    @click="addToCart()"
                 >
                     в корзину
                 </v-btn>
@@ -62,6 +74,8 @@
 
 <script setup>
 import {ref} from "vue";
+import store from "../stores/store";
+import {cartItemCount} from "../utils/utils";
 const { product } = defineProps(['product']);
 const {
     productName,
@@ -74,6 +88,7 @@ const {
 } = product
 
 const admin = false
+let addToCartError = ref(false)
 let isDescriptionShown = ref(false)
 const descriptionSmall = description.length <= 300 ? description : description.slice(0, 300) + "..."
 
@@ -86,6 +101,21 @@ function getProductStockStatus(stockQuantity) {
     }
     return "Нет данных";
 }
+
+const addToCart = async () => {
+    let currentStockQuantity = await fetch(`http://localhost:8080/products/${productId}`)
+        .then(res => res.json())
+        .then(res => res.stockQuantity)
+    if (currentStockQuantity !== 0) {
+        cartItemCount.value += 1
+        store.commit('addToCart', product);
+    } else {
+        addToCartError.value = true
+        setTimeout(() => {
+            addToCartError.value = false;
+        }, 1500);
+    }
+};
 </script>
 
 <style scoped lang="scss">
