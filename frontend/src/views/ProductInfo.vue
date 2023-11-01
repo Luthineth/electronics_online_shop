@@ -38,14 +38,19 @@
                 variant="outlined"
                 max-width="1000px"
             >
-                <v-rating
-                    v-model="rating"
-                    color="yellow-darken-3"
-                    size="small"
-                />
+                <v-card-title class="rating-input">
+                    Ваша оценка:
+                    <v-rating
+                        v-model="rating"
+                        color="yellow-darken-3"
+                    />
+                    <span class="text-grey-darken-2 text-caption me-2">
+                    ({{ rating }}/5)
+            </span>
+                </v-card-title>
                 <v-textarea
                     v-model="commentText"
-                    label="Напишите, что вам понравилось в товаре (или не понравилось)"
+                    label="Напишите ваше мнение о товаре"
                 />
                 <v-file-input
                     class="imageInput"
@@ -62,8 +67,8 @@
                         variant="tonal"
                         @click="saveRating"
                     >
-                        <v-icon icon="mdi-check"></v-icon>
-                        Сохранить
+                        <v-icon icon="mdi-arrow-up"></v-icon>
+                        Добавить
                     </v-btn>
                 </v-card-actions>
             </v-card>
@@ -89,12 +94,6 @@ let rules = [
         return !value || !value.length || value[0].size < 2000000 || 'Avatar size should be less than 2 MB!'
     },
 ]
-
-onMounted(async () => {
-    product.value = await fetch(`http://localhost:8080/products/${productId}`)
-        .then(res => res.json())
-    console.log(product.value)
-});
 
 onMounted(async () => {
     try {
@@ -135,5 +134,11 @@ onMounted(async () => {
 }
 .product__details {
     padding: 10px;
+}
+.rating-input{
+    display: flex;
+    align-items: center;
+    padding: 0;
+    font-size: large;
 }
 </style>
