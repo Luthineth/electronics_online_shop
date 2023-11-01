@@ -29,10 +29,6 @@ public class ProductCategoryServiceImpl implements productCategoryService {
     public List<Product> getProductsByCategoryAndSubcategories(Long categoryId) {
         List<Product> products = productCategoryRepository.findByCategoryId(categoryId);
 
-        if (products.isEmpty()) {
-            throw new ProductNotFoundException("No products found for category with ID: " + categoryId);
-        }
-
         return getProductsRecursively(categoryId, products);
     }
 
