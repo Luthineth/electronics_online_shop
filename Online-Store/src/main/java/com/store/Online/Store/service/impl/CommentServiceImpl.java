@@ -138,6 +138,7 @@ public class CommentServiceImpl implements commentService{
                 .text(comment.getText())
                 .rating(comment.getRating())
                 .imageUrl(comment.getImageUrl())
+                .commentId(comment.getCommentId())
                 .build();
     }
 }

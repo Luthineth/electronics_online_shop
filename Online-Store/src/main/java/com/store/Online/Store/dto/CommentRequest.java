@@ -19,4 +19,6 @@ public class CommentRequest {
     private Integer rating;
 
     private String imageUrl;
+
+    private Long commentId;
 }
