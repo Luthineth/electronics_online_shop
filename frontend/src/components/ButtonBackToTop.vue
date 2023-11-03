@@ -18,9 +18,10 @@ const scrollToTop = () => {
 
 <style scoped lang="scss">
 .back-to-top {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  cursor: pointer;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    cursor: pointer;
+    z-index: 3;
 }
 </style>
