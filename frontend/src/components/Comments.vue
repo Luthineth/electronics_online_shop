@@ -74,7 +74,7 @@
         <v-card
             v-else
             class="mx-auto commentCard"
-            width="700px"
+            width="100%"
             variant="outlined"
             v-for="comment in filteredComments"
         >
