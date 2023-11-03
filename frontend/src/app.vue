@@ -1,8 +1,10 @@
 <template>
-    <NavBar/>
-    <router-view/>
-    <ButtonBackToTop/>
-    <MainFooter/>
+    <div style="min-height: 100vh">
+        <NavBar />
+        <router-view />
+        <ButtonBackToTop />
+    </div>
+    <MainFooter />
 </template>
 
 <script setup>

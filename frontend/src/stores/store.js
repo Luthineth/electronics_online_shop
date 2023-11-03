@@ -5,19 +5,25 @@ export default createStore({
         cart: [],
     },
     mutations: {
-        addToCart(state, product){
-            state.cart.push(product)
+        addToCart(state, orderItem){
+            const existingItem = state.cart.find(item => item.product.productId === orderItem.product.productId);
+
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                state.cart.push(orderItem);
+            }
 
             localStorage.setItem("cart", JSON.stringify(state.cart));
         },
-        removeFromCart(state, product){
-            state.cart = state.cart.filter(each => each.id !== product.id)
+        removeFromCart(state, orderItem){
+            state.cart = state.cart.filter(each => each.product.productId !== orderItem.product.productId)
 
             localStorage.setItem("cart", JSON.stringify(state.cart));
         },
-        editCart(state, product){
-            const index = state.cart.findIndex((obj) => obj.id === product.id);
-            state.cart.splice(index, 1, product);
+        editCart(state, orderItem){
+            const index = state.cart.findIndex((obj) => obj.product.productId === orderItem.product.productId);
+            state.cart.splice(index, 1, orderItem);
 
             localStorage.setItem("cart", JSON.stringify(state.cart));
         },

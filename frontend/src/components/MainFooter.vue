@@ -5,9 +5,6 @@
         <div class="pt-0">
             By Artem Lihachev (backend) & Ekaterina Pustovalova (frontend)
         </div>
-
-        <v-divider/>
-
         <div>
             {{ new Date().getFullYear() }} —
             <strong>
@@ -21,10 +18,9 @@
 
 <style lang="scss" scoped>
 .footer {
-  bottom: 0;
-  width: 100%;
-  position: fixed;
-  height: auto;
+    width: 100%;
+    height: auto;
     background-color: #e2e2e2;
+    margin-top: 30px;
 }
 </style>

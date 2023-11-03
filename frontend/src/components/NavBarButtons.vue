@@ -36,7 +36,9 @@
             </div>
             <div class="wrapper__links">
                 <v-icon icon="mdi-magnify" @click="showSearchBar"></v-icon>
-                <v-icon icon="mdi-account-outline"></v-icon>
+                <router-link to="/account">
+                    <v-icon icon="mdi-account-outline"></v-icon>
+                </router-link>
             </div>
         </div>
     </div>
@@ -44,7 +46,7 @@
 
 <script setup>
 import {onMounted, ref} from "vue";
-import {isSearchBarShown, cartItemCount, userAuthorized} from "../utils/utils.js";
+import {cartItemCount, isSearchBarShown, userAuthorized, userRole} from "../utils/utils.js";
 import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
 import store from "../stores/store";
 
@@ -52,7 +54,13 @@ let categories = ref([])
 let hierarchy = ref([])
 
 const checkAuthorisation = () => {
-    return localStorage.getItem('token') !== null;
+    if (localStorage.getItem('token') !== null){
+        let token = localStorage.getItem('token')
+        userRole.value = JSON.parse(atob(token.split('.')[1])).role
+        return true
+    } else {
+        return false
+    }
 };
 
 const returnUserName = () => {
@@ -106,7 +114,8 @@ function buildHierarchyTree(categories){
 
 onMounted(async () => {
     await store.dispatch("load");
-    cartItemCount.value = store.state.cart.length
+
+    cartItemCount.value = store.state.cart.reduce((total, item) => total + item.quantity, 0)
     userAuthorized.value = checkAuthorisation()
     categories.value = await fetch(`http://localhost:8080/main`)
         .then(res => res.json())

@@ -25,54 +25,26 @@
 
                 <div class="description-action-wrapper">
                     <div class="description-button" style="">
-                        <p class="header">В наличии {{ product.stockQuantity }}</p>
-                        <v-btn color="red-darken-2" @click="addProductToCart(product)"><v-icon class="me-1" icon="mdi-image-off-outline"></v-icon> Add to cart</v-btn>
+                        <p class="header">В наличии: {{ product.stockQuantity }}</p>
+                        <v-btn
+                            color="green"
+                            variant="tonal"
+                            @click="addProductToCart()"
+                            :disabled="product.stockQuantity === 0"
+                        >
+                            Добавить в корзину
+                        </v-btn>
                     </div>
                 </div>
 
             </div>
         </div>
         <div class="product__comments">
-            <v-card
-                class="pa-2 mb-9"
-                variant="outlined"
-                max-width="1000px"
-            >
-                <v-card-title class="rating-input">
-                    Ваша оценка:
-                    <v-rating
-                        v-model="rating"
-                        color="yellow-darken-3"
-                    />
-                    <span class="text-grey-darken-2 text-caption me-2">
-                    ({{ rating }}/5)
-            </span>
-                </v-card-title>
-                <v-textarea
-                    v-model="commentText"
-                    label="Напишите ваше мнение о товаре"
-                />
-                <v-file-input
-                    class="imageInput"
-                    :rules="rules"
-                    accept=".png, .jpeg, .bmp"
-                    placeholder="Выберите изображение"
-                    prepend-icon="mdi-camera-plus-outline"
-                    label="Добавьте фото к отзыву"
-                ></v-file-input>
-                <v-card-actions class="d-flex justify-center">
-                    <v-btn
-                        class="me-4"
-                        color="black"
-                        variant="tonal"
-                        @click="saveRating"
-                    >
-                        <v-icon icon="mdi-arrow-up"></v-icon>
-                        Добавить
-                    </v-btn>
-                </v-card-actions>
-            </v-card>
-            <Comments v-if="product.comments.length !== 0" :comments="product.comments"/>
+            <Comments
+                v-if="product.comments.length !== 0"
+                :comments="product.comments"
+                :productId="productId"
+            />
             <h4 v-else>Никто еще не оставил комментарий к этому товару, будьте первым!</h4>
         </div>
     </div>
@@ -86,14 +58,6 @@ import Comments from "../components/Comments.vue";
 const productId = router.currentRoute.value.params.id
 const isFetchError = ref(false);
 const product = ref([])
-const rating = ref(null)
-const commentText = ref('')
-
-let rules = [
-    value => {
-        return !value || !value.length || value[0].size < 2000000 || 'Avatar size should be less than 2 MB!'
-    },
-]
 
 onMounted(async () => {
     try {
@@ -134,11 +98,5 @@ onMounted(async () => {
 }
 .product__details {
     padding: 10px;
-}
-.rating-input{
-    display: flex;
-    align-items: center;
-    padding: 0;
-    font-size: large;
 }
 </style>
