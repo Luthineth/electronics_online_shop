@@ -14,3 +14,10 @@ export const loadNewPage = (id, pageType) => {
 
     window.open(url, '_self');
 };
+
+export const scrollToTop = () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+};

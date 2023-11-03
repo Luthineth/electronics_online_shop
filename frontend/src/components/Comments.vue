@@ -68,7 +68,7 @@
             v-if="filteredComments.length === 0"
             class="d-flex justify-center"
         >
-            Не нашли такие комментарии :(
+            Не нашли комментарии :(
         </h4>
 
         <v-card

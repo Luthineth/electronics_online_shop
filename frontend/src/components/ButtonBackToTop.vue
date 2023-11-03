@@ -8,12 +8,7 @@
 </template>
 
 <script setup>
-const scrollToTop = () => {
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-};
+import {scrollToTop} from "../utils/utils";
 </script>
 
 <style scoped lang="scss">

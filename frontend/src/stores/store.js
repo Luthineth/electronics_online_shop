@@ -6,7 +6,7 @@ export default createStore({
     },
     mutations: {
         addToCart(state, orderItem){
-            const existingItem = state.cart.find(item => item.product.productId === orderItem.product.productId);
+            const existingItem = state.cart.find(item => item.productId === orderItem.productId);
 
             if (existingItem) {
                 existingItem.quantity += 1;
@@ -17,12 +17,12 @@ export default createStore({
             localStorage.setItem("cart", JSON.stringify(state.cart));
         },
         removeFromCart(state, orderItem){
-            state.cart = state.cart.filter(each => each.product.productId !== orderItem.product.productId)
+            state.cart = state.cart.filter(each => each.productId !== orderItem.productId)
 
             localStorage.setItem("cart", JSON.stringify(state.cart));
         },
         editCart(state, orderItem){
-            const index = state.cart.findIndex((obj) => obj.product.productId === orderItem.product.productId);
+            const index = state.cart.findIndex((obj) => obj.productId === orderItem.productId);
             state.cart.splice(index, 1, orderItem);
 
             localStorage.setItem("cart", JSON.stringify(state.cart));
