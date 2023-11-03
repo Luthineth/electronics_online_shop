@@ -1,4 +1,15 @@
 <template>
+    <div class="mb-6 d-flex justify-center">
+        <v-btn
+            v-if="userRole === 'ADMIN'"
+            variant="tonal"
+            color="green"
+            width="fit-content"
+        >
+            Добавить товар
+            <ProductEdit/>
+        </v-btn>
+    </div>
     <ProductList
             v-if="products"
             :products="products"
@@ -9,6 +20,8 @@
 import {onMounted, ref} from "vue"
 import ProductList from "../components/ProductList.vue";
 import router from "../router/router";
+import {userRole} from "../utils/utils";
+import ProductEdit from "../components/ProductEdit.vue";
 
 const categoryId = router.currentRoute.value.params.id
 const isFetchError = ref(false);
@@ -32,7 +45,3 @@ onMounted(async () => {
     }
 });
 </script>
-
-<style scoped lang="scss">
-
-</style>
