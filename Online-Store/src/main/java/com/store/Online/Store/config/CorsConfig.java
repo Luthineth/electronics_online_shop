@@ -23,15 +23,4 @@ public class CorsConfig {
             }
         };
     }
-
-    @Bean
-    public WebMvcConfigurer resourceConfigurer() {
-        return new WebMvcConfigurer() {
-            @Override
-            public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                registry.addResourceHandler("/images/**")
-                        .addResourceLocations("D:\\javaCode\\electronics_online_shop\\images");
-            }
-        };
-    }
 }
