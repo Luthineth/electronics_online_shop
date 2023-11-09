@@ -11,17 +11,16 @@ import com.store.Online.Store.repository.*;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements productService {
@@ -33,8 +32,6 @@ public class ProductServiceImpl implements productService {
     private final commentService commentService;
     private final orderItemRepository orderItemRepository;
 
-    @Value("Online-Store/images")
-    private String imageUploadDirectory;
     @Autowired
     public ProductServiceImpl(productRepository productRepository, com.store.Online.Store.repository.productCategoryRepository productCategoryRepository, com.store.Online.Store.repository.categoryRepository categoryRepository, com.store.Online.Store.repository.discountRepository discountRepository, commentService commentService, com.store.Online.Store.repository.orderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
@@ -221,19 +218,14 @@ public class ProductServiceImpl implements productService {
         return count > 0 ? (double) sum / count : null;
     }
 
-    public ProductRequest mapToProductDto(Product product) throws IOException {
+    public ProductRequest mapToProductDto(Product product) {
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductName(product.getProductName());
         productRequest.setDescription(product.getDescription());
         productRequest.setStockQuantity(product.getStockQuantity());
         productRequest.setPrice(product.getPrice());
         productRequest.setPriceWithDiscount(product.getPriceWithDiscount());
-        if (product.getImageUrl() != null) {
-            String imageUrl = product.getImageUrl();
-            byte[] imageData = Files.readAllBytes(Paths.get(imageUploadDirectory, imageUrl));
-            String base64Image = Base64.getEncoder().encodeToString(imageData);
-            productRequest.setImageUrl(base64Image);
-        }
+        productRequest.setImageUrl(product.getImageUrl());
         return productRequest;
     }
 

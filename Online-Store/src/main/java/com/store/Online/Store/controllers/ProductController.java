@@ -8,13 +8,16 @@ import com.store.Online.Store.service.productService;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.core.io.Resource;
 import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -117,4 +120,23 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
+
+    @GetMapping("/images/{imageName}")
+    public ResponseEntity<Resource> serveImage(@PathVariable String imageName) {
+        try {
+            Path imagePath = Paths.get(imageUploadDirectory, imageName);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_PNG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }
