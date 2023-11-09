@@ -27,7 +27,7 @@
             color="warning"
             v-if="confirmationError"
         >
-            Не удалось оформить заказ, уменьшите количество товара {{troublemakerProductName}}
+            Не удалось оформить заказ, уменьшите количество товаров {{problematicProductsNames.join(', ')}}
         </v-alert>
 
         <v-alert
@@ -94,11 +94,12 @@ import axios from "axios";
 let placeOrderSuccess = ref(false)
 let confirmationError = ref(false)
 let sendOrderError = ref(false)
-let troublemakerProductName = ref('')
+let problematicProductsNames = ref([])
 
 const confirmOrder = async () => {
     await store.dispatch("load");
     const orderItemsArray = [];
+    problematicProductsNames.value = [];
 
     for (const cartItem of store.state.cart) {
         let currentStockQuantity = await fetch(`http://localhost:8080/products/${cartItem.productId}`)
@@ -108,16 +109,12 @@ const confirmOrder = async () => {
             const {productId, quantity} = cartItem;
             orderItemsArray.push({productId, quantity});
         } else {
-            troublemakerProductName.value = cartItem.product.productName
+            problematicProductsNames.value.push(cartItem.product.productName)
             confirmationError.value = true
-            setTimeout(() => {
-                confirmationError.value = false;
-            }, 2000);
-            break
         }
     }
 
-    await sendOrderToServer(orderItemsArray);
+    if(!confirmationError) await sendOrderToServer(orderItemsArray);
 };
 
 const sendOrderToServer = async (orderItemsArray) => {
