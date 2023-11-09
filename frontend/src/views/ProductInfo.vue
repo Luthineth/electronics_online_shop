@@ -17,7 +17,7 @@
         <div class="product__info">
             <div class="product__image">
                 <v-img
-                    src="https://cdn.vuetifyjs.com/images/cards/halcyon.png"
+                    :src="getImage(product.imageUrl)"
                 />
             </div>
 
@@ -78,7 +78,7 @@
 import {onMounted, ref} from "vue"
 import router from "../router/router";
 import Comments from "../components/Comments.vue";
-import {cartItemCount, userAuthorized} from "../utils/utils";
+import {cartItemCount, getImage, userAuthorized} from "../utils/utils";
 import store from "../stores/store";
 
 const productId = router.currentRoute.value.params.id

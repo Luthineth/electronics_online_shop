@@ -17,10 +17,17 @@
         >
             <v-img
                 class="product__picture"
-                src="imageUrl"
+                :src="getImage(imageUrl)"
             />
             <div class="product__description">
-                <h3><router-link :to="'/products/' + productId">{{ productName }}</router-link></h3>
+                <h3>
+                    <router-link
+                        :to="'/products/' + productId"
+                        @click="scrollToTop"
+                    >
+                        {{ productName }}
+                    </router-link>
+                </h3>
                 <v-card-text class="description__text">
                     {{ isDescriptionShown? description : descriptionSmall }}
                 </v-card-text>
@@ -64,10 +71,13 @@
         </v-card>
         <div
             class="product__admin-actions"
-            v-if="admin === true"
+            v-if="admin"
         >
-            <v-btn variant="text">edit</v-btn>
-            <v-btn variant="outlined" color="red">delete</v-btn>
+            <v-btn variant="text">
+                Редактировать
+                <ProductEdit></ProductEdit>
+            </v-btn>
+            <v-btn variant="outlined" color="red">Удалить</v-btn>
         </div>
     </div>
 </template>
@@ -75,7 +85,8 @@
 <script setup>
 import {ref} from "vue";
 import store from "../stores/store";
-import {cartItemCount} from "../utils/utils";
+import {cartItemCount, getImage, scrollToTop, userRole} from "../utils/utils";
+import ProductEdit from "./ProductEdit.vue";
 const { product } = defineProps(['product']);
 const {
     productName,
@@ -87,7 +98,7 @@ const {
     imageUrl,
 } = product
 
-const admin = false
+let admin = userRole.value === 'ADMIN';
 let addToCartError = ref(false)
 let isDescriptionShown = ref(false)
 const descriptionSmall = description.length <= 300 ? description : description.slice(0, 300) + "..."
@@ -107,8 +118,13 @@ const addToCart = async () => {
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (currentStockQuantity !== 0) {
+        const orderItem = {
+            product: product,
+            quantity: 1,
+            productId: productId,
+        };
         cartItemCount.value += 1
-        store.commit('addToCart', product);
+        store.commit('addToCart', orderItem);
     } else {
         addToCartError.value = true
         setTimeout(() => {
@@ -143,7 +159,7 @@ const addToCart = async () => {
     width: 20%;
 }
 .product__description{
-    width: 55%;
+    width: 45%;
 }
 .product__availability{
     width: 15%;
@@ -152,7 +168,7 @@ const addToCart = async () => {
     text-align: center;
 }
 .product__controls {
-    width: 10%;
+    width: 20%;
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -1,7 +1,54 @@
 <template>
+    <div class="alert-container">
+        <v-alert
+            closable
+            icon="mdi-check-circle-outline"
+            variant="tonal"
+            color="success"
+            v-if="placeOrderSuccess"
+        >
+            Поздравляем! Заказ подтвержден, отправили письмо на вашу почту
+        </v-alert>
+
+        <v-alert
+            closable
+            icon="mdi-information-outline"
+            variant="tonal"
+            color="info"
+            v-if="!userAuthorized"
+        >
+            Чтобы оформить заказ, нужно авторизоваться
+        </v-alert>
+
+        <v-alert
+            closable
+            icon="mdi-alert-circle-outline"
+            variant="tonal"
+            color="warning"
+            v-if="confirmationError"
+        >
+            Не удалось оформить заказ, уменьшите количество товара {{troublemakerProductName}}
+        </v-alert>
+
+        <v-alert
+            closable
+            icon="mdi-alert-circle-outline"
+            variant="tonal"
+            color="error"
+            v-if="sendOrderError"
+        >
+           Заказ не удалось подтвердить
+        </v-alert>
+    </div>
     <div class="order-info">
         <div class="order__items d-flex justify-center">
-            items
+            <OrderList
+                v-if="orderItems.length !== 0"
+                :orderItems="orderItems"
+            />
+            <h4 v-else>
+                Корзина пуста, добавьте что-нибудь!
+            </h4>
         </div>
         <div class="order__details">
             <v-card
@@ -14,16 +61,21 @@
                 </v-card-title>
                 <v-table class="order__summary">
                     <tr>
-                        <td class="pr-3">Количество товаров:</td>
+                        <td class="pr-3">Кол-во товаров:</td>
                         <td>{{ cartItemCount }}</td>
                     </tr>
                     <tr>
                         <td class="pr-3">Итого:</td>
-                        <td>{{ totalOrderCost }} ₽</td>
+                        <td>{{ orderPrice }}₽</td>
                     </tr>
                 </v-table>
                 <v-card-actions class="d-flex justify-center">
-                    <v-btn color="green" variant="tonal" @click="confirmOrder()">
+                    <v-btn
+                        color="green"
+                        variant="tonal"
+                        :disabled="!userAuthorized || orderItems.length === 0"
+                        @click="confirmOrder()"
+                    >
                         Оформить заказ
                     </v-btn>
                 </v-card-actions>
@@ -33,19 +85,68 @@
 </template>
 
 <script setup>
-import {cartItemCount} from "../utils/utils";
-import {ref} from "vue";
+import {cartItemCount, userAuthorized} from "../utils/utils";
+import {computed, onMounted, ref} from "vue";
+import store from "../stores/store";
+import OrderList from "../components/OrderList.vue";
+import axios from "axios";
 
-let totalOrderCost = ref(0)
+let placeOrderSuccess = ref(false)
 let confirmationError = ref(false)
+let sendOrderError = ref(false)
+let troublemakerProductName = ref('')
 
-const confirmOrder = () => {
+const confirmOrder = async () => {
+    await store.dispatch("load");
+    const orderItemsArray = [];
 
+    for (const cartItem of store.state.cart) {
+        let currentStockQuantity = await fetch(`http://localhost:8080/products/${cartItem.productId}`)
+            .then(res => res.json())
+            .then(res => res.stockQuantity)
+        if (cartItem.quantity < currentStockQuantity) {
+            const {productId, quantity} = cartItem;
+            orderItemsArray.push({productId, quantity});
+        } else {
+            troublemakerProductName.value = cartItem.product.productName
+            confirmationError.value = true
+            setTimeout(() => {
+                confirmationError.value = false;
+            }, 2000);
+            break
+        }
+    }
+
+    await sendOrderToServer(orderItemsArray);
 };
 
-const sendOrder = () => {
+const sendOrderToServer = async (orderItemsArray) => {
+    const token = localStorage.getItem('token')
 
+    await axios
+        .post(`http://localhost:8080/orders`,
+            orderItemsArray,
+            {headers: {
+                    'Authorization': `Bearer ${token}`
+                }})
+        .catch(() => {
+            sendOrderError.value = true
+        })
+        .then(() => {
+            if (sendOrderError.value === false) {
+                placeOrderSuccess.value = true;
+                cartItemCount.value = 0
+                store.dispatch("clearCart");
+            }
+        })
 };
+
+const orderItems = computed(() => store.state.cart);
+const orderPrice = computed(() => store.state.totalPrice);
+
+onMounted(() => {
+    store.dispatch("load");
+});
 </script>
 
 <style scoped lang="scss">

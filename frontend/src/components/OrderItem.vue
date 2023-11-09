@@ -85,7 +85,7 @@ const increaseOrderItemQuantity = async () => {
     let currentStockQuantity = await fetch(`http://localhost:8080/products/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
-    if (currentStockQuantity !== 0 && quantityRef.value < currentStockQuantity) {
+    if (quantityRef.value < currentStockQuantity) {
         const orderItem = {
             product: product,
             quantity: 1,

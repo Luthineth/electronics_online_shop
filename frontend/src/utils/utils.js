@@ -21,3 +21,7 @@ export const scrollToTop = () => {
         behavior: 'smooth'
     });
 };
+
+export function getImage(src) {
+    return `http://localhost:8080/products/images/iphone_14.png`
+}

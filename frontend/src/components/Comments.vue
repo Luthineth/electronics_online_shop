@@ -98,7 +98,7 @@
                     class="mb-2"
                     v-if="comment.imageUrl"
                 >
-                    <v-img src="https://cdn.vuetifyjs.com/images/cards/halcyon.png"/>
+                    <v-img :src="getImage(comment.imageUrl)"/>
                 </v-avatar>
 
                 <div>{{ comment.text }}</div>
@@ -139,7 +139,7 @@
 </template>
 
 <script setup>
-import {userAuthorized, userRole} from "../utils/utils";
+import {getImage, userAuthorized, userRole} from "../utils/utils";
 import axios from "axios";
 import {computed, ref} from "vue";
 
