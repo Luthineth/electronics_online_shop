@@ -22,7 +22,7 @@ public class Category {
     @Column(name = "category_id")
     private long categoryId;
 
-    @Column(name = "category_name", nullable = false)
+    @Column(name = "category_name")
     private String categoryName;
 
     @ManyToOne(fetch = FetchType.EAGER)
