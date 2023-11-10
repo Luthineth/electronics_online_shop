@@ -1,8 +1,29 @@
 <template>
     <ul>
         <li v-for="item in hierarchyProductTree" :key="item.categoryId">
-            <div class="categoryName" @click="loadNewPage(item.categoryId, 'product_category')">
-                {{ item.categoryName }}
+            <div>
+                <button
+                    class="categoryName"
+                    @click="loadNewPage(`product_category/${item.categoryId}`)"
+                >
+                    {{ item.categoryName }}
+                </button>
+                <button v-if="userRole === 'ADMIN'">
+                    <v-icon
+                        class="ml-2"
+                        icon="mdi-pencil-outline"
+                        color="grey"
+                    />
+                    <CategoryEdit
+                        :category-id="item.categoryId"
+                        :old-category-name="item.categoryName"
+                    />
+                </button>
+                <v-icon
+                    v-if="userRole === 'ADMIN'"
+                    icon="mdi-delete-outline"
+                    @click="deleteCategory(item.categoryId)"
+                />
             </div>
             <HierarchicalCategoriesList :hierarchyProductTree="item.children" v-if="item.children" />
         </li>
@@ -10,28 +31,35 @@
 </template>
 
 <script setup>
-import {loadNewPage} from "../utils/utils";
+import {loadNewPage, userRole} from "../utils/utils";
+import CategoryEdit from "./CategoryEdit.vue";
+import axios from "axios";
 
 const { hierarchyProductTree } = defineProps({
     hierarchyProductTree: Array
 })
+
+const deleteCategory = async (categoryId) => {
+    const token = localStorage.getItem('token')
+
+    await axios
+        .delete(`http://localhost:8080/categories/${categoryId}`,
+            {headers: {
+                    'Authorization': `Bearer ${token}`
+                }})
+    location.reload()
+};
 </script>
 
 <style scoped lang="scss">
 
 ul {
-    list-style-type: none;
-    padding: 0;
     margin-top: 10px;
-    background-color: #e2e2e2;
 }
 
 li{
-    padding: 10px;
+    padding-left: 10px;
     margin-left: 10px;
-}
-.categoryName{
-    cursor: pointer;
 }
 .categoryName:hover {
     color: darkgreen;

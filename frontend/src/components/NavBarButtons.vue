@@ -1,27 +1,25 @@
 <template>
     <div class="mainNav wrapper__links">
         <router-link to="/">Главная</router-link>
-        <div class="dropdown" @mouseover="showDropdown" @mouseleave="hideDropdown">
-            <router-link to="/frsghus">
+        <div class="show-all-categories">
+            <button>
                 Каталог
-            </router-link>
-            <div class="dropdown-content" :class="{ open: isOpen }">
-                <HierarchicalCategoriesList :hierarchyProductTree="hierarchy" v-if="hierarchy"/>
-            </div>
+                <AllCategoriesModal/>
+            </button>
         </div>
         <router-link to="/frsdejn">О нас</router-link>
     </div>
     <div class="actions">
         <div class="actions__container">
             <div class="wrapper__links">
-                <router-link
-                    to="/login"
+                <button
+                    class="button__logout"
                     v-if="userAuthorized"
                     @click="userLogOut()"
                 >
                     <v-icon icon="mdi-logout"></v-icon>
                     {{ returnUserName() }}
-                </router-link>
+                </button>
                 <router-link
                     to="/login"
                     v-else
@@ -45,23 +43,10 @@
 </template>
 
 <script setup>
-import {onMounted, ref} from "vue";
-import {cartItemCount, isSearchBarShown, userAuthorized, userRole} from "../utils/utils.js";
-import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
+import {onMounted} from "vue";
+import {cartItemCount, checkAuthorisation, isSearchBarShown, loadNewPage, userAuthorized} from "../utils/utils.js";
 import store from "../stores/store";
-
-let categories = ref([])
-let hierarchy = ref([])
-
-const checkAuthorisation = () => {
-    if (localStorage.getItem('token') !== null){
-        let token = localStorage.getItem('token')
-        userRole.value = JSON.parse(atob(token.split('.')[1])).role
-        return true
-    } else {
-        return false
-    }
-};
+import AllCategoriesModal from "./AllCategoriesModal.vue";
 
 const returnUserName = () => {
     const firstName = localStorage.getItem('firstName').charAt(0)
@@ -76,50 +61,19 @@ const userLogOut = () => {
     localStorage.removeItem("secondName")
 
     userAuthorized.value = false
+
+    loadNewPage('login')
 };
 
 const showSearchBar = () => {
     isSearchBarShown.value = true
 };
-const isOpen = ref(false);
-
-const showDropdown = () => {
-    isOpen.value = true;
-};
-
-const hideDropdown = () => {
-    isOpen.value = false;
-};
-
-function buildHierarchyTree(categories){
-    const categoryMap = new Map();
-    categories.forEach((category) => {
-        categoryMap.set(category.categoryId, { ...category, children: [] });
-    });
-
-    const hierarchyTree = [];
-    categories.forEach((category) => {
-        if (category.parentCategoryId === null) {
-            hierarchyTree.push(categoryMap.get(category.categoryId));
-        } else {
-            const parentCategory = categoryMap.get(category.parentCategoryId.categoryId);
-            if (parentCategory) {
-                parentCategory.children.push(categoryMap.get(category.categoryId));
-            }
-        }
-    });
-
-    return hierarchyTree
-}
 
 onMounted(async () => {
     await store.dispatch("load");
 
     cartItemCount.value = store.state.cart.reduce((total, item) => total + item.quantity, 0)
     userAuthorized.value = checkAuthorisation()
-    categories.value = await fetch(`http://localhost:8080/main`)
-        .then(res => res.json())
-    hierarchy = buildHierarchyTree(categories.value)
 });
 </script>
 
@@ -150,22 +104,7 @@ a:hover {
   justify-content: space-between;
   gap: .7125rem;
 }
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
-.dropdown-content {
-    display: none;
-    width: 100vw;
-    max-width: 1390px;
-    left: 0;
-    position: fixed;
-    z-index: 1;
-    box-shadow: rgba(33, 35, 38, 0.1) 0 10px 10px -10px;
-}
-
-.open {
-    display: block;
-    background-color: #faf8f5;
+.button__logout:hover{
+    color: darkgreen;
 }
 </style>

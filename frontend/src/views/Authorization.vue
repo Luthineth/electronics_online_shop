@@ -185,6 +185,7 @@ const userLogIn = async () => {
                 userAuthorized.value = !userAuthorized.value
 
                 await router.push('/')
+                location.reload()
             }
         })
 }

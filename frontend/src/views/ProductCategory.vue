@@ -11,9 +11,12 @@
         </v-btn>
     </div>
     <ProductList
-            v-if="products"
+            v-if="products.length !== 0"
             :products="products"
     />
+    <h4 v-else class="d-flex justify-center">
+        Тут пока нет товаров:(
+    </h4>
 </template>
 
 <script setup>
