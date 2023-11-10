@@ -1,15 +1,16 @@
 <template>
-    <div class="alert-container">
-        <v-alert
-            closable
-            icon="mdi-alert-circle-outline"
-            variant="tonal"
-            color="error"
-            v-if="logInError || signUpError"
-        >
-         {{ logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'}}
-        </v-alert>
-    </div>
+    <AlertContainer
+        v-if="signUpSuccess"
+        :color="'success'"
+        :icon="'mdi-check-circle-outline'"
+        :message="'Поздравляем! Вы успешно зарегистрированы'"
+    />
+    <AlertContainer
+        v-if="logInError || signUpError"
+        :color="'error'"
+        :icon="'mdi-alert-circle-outline'"
+        :message="logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'"
+    />
     <div class="authorization-container">
         <v-card
             variant="outlined"
@@ -45,7 +46,7 @@
                         Войти
                     </v-btn>
 
-                    <v-btn @click="handleReset; logInError = false">
+                    <v-btn @click="handleReset(); logInError = false">
                         <v-icon icon="mdi-close"/>
                         Очистить
                     </v-btn>
@@ -100,7 +101,7 @@
                             Сохранить
                         </v-btn>
 
-                        <v-btn @click="handleReset; signUpError = false">
+                        <v-btn @click="handleReset(); signUpError = false">
                             <v-icon icon="mdi-close"/>
                             Очистить
                         </v-btn>
@@ -126,8 +127,10 @@ import {useField, useForm} from 'vee-validate'
 import axios from "axios";
 import router from "../router/router";
 import {userAuthorized} from "../utils/utils";
+import AlertContainer from "../components/AlertContainer.vue";
 
 const isLogin = ref(true);
+const signUpSuccess = ref(false);
 const logInError = ref(false);
 const signUpError = ref(false);
 
@@ -172,13 +175,19 @@ const userLogIn = async () => {
             logInError.value = true
         })
         .then(async (res) => {
-            localStorage.setItem('token', res.data.token)
-            localStorage.setItem('firstName', res.data.firstName)
-            localStorage.setItem('secondName', res.data.secondName)
+            if (!logInError){
+                localStorage.setItem('token', res.data.token)
+                localStorage.setItem('firstName', res.data.firstName)
+                localStorage.setItem('secondName', res.data.secondName)
 
-            userAuthorized.value = !userAuthorized.value
+                userAuthorized.value = !userAuthorized.value
 
-            await router.push('/')
+                await router.push('/')
+            } else {
+                setTimeout(() => {
+                    logInError.value = false;
+                }, 1500);
+            }
         })
 }
 
@@ -195,7 +204,18 @@ const userSignUp = handleSubmit(async () => {
             signUpError.value = true
         })
         .then(() => {
-            if (signUpError.value === false) toggleForm();
+            if (!signUpError) {
+                signUpSuccess.value = true
+                setTimeout(() => {
+                    signUpSuccess.value = false;
+                }, 2000);
+
+                toggleForm()
+            } else {
+                setTimeout(() => {
+                    signUpError.value = false;
+                }, 1500);
+            }
         })
 })
 
