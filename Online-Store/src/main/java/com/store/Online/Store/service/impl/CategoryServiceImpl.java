@@ -103,6 +103,7 @@ public class CategoryServiceImpl implements categoryService {
         } else {
             Category parentCategory = new Category();
             parentCategory.setCategoryId(request.getParentCategoryId());
+            parentCategory.setCategoryName(categoryRepository.findCategoryNameByCategoryId(request.getParentCategoryId()));
             category.setParentCategoryId(parentCategory);
         }
         return category;
