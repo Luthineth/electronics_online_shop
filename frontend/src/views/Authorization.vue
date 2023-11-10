@@ -165,17 +165,19 @@ const email = useField('email')
 const password = useField('password')
 
 const userLogIn = async () => {
+    logInError.value = false;
     const user = {
         email: email.value.value,
         password: password.value.value,
     }
+
     await axios
         .post(`http://localhost:8080/login`, user)
         .catch(() => {
             logInError.value = true
         })
         .then(async (res) => {
-            if (!logInError){
+            if (logInError.value === false){
                 localStorage.setItem('token', res.data.token)
                 localStorage.setItem('firstName', res.data.firstName)
                 localStorage.setItem('secondName', res.data.secondName)
@@ -183,38 +185,32 @@ const userLogIn = async () => {
                 userAuthorized.value = !userAuthorized.value
 
                 await router.push('/')
-            } else {
-                setTimeout(() => {
-                    logInError.value = false;
-                }, 1500);
             }
         })
 }
 
 const userSignUp = handleSubmit(async () => {
+    signUpError.value = false;
     const user = {
         firstName: name.value.value,
         secondName: lastName.value.value,
         email: email.value.value,
         password: password.value.value,
     }
+
     await axios
         .post(`http://localhost:8080/authenticate`, user)
         .catch(() => {
             signUpError.value = true
         })
         .then(() => {
-            if (!signUpError) {
+            if (signUpError.value === false) {
                 signUpSuccess.value = true
                 setTimeout(() => {
                     signUpSuccess.value = false;
                 }, 2000);
 
                 toggleForm()
-            } else {
-                setTimeout(() => {
-                    signUpError.value = false;
-                }, 1500);
             }
         })
 })
