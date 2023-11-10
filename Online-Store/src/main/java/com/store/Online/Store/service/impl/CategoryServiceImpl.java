@@ -96,7 +96,12 @@ public class CategoryServiceImpl implements categoryService {
 
     public Category mapToCategory(CategoryRequest request) {
         Category category = new Category();
-        category.setCategoryName(request.getNameCategory());
+
+        if (request.getNameCategory() != null) {
+            category.setCategoryName(request.getNameCategory());
+        } else {
+            category.setCategoryName("DefaultCategoryName");
+        }
 
         if (request.getParentCategoryId() == null) {
             category.setParentCategoryId(null);
