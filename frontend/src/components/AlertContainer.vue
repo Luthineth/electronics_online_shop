@@ -14,7 +14,3 @@
 <script setup>
 const { icon, color, message } = defineProps(['icon', 'color', 'message']);
 </script>
-
-<style scoped lang="scss">
-
-</style>

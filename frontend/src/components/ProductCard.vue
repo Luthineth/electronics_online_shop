@@ -1,15 +1,11 @@
 <template>
-    <div class="alert-container">
-        <v-alert
-            closable
-            icon="mdi-alert-circle-outline"
-            variant="tonal"
-            color="error"
-            v-if="addToCartError"
-        >
-            Товар уже раскупили:(
-        </v-alert>
-    </div>
+    <AlertContainer
+        v-if="addToCartError"
+        :color="'error'"
+        :icon="'mdi-alert-circle-outline'"
+        :message="'Товар уже раскупили:('"
+    />
+
     <div class="product">
         <v-card
             class="product__info"
@@ -19,6 +15,7 @@
                 class="product__picture"
                 :src="getImage(imageUrl)"
             />
+
             <div class="product__description">
                 <h3>
                     <router-link
@@ -28,9 +25,11 @@
                         {{ productName }}
                     </router-link>
                 </h3>
+
                 <v-card-text class="description__text">
                     {{ isDescriptionShown? description : descriptionSmall }}
                 </v-card-text>
+
                 <v-btn
                     v-if="description.length > 300"
                     class="description__more"
@@ -43,14 +42,17 @@
                     {{ isDescriptionShown? 'Скрыть описание' : 'Показать больше' }}
                 </v-btn>
             </div>
+
             <div class="product__availability">
                 <h4>{{ getProductStockStatus(stockQuantity) }}</h4>
             </div>
+
             <div class="product__controls">
                 <div class="product__controls__price">
                     <h4 v-if="price === priceWithDiscount">
                         {{ price }}
                     </h4>
+
                     <div
                         v-else
                         class="price-updated"
@@ -75,9 +77,15 @@
         >
             <v-btn variant="text">
                 Редактировать
-                <ProductEdit></ProductEdit>
+                <ProductEdit/>
             </v-btn>
-            <v-btn variant="outlined" color="red">Удалить</v-btn>
+
+            <v-btn
+                variant="outlined"
+                color="red"
+            >
+                Удалить
+            </v-btn>
         </div>
     </div>
 </template>
@@ -87,6 +95,8 @@ import {ref} from "vue";
 import store from "../stores/store";
 import {cartItemCount, getImage, scrollToTop, userRole} from "../utils/utils";
 import ProductEdit from "./ProductEdit.vue";
+import AlertContainer from "./AlertContainer.vue";
+
 const { product } = defineProps(['product']);
 const {
     productName,
@@ -114,6 +124,8 @@ function getProductStockStatus(stockQuantity) {
 }
 
 const addToCart = async () => {
+    addToCartError.value = false
+
     let currentStockQuantity = await fetch(`http://localhost:8080/products/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)

@@ -1,15 +1,11 @@
 <template>
-    <div class="alert-container">
-        <v-alert
-            closable
-            icon="mdi-alert-circle-outline"
-            variant="tonal"
-            color="error"
-            v-if="addToCartError"
-        >
-            Товар уже раскупили:(
-        </v-alert>
-    </div>
+    <AlertContainer
+        v-if="addToCartError"
+        :color="'error'"
+        :icon="'mdi-alert-circle-outline'"
+        :message="'Товар уже раскупили:('"
+    />
+
     <div
         class="product"
         v-if="product.length !== 0"
@@ -80,6 +76,7 @@ import router from "../router/router";
 import Comments from "../components/Comments.vue";
 import {cartItemCount, getImage, userAuthorized} from "../utils/utils";
 import store from "../stores/store";
+import AlertContainer from "../components/AlertContainer.vue";
 
 const productId = router.currentRoute.value.params.id
 const isFetchError = ref(false);

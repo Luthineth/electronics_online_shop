@@ -1,45 +1,25 @@
 <template>
-    <div class="alert-container">
-        <v-alert
-            closable
-            icon="mdi-check-circle-outline"
-            variant="tonal"
-            color="success"
-            v-if="placeOrderSuccess"
-        >
-            Поздравляем! Заказ подтвержден, отправили письмо на вашу почту
-        </v-alert>
+    <AlertContainer
+        v-if="placeOrderSuccess"
+        :color="'success'"
+        :icon="'mdi-check-circle-outline'"
+        :message="'Поздравляем! Заказ подтвержден, отправили письмо на вашу почту'"
+    />
 
-        <v-alert
-            closable
-            icon="mdi-information-outline"
-            variant="tonal"
-            color="info"
-            v-if="!userAuthorized"
-        >
-            Чтобы оформить заказ, нужно авторизоваться
-        </v-alert>
+    <AlertContainer
+        v-if="!userAuthorized"
+        :color="'info'"
+        :icon="'mdi-information-outline'"
+        :message="'Чтобы оформить заказ, нужно авторизоваться'"
+    />
 
-        <v-alert
-            closable
-            icon="mdi-alert-circle-outline"
-            variant="tonal"
-            color="warning"
-            v-if="confirmationError"
-        >
-            Не удалось оформить заказ, уменьшите количество товаров {{problematicProductsNames.join(', ')}}
-        </v-alert>
+    <AlertContainer
+        v-if="confirmationError || sendOrderError"
+        :color="confirmationError ? 'warning' : 'error'"
+        :icon="'mdi-alert-circle-outline'"
+        :message="confirmationError ? `Уменьшите количество товаров ` + problematicProductsNames.join(', ') : 'Заказ не удалось подтвердить'"
+    />
 
-        <v-alert
-            closable
-            icon="mdi-alert-circle-outline"
-            variant="tonal"
-            color="error"
-            v-if="sendOrderError"
-        >
-           Заказ не удалось подтвердить
-        </v-alert>
-    </div>
     <div class="order-info">
         <div class="order__items d-flex justify-center">
             <OrderList
@@ -73,8 +53,8 @@
                     <v-btn
                         color="green"
                         variant="tonal"
-                        :disabled="!userAuthorized || orderItems.length === 0"
-                        @click="confirmOrder()"
+                        :disabled="!userAuthorized || processingOrder || orderItems.length === 0"
+                        @click="processingOrder = true; confirmOrder()"
                     >
                         Оформить заказ
                     </v-btn>
@@ -90,13 +70,17 @@ import {computed, onMounted, ref} from "vue";
 import store from "../stores/store";
 import OrderList from "../components/OrderList.vue";
 import axios from "axios";
+import AlertContainer from "../components/AlertContainer.vue";
 
 let placeOrderSuccess = ref(false)
+let processingOrder = ref(false)
 let confirmationError = ref(false)
 let sendOrderError = ref(false)
 let problematicProductsNames = ref([])
 
 const confirmOrder = async () => {
+    confirmationError.value = false
+
     await store.dispatch("load");
     const orderItemsArray = [];
     problematicProductsNames.value = [];
@@ -105,19 +89,28 @@ const confirmOrder = async () => {
         let currentStockQuantity = await fetch(`http://localhost:8080/products/${cartItem.productId}`)
             .then(res => res.json())
             .then(res => res.stockQuantity)
-        if (cartItem.quantity < currentStockQuantity) {
+        if (cartItem.quantity <= currentStockQuantity) {
             const {productId, quantity} = cartItem;
             orderItemsArray.push({productId, quantity});
         } else {
             problematicProductsNames.value.push(cartItem.product.productName)
             confirmationError.value = true
+            processingOrder.value = false
         }
     }
 
-    if(!confirmationError) await sendOrderToServer(orderItemsArray);
+    if(confirmationError.value === false) {
+        await sendOrderToServer(orderItemsArray);
+    } else {
+        setTimeout(() => {
+            confirmationError.value = false;
+        }, 1000);
+    }
 };
 
 const sendOrderToServer = async (orderItemsArray) => {
+    sendOrderError.value = false
+
     const token = localStorage.getItem('token')
 
     await axios
@@ -128,12 +121,17 @@ const sendOrderToServer = async (orderItemsArray) => {
                 }})
         .catch(() => {
             sendOrderError.value = true
+            processingOrder.value = false
         })
         .then(() => {
             if (sendOrderError.value === false) {
                 placeOrderSuccess.value = true;
+                setTimeout(() => {
+                    placeOrderSuccess.value = false;
+                }, 2000);
                 cartItemCount.value = 0
                 store.dispatch("clearCart");
+                processingOrder.value = false
             }
         })
 };

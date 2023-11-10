@@ -1,15 +1,11 @@
 <template>
-    <div class="alert-container">
-        <v-alert
-            closable
-            icon="mdi-alert-circle-outline"
-            variant="tonal"
-            color="error"
-            v-if="addToCartError"
-        >
-            Указанное количество нельзя добавить к заказу
-        </v-alert>
-    </div>
+    <AlertContainer
+        v-if="addToCartError"
+        :color="'error'"
+        :icon="'mdi-alert-circle-outline'"
+        :message="'Указанное количество нельзя добавить к заказу'"
+    />
+
     <div class="product">
         <v-card
                 class="product__info"
@@ -20,9 +16,11 @@
                     class="product__picture"
                     :src="getImage(imageUrl)"
             />
+
             <div class="product__description">
                 <h3>{{ productName }}</h3>
             </div>
+
             <div class="product__availability">
                 <v-card-actions class="d-flex align-content-center">
                     <v-btn
@@ -39,6 +37,7 @@
                         +
                     </v-btn>
                 </v-card-actions>
+
                 <v-btn
                     variant="text"
                     color="red"
@@ -68,6 +67,7 @@
 import {ref} from "vue";
 import {cartItemCount, getImage} from "../utils/utils";
 import store from "../stores/store";
+import AlertContainer from "./AlertContainer.vue";
 const { product, quantity, productId } = defineProps(['product', 'quantity', 'productId']);
 const {
     productName,
