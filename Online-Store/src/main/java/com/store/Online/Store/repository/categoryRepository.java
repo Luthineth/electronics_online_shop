@@ -14,4 +14,7 @@ public interface categoryRepository extends JpaRepository<Category,Long> {
     @Query("SELECT c FROM Category c " +
             "WHERE c.parentCategoryId.categoryId = :categoryId")
     List<Category> findSubCategories(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT c.categoryName FROM Category c WHERE c.categoryId = :categoryId")
+    String findCategoryNameByCategoryId(@Param("categoryId") Long categoryId);
 }
