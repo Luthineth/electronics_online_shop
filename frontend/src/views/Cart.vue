@@ -55,7 +55,7 @@
                     </tr>
                     <tr>
                         <td class="pr-3">Итого:</td>
-                        <td>{{ orderPrice }}₽</td>
+                        <td>{{ orderPrice.toFixed(2) }}₽</td>
                     </tr>
                 </v-table>
 
