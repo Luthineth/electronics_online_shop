@@ -36,9 +36,18 @@
                     variant="outlined"
                     width="fit-content"
             >
+                <v-progress-linear
+                    :active="processingOrder"
+                    :indeterminate="processingOrder"
+                    absolute
+                    height="10"
+                    color="light-green-lighten-3"
+                />
+
                 <v-card-title class="pa-0">
                     Ваш заказ
                 </v-card-title>
+
                 <v-table class="order__summary">
                     <tr>
                         <td class="pr-3">Кол-во товаров:</td>
@@ -49,6 +58,7 @@
                         <td>{{ orderPrice }}₽</td>
                     </tr>
                 </v-table>
+
                 <v-card-actions class="d-flex justify-center">
                     <v-btn
                         color="green"
