@@ -96,13 +96,5 @@ public class JwtTokenUtil {
         List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role));
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
-
-//    private Date getExpirationDateFromToken(String token) {
-//        return Jwts.parser()
-//                .setSigningKey(secret)
-//                .parseClaimsJws(token)
-//                .getBody()
-//                .getExpiration();
-//    }
 }
 

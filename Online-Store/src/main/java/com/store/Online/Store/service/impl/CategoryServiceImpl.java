@@ -59,8 +59,8 @@ public class CategoryServiceImpl implements categoryService {
             parentCategory.setCategoryId(categoryRequest.getParentCategoryId());
             category.setParentCategoryId(parentCategory);
         }
-        if (categoryRequest.getNameCategory() != null) {
-            category.setCategoryName(categoryRequest.getNameCategory());
+        if (categoryRequest.getCategoryName() != null) {
+            category.setCategoryName(categoryRequest.getCategoryName());
         }
 
         if (categoryRequest.getParentCategoryId() != null) {
@@ -96,13 +96,19 @@ public class CategoryServiceImpl implements categoryService {
 
     public Category mapToCategory(CategoryRequest request) {
         Category category = new Category();
-        category.setCategoryName(request.getNameCategory());
+
+        if (request.getCategoryName() != null) {
+            category.setCategoryName(request.getCategoryName());
+        } else {
+            category.setCategoryName("DefaultCategoryName");
+        }
 
         if (request.getParentCategoryId() == null) {
             category.setParentCategoryId(null);
         } else {
             Category parentCategory = new Category();
             parentCategory.setCategoryId(request.getParentCategoryId());
+            parentCategory.setCategoryName(categoryRepository.findCategoryNameByCategoryId(request.getParentCategoryId()));
             category.setParentCategoryId(parentCategory);
         }
         return category;

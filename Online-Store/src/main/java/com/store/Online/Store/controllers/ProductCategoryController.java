@@ -1,5 +1,6 @@
 package com.store.Online.Store.controllers;
 import com.store.Online.Store.entity.Product;
+import com.store.Online.Store.exception.CategoryNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.service.productCategoryService;
 import com.store.Online.Store.service.productService;
@@ -42,7 +43,7 @@ public class ProductCategoryController {
                 products = productService.searchProducts(minPrice, maxPrice, inStock, minRating, price, products);
             }
             return ResponseEntity.ok(products);
-        } catch (ProductNotFoundException e) {
+        } catch (ProductNotFoundException | CategoryNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
