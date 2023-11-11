@@ -61,6 +61,8 @@ public class CategoryServiceImpl implements categoryService {
         }
         if (categoryRequest.getCategoryName() != null) {
             category.setCategoryName(categoryRequest.getCategoryName());
+        } else {
+            throw new NoCategoryName("Enter the category name ");
         }
 
         if (categoryRequest.getParentCategoryId() != null) {
@@ -100,14 +102,15 @@ public class CategoryServiceImpl implements categoryService {
         if (request.getCategoryName() != null) {
             category.setCategoryName(request.getCategoryName());
         } else {
-            category.setCategoryName("DefaultCategoryName");
+            throw new NoCategoryName("Enter the category name ");
         }
 
         if (request.getParentCategoryId() == null) {
             category.setParentCategoryId(null);
         } else {
-            Category parentCategory = new Category();
-            parentCategory.setCategoryId(request.getParentCategoryId());
+            Category parentCategory = categoryRepository.findById(request.getParentCategoryId())
+                    .orElseThrow(() -> new CategoryNotFoundException("Parent category not found with ID: " + request.getParentCategoryId()));
+
             parentCategory.setCategoryName(categoryRepository.findCategoryNameByCategoryId(request.getParentCategoryId()));
             category.setParentCategoryId(parentCategory);
         }
