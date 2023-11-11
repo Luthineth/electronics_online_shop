@@ -161,7 +161,7 @@ const addToCart = async () => {
 }
 .product__info{
     padding: 10px 20px;
-    width: 90%;
+    width: 70%;
     max-width: 1500px;
     display: flex;
     align-items: center;

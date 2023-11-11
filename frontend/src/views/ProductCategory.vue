@@ -1,27 +1,31 @@
 <template>
-    <v-breadcrumbs
+    <div
+        class="page-info"
         v-if="categoryWithParents.length !== 0"
-        class="d-flex justify-center"
-        :items="parentCategories"
-    />
-    <div class="mb-6 d-flex justify-center">
-        <v-btn
-            v-if="userRole === 'ADMIN'"
-            variant="tonal"
-            color="green"
-            width="fit-content"
-        >
-            Добавить товар
-            <ProductEdit/>
-        </v-btn>
-    </div>
-    <ProductList
+    >
+        <v-breadcrumbs
+            class="d-flex justify-center"
+            :items="parentCategories"
+        />
+        <div class="mb-6 d-flex justify-center">
+            <v-btn
+                v-if="userRole === 'ADMIN'"
+                variant="tonal"
+                color="green"
+                width="fit-content"
+            >
+                Добавить товар
+                <ProductEdit/>
+            </v-btn>
+        </div>
+        <ProductList
             v-if="products.length !== 0"
             :products="products"
-    />
-    <h4 v-else class="d-flex justify-center">
-        Тут пока нет товаров:(
-    </h4>
+        />
+        <h4 v-else class="d-flex justify-center">
+            Тут пока нет товаров:(
+        </h4>
+    </div>
 </template>
 
 <script setup>

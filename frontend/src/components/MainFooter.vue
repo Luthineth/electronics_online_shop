@@ -2,9 +2,12 @@
     <footer
             class="text-center d-flex flex-column footer"
     >
+        <v-divider/>
+
         <div class="pt-0">
             By Artem Lihachev (backend) & Ekaterina Pustovalova (frontend)
         </div>
+
         <div>
             {{ new Date().getFullYear() }} —
             <strong>
@@ -20,7 +23,6 @@
 .footer {
     width: 100%;
     height: auto;
-    background-color: #e2e2e2;
     margin-top: 30px;
 }
 </style>
