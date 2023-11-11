@@ -8,24 +8,32 @@
                 >
                     {{ item.categoryName }}
                 </button>
+
                 <button v-if="userRole === 'ADMIN'">
                     <v-icon
                         class="ml-2"
                         icon="mdi-pencil-outline"
                         color="grey"
                     />
+
                     <CategoryEdit
                         :category-id="item.categoryId"
                         :old-category-name="item.categoryName"
+                        :old-parent-category-id="item.parentCategoryId?.categoryId"
                     />
                 </button>
+
                 <v-icon
                     v-if="userRole === 'ADMIN'"
                     icon="mdi-delete-outline"
                     @click="deleteCategory(item.categoryId)"
                 />
             </div>
-            <HierarchicalCategoriesList :hierarchyProductTree="item.children" v-if="item.children" />
+
+            <HierarchicalCategoriesList
+                :hierarchyProductTree="item.children"
+                v-if="item.children"
+            />
         </li>
     </ul>
 </template>

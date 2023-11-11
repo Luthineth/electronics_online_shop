@@ -1,15 +1,20 @@
 <template>
     <v-dialog activator="parent" width="auto">
         <v-card class="pa-2" width="500px">
-            <v-card-title class="pa-0" v-if="categoryId">
+            <v-card-title
+                class="pa-0"
+                v-if="categoryId"
+            >
                 Id категории: {{categoryId}}
             </v-card-title>
+
             <v-text-field
                 clearable
                 v-model="categoryName"
                 label="Название"
                 variant="underlined"
             />
+
             <v-select
                 clearable
                 v-model="selectedParentCategory"
@@ -18,7 +23,8 @@
                 item-title="categoryName"
                 item-value="categoryId"
                 variant="underlined"
-            ></v-select>
+            />
+
             <v-card-actions class="d-flex justify-center">
                 <v-btn
                     @click="categoryId ? editCategory() : addCategory()"
@@ -35,10 +41,11 @@
 import {onMounted, ref} from "vue";
 import axios from "axios";
 
-const { categoryId, oldCategoryName } = defineProps(['categoryId', 'oldCategoryName']);
+const { categoryId, oldCategoryName, oldParentCategoryId } =
+    defineProps(['categoryId', 'oldCategoryName', 'oldParentCategoryId']);
 
 const categoryName = ref(oldCategoryName)
-const selectedParentCategory = ref(null)
+const selectedParentCategory = ref(oldParentCategoryId)
 const categoriesList = ref([])
 
 const addCategory = async () => {

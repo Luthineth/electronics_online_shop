@@ -1,6 +1,6 @@
 <template>
     <v-breadcrumbs
-        v-if="categoryWithParents"
+        v-if="categoryWithParents.length !== 0"
         class="d-flex justify-center"
         :items="parentCategories"
     />

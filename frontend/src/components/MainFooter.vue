@@ -9,7 +9,7 @@
             {{ new Date().getFullYear() }} —
             <strong>
                 <router-link to="/">
-                    E-shop
+                    E-shop.
                 </router-link>
             </strong>
         </div>
