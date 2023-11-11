@@ -1,4 +1,9 @@
 <template>
+    <v-breadcrumbs
+        v-if="categoryWithParents"
+        class="d-flex justify-center"
+        :items="parentCategories"
+    />
     <div class="mb-6 d-flex justify-center">
         <v-btn
             v-if="userRole === 'ADMIN'"
@@ -29,6 +34,27 @@ import ProductEdit from "../components/ProductEdit.vue";
 const categoryId = router.currentRoute.value.params.id
 const isFetchError = ref(false);
 const products = ref([])
+const categoryWithParents = ref([])
+const parentCategories = ref([])
+
+function produceBreadCrumbs(category) {
+    let categoryInfo = [];
+
+    while (category) {
+        categoryInfo.push({
+            href: `http://localhost:5173/product_category/${category.categoryId}`,
+            title: category.categoryName
+        });
+        category = category.parentCategoryId;
+    }
+
+    categoryInfo.push({
+        href: '/',
+        title: 'Главная'
+    });
+
+    return categoryInfo.reverse();
+}
 
 onMounted(async () => {
     try {
@@ -45,6 +71,11 @@ onMounted(async () => {
 
     if (isFetchError.value) {
         await router.push('/404');
+    } else {
+        categoryWithParents.value = await fetch(`http://localhost:8080/main`)
+            .then(res => res.json())
+            .then(res => res.filter(each => each.categoryId === parseInt(categoryId)))
+        parentCategories.value = produceBreadCrumbs(categoryWithParents.value[0])
     }
 });
 </script>
