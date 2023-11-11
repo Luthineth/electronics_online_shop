@@ -40,10 +40,12 @@ public class CategoryController {
         try {
             Category addedCategory = categoryService.addCategory(categoryRequest);
             return ResponseEntity.status(HttpStatus.CREATED).body(addedCategory);
+        } catch (NoCategoryName e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (CategoryNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (CategoryAdditionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding the category.");
         }
     }
 
@@ -53,12 +55,12 @@ public class CategoryController {
         try {
             Category updatedCategory = categoryService.updateCategory(categoryId, categoryRequest);
             return ResponseEntity.ok(updatedCategory);
-        } catch (CategoryNotFoundException e) {
+        } catch (NoCategoryName e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }  catch (CategoryNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (CategoryUpdateException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while updating the category.");
         }
     }
 
@@ -74,8 +76,6 @@ public class CategoryController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (CategoryDeletionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the category.");
         }
     }
 
