@@ -52,85 +52,67 @@ public class OrderServiceImpl implements orderService {
         User user = getUser();
         order.setUserId(user);
 
-        BigDecimal totalPrice = processOrderItems(order, orderItems);
-
-        saveOrderAndSendEmail(order, user, totalPrice);
-    }
-
-    private BigDecimal processOrderItems(Order order, List<OrderItemRequest> orderItems) {
         BigDecimal totalPrice = BigDecimal.ZERO;
         int itemNumber = 1;
         StringBuilder descriptionBuilder = new StringBuilder();
 
         for (OrderItemRequest orderItemRequest : orderItems) {
-            Product product = getProductById(orderItemRequest.getProductId());
+            Product product = productRepository.findById(orderItemRequest.getProductId())
+                    .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + orderItemRequest.getProductId()));
 
-            OrderItem orderItem = createOrderItem(order, product, orderItemRequest);
+            if (product != null) {
+                OrderItem orderItem = new OrderItem();
+                orderItem.setProductId(product);
+                orderItem.setQuantity(orderItemRequest.getQuantity());
+                orderItem.setOrderId(order);
 
-            descriptionBuilder.append(formatOrderItemDetails(itemNumber, product, orderItemRequest));
-            itemNumber++;
+                descriptionBuilder.append(itemNumber).append(". ").append(product.getProductName()).append("\n");
+                descriptionBuilder.append("   - Количество: ").append(orderItemRequest.getQuantity()).append("\n");
+                descriptionBuilder.append("   - Стоимость: ").append(product.getPriceWithDiscount()).append(" ₽").append("\n\n");
+                itemNumber++;
 
-            BigDecimal productTotalPrice = product.getPriceWithDiscount().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity()));
-            totalPrice = totalPrice.add(productTotalPrice);
-            orderItemRepository.save(orderItem);
-
-            updateProductStock(product, orderItemRequest.getQuantity());
+                BigDecimal productTotalPrice = product.getPriceWithDiscount().multiply(BigDecimal.valueOf(orderItemRequest.getQuantity()));
+                totalPrice = totalPrice.add(productTotalPrice);
+                orderItemRepository.save(orderItem);
+            }
         }
 
         order.setTotalPrice(totalPrice);
-        return totalPrice;
-    }
-
-    private OrderItem createOrderItem(Order order, Product product, OrderItemRequest orderItemRequest) {
-        OrderItem orderItem = new OrderItem();
-        orderItem.setProductId(product);
-        orderItem.setQuantity(orderItemRequest.getQuantity());
-        orderItem.setOrderId(order);
-        return orderItem;
-    }
-
-    private String formatOrderItemDetails(int itemNumber, Product product, OrderItemRequest orderItemRequest) {
-        StringBuilder details = new StringBuilder();
-        details.append(itemNumber).append(". ").append(product.getProductName()).append("\n");
-        details.append("   - Количество: ").append(orderItemRequest.getQuantity()).append("\n");
-        details.append("   - Стоимость: ").append(product.getPriceWithDiscount()).append(" ₽").append("\n\n");
-        return details.toString();
-    }
-
-    private void updateProductStock(Product product, int orderedQuantity) {
-        int newStockQuantity = product.getStockQuantity() - orderedQuantity;
-        if (newStockQuantity < 0) {
-            throw new InvalidOrderQuantityException("Invalid order quantity for product with ID: " + product.getProductId());
-        }
-        product.setStockQuantity(newStockQuantity);
-        productRepository.updateStockQuantity(product.getProductId(), newStockQuantity);
-    }
-
-    private void saveOrderAndSendEmail(Order order, User user, BigDecimal totalPrice) {
         try {
             orderRepository.save(order);
         } catch (Exception e) {
             throw new OrderCreationException("Failed to create the order. Please try again later.");
         }
 
-        sendOrderConfirmationEmail(user, order, totalPrice);
+
+        for (OrderItemRequest orderItemRequest : orderItems) {
+            Product product = productRepository.findById(orderItemRequest.getProductId()).orElse(null);
+
+            if (product != null) {
+                int newStockQuantity = product.getStockQuantity() - orderItemRequest.getQuantity();
+                if (newStockQuantity < 0) {
+                    throw new InvalidOrderQuantityException("Invalid order quantity for product with ID: " + product.getProductId());
+                }
+                product.setStockQuantity(newStockQuantity);
+                productRepository.updateStockQuantity(product.getProductId(), newStockQuantity);
+            }
+        }
+
+        descriptionBuilder.append("Итоговая стоимость заказа: ").append(totalPrice).append(" ₽").append("\n\n");
+
+        descriptionBuilder.append("Мы рады быть вашими партнерами и готовы помочь вам в любое время. Если у вас есть какие-то вопросы или требуется дополнительная информация, пожалуйста, не стесняйтесь связаться с нами.\n\n");
+        descriptionBuilder.append("С уважением,\nКоманда ").append("Наш онлайн магазинчик");
+
+        descriptionBuilder.insert(0, "Спасибо за ваш заказ! Ваш заказ (номер " + order.getOrderId() + ") был успешно обработан. Ниже приведен список товаров в вашем заказе с указанием количества и стоимости каждого товара:\n\n");
+        descriptionBuilder.insert(0, "Уважаемый(ая) " + user.getSecondName() + " " + user.getFirstName() + ",\n\n");
+
+        String body = descriptionBuilder.toString();
+
+        String subject = "Ваш заказ и его стоимость";
+
+        emailService.sendEmail(user.getEmail(),subject,body);
     }
 
-    private void sendOrderConfirmationEmail(User user, Order order, BigDecimal totalPrice) {
-        StringBuilder emailBody = createOrderConfirmationEmailBody(user, order, totalPrice);
-        emailService.sendEmail(user.getEmail(), "Ваш заказ и его стоимость", emailBody.toString());
-    }
-
-    private StringBuilder createOrderConfirmationEmailBody(User user, Order order, BigDecimal totalPrice) {
-        StringBuilder emailBody = new StringBuilder();
-        emailBody.append("Спасибо за ваш заказ! Ваш заказ (номер ").append(order.getOrderId()).append(") был успешно обработан. Ниже приведен список товаров в вашем заказе с указанием количества и стоимости каждого товара:\n\n");
-        emailBody.append("Уважаемый(ая) ").append(user.getSecondName()).append(" ").append(user.getFirstName()).append(",\n\n");
-        emailBody.append("Итоговая стоимость заказа: ").append(totalPrice).append(" ₽").append("\n\n");
-        emailBody.append("Мы рады быть вашими партнерами и готовы помочь вам в любое время. Если у вас есть какие-то вопросы или требуется дополнительная информация, пожалуйста, не стесняйтесь связаться с нами.\n\n");
-        emailBody.append("С уважением,\nКоманда Наш онлайн магазинчик");
-
-        return emailBody;
-    }
 
     private Order createOrderEntity() {
         Order order = new Order();
@@ -143,10 +125,5 @@ public class OrderServiceImpl implements orderService {
         String userEmail = auth.getName();
         return userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new UserNotFoundException("User not found with email " + userEmail));
-    }
-
-    private Product getProductById(Long productId) {
-        return productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + productId));
     }
 }
