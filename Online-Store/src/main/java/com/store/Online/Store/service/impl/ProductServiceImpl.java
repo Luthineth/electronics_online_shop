@@ -33,7 +33,9 @@ public class ProductServiceImpl implements productService {
     private final orderItemRepository orderItemRepository;
 
     @Autowired
-    public ProductServiceImpl(productRepository productRepository, com.store.Online.Store.repository.productCategoryRepository productCategoryRepository, com.store.Online.Store.repository.categoryRepository categoryRepository, com.store.Online.Store.repository.discountRepository discountRepository, commentService commentService, com.store.Online.Store.repository.orderItemRepository orderItemRepository) {
+    public ProductServiceImpl(productRepository productRepository, productCategoryRepository productCategoryRepository,
+                              categoryRepository categoryRepository, discountRepository discountRepository,
+                              commentService commentService, orderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.categoryRepository = categoryRepository;
@@ -53,23 +55,14 @@ public class ProductServiceImpl implements productService {
 
     @Override
     public ProductRequest getProductRequestById(Long productId, Sort.Direction direction) {
-        Optional<Product> optionalProduct;
-        try {
-            optionalProduct = productRepository.findById(productId);
-        } catch (Exception e) {
-            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
-        }
+        Optional<Product> optionalProduct = getProductById(productId);
 
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
-            try {
-                List<CommentRequest> comments = commentService.getCommentsByProductId(productId, direction);
-                ProductRequest productRequest = mapToProductDto(product);
-                productRequest.setComments(comments);
-                return productRequest;
-            } catch (Exception e) {
-                throw new ProductNotFoundException("Failed to retrieve comments for product with ID: " + productId);
-            }
+            List<CommentRequest> comments = getCommentsForProduct(productId, direction);
+            ProductRequest productRequest = mapToProductDto(product);
+            productRequest.setComments(comments);
+            return productRequest;
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
@@ -79,17 +72,7 @@ public class ProductServiceImpl implements productService {
     @Override
     public void addProduct(ProductRequest productRequest) {
         try {
-            Product product = new Product();
-            product.setProductName(productRequest.getProductName());
-            product.setDescription(productRequest.getDescription());
-            product.setStockQuantity(productRequest.getStockQuantity());
-            product.setPrice(productRequest.getPrice());
-            product.setPriceWithDiscount(productRequest.getPrice());
-            product.setImageUrl(productRequest.getImageUrl());
-
-            Discount defaultDiscount = new Discount();
-            defaultDiscount.setDiscountId(1L);
-            product.setDiscountId(defaultDiscount);
+            Product product = createProductFromRequest(productRequest);
             productRepository.save(product);
         } catch (Exception e) {
             throw new ProductAdditionException("Failed to add product: " + e.getMessage());
@@ -99,44 +82,15 @@ public class ProductServiceImpl implements productService {
     @Transactional
     @Override
     public void updateProduct(Long productId, ProductRequest productRequest) {
-        Optional<Product> optionalProduct;
-        try {
-            optionalProduct = productRepository.findById(productId);
-        } catch (Exception e) {
-            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
-        }
+        Optional<Product> optionalProduct = getProductById(productId);
 
         if (optionalProduct.isPresent()) {
             try {
                 Product product = optionalProduct.get();
-
-                product.setProductName(productRequest.getProductName());
-                product.setDescription(productRequest.getDescription());
-                product.setStockQuantity(productRequest.getStockQuantity());
-                product.setPrice(productRequest.getPrice());
-                product.setImageUrl(productRequest.getImageUrl());
-
-                updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
-
-
-                List<Long> categoryIds = productRequest.getCategoryId();
-
-                if (categoryIds != null) {
-
-                    productCategoryRepository.deleteByProductId(product);
-
-                    for (Long categoryId : categoryIds) {
-                        Category category = categoryRepository.findById(categoryId)
-                                .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
-
-                        ProductCategory productCategory = new ProductCategory(product, category);
-                        productCategoryRepository.save(productCategory);
-                    }
-                }
-
-
+                updateProductDetails(product, productRequest);
+                updateProductCategories(product, productRequest.getCategoryId());
                 productRepository.save(product);
-            }catch (Exception e){
+            } catch (Exception e) {
                 throw new ProductUpdateException("Failed to update product: " + e.getMessage());
             }
         } else {
@@ -149,16 +103,10 @@ public class ProductServiceImpl implements productService {
     public void deleteProduct(Long productId) {
         if (productRepository.existsById(productId)) {
             try {
-                Product product = productRepository.findById(productId).
-                        orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
+                Product product = getProductById(productId)
+                        .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
 
-                orderItemRepository.deleteByProductId(product);
-
-                commentService.deleteProductComments(productId);
-
-                productCategoryRepository.deleteByProductId(product);
-
-                productRepository.deleteById(productId);
+                deleteProductDetails(product);
             } catch (Exception e) {
                 throw new ProductDeletionException("Failed to delete product: " + e.getMessage());
             }
@@ -173,8 +121,8 @@ public class ProductServiceImpl implements productService {
 
         for (Product product : products) {
             boolean isInRange = isProductInRange(product, minPrice, maxPrice);
-            boolean isStockValid = (inStock == null) || (inStock && product.getStockQuantity() > 0);
-            boolean isRatingValid = (minRating == null) || (calculateAverageRating(product) != null && calculateAverageRating(product) >= minRating);
+            boolean isStockValid = isStockValid(product, inStock);
+            boolean isRatingValid = isRatingValid(product, minRating);
 
             if (isInRange && isStockValid && isRatingValid) {
                 filteredProducts.add(product);
@@ -189,6 +137,70 @@ public class ProductServiceImpl implements productService {
             });
         }
         return filteredProducts;
+    }
+
+    private List<CommentRequest> getCommentsForProduct(Long productId, Sort.Direction direction) {
+        try {
+            return commentService.getCommentsByProductId(productId, direction);
+        } catch (Exception e) {
+            throw new ProductNotFoundException("Failed to retrieve comments for product with ID: " + productId);
+        }
+    }
+
+    private Product createProductFromRequest(ProductRequest productRequest) {
+        Product product = new Product();
+        product.setProductName(productRequest.getProductName());
+        product.setDescription(productRequest.getDescription());
+        product.setStockQuantity(productRequest.getStockQuantity());
+        product.setPrice(productRequest.getPrice());
+        product.setPriceWithDiscount(productRequest.getPrice());
+        product.setImageUrl(productRequest.getImageUrl());
+
+        Discount defaultDiscount = new Discount();
+        defaultDiscount.setDiscountId(1L);
+        product.setDiscountId(defaultDiscount);
+
+        return product;
+    }
+
+    private void updateProductDetails(Product product, ProductRequest productRequest) {
+        product.setProductName(productRequest.getProductName());
+        product.setDescription(productRequest.getDescription());
+        product.setStockQuantity(productRequest.getStockQuantity());
+        product.setPrice(productRequest.getPrice());
+        product.setImageUrl(productRequest.getImageUrl());
+
+        updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
+    }
+
+    private void updateProductCategories(Product product, List<Long> categoryIds) {
+        productCategoryRepository.deleteByProductId(product);
+
+        for (Long categoryId : categoryIds) {
+            Category category = getCategoryById(categoryId);
+            ProductCategory productCategory = new ProductCategory(product, category);
+            productCategoryRepository.save(productCategory);
+        }
+    }
+
+    private Category getCategoryById(Long categoryId) {
+        return categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
+    }
+
+    private void deleteProductDetails(Product product) {
+        orderItemRepository.deleteByProductId(product);
+        commentService.deleteProductComments(product.getProductId());
+        productCategoryRepository.deleteByProductId(product);
+        productRepository.deleteById(product.getProductId());
+    }
+
+    private boolean isStockValid(Product product, Boolean inStock) {
+        return (inStock == null) || (inStock && product.getStockQuantity() > 0);
+    }
+
+    private boolean isRatingValid(Product product, Integer minRating) {
+        return (minRating == null) || (calculateAverageRating(product) != null && calculateAverageRating(product) >= minRating);
     }
 
     private boolean isProductInRange(Product product, BigDecimal minPrice, BigDecimal maxPrice) {
@@ -218,7 +230,7 @@ public class ProductServiceImpl implements productService {
         return count > 0 ? (double) sum / count : null;
     }
 
-    public ProductRequest mapToProductDto(Product product) {
+    private ProductRequest mapToProductDto(Product product) {
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductName(product.getProductName());
         productRequest.setDescription(product.getDescription());
