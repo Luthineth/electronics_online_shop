@@ -49,16 +49,16 @@
 
             <div class="product__controls">
                 <div class="product__controls__price">
-                    <h4 v-if="price === priceWithDiscount">
-                        {{ price }}
+                    <h4 v-if="price === priceWithDiscount || !userAuthorized">
+                        {{ price }}₽
                     </h4>
 
                     <div
                         v-else
                         class="price-updated"
                     >
-                        <b>{{ priceWithDiscount }}</b>
-                        <s class="old-price">{{ price }}</s>
+                        <b>{{ priceWithDiscount }}₽</b>
+                        <s class="old-price">{{ price }}₽</s>
                     </div>
                 </div>
                 <v-btn
@@ -93,7 +93,7 @@
 <script setup>
 import {ref} from "vue";
 import store from "../stores/store";
-import {cartItemCount, getImage, scrollToTop, userRole} from "../utils/utils";
+import {cartItemCount, getImage, scrollToTop, userAuthorized, userRole} from "../utils/utils";
 import ProductEdit from "./ProductEdit.vue";
 import AlertContainer from "./AlertContainer.vue";
 
@@ -169,6 +169,7 @@ const addToCart = async () => {
 }
 .product__picture{
     width: 20%;
+    max-height: 150px;
 }
 .product__description{
     width: 45%;

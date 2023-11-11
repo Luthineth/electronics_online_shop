@@ -146,6 +146,7 @@ const removeOrderItem = async () => {
 }
 .product__picture{
     width: 20%;
+    max-height: 150px;
 }
 .product__description{
     width: 40%;

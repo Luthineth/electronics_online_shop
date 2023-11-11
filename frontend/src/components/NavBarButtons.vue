@@ -107,4 +107,7 @@ a:hover {
 .button__logout:hover{
     color: darkgreen;
 }
+.show-all-categories:hover{
+    color: darkgreen;
+}
 </style>
