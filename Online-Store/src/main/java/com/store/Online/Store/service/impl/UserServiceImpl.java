@@ -83,10 +83,10 @@ public class UserServiceImpl implements userService {
                 );
                 return response;
             } else {
-                throw new BadCredentialsException("Invalid password!");
+                throw new BadCredentialsException("Invalid password");
             }
         } else {
-            throw new IllegalArgumentException("The user with this email" + authRequest.getEmail() + "already exists");
+            throw new UserNotFoundException("The user with this email" + authRequest.getEmail() + " not found");
         }
     }
     @Override
