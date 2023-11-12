@@ -6,6 +6,7 @@ import com.store.Online.Store.exception.ProductDeletionException;
 import com.store.Online.Store.exception.ProductUpdateException;
 import com.store.Online.Store.service.productService;
 import com.store.Online.Store.exception.ProductNotFoundException;
+import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.UrlResource;
@@ -18,12 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.core.io.Resource;
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/products")
@@ -33,9 +30,6 @@ public class ProductController {
 
     @Value("Online-Store/images")
     private String imageUploadDirectory;
-
-    @Autowired
-    private ServletContext servletContext;
 
 
     @Autowired
@@ -62,12 +56,13 @@ public class ProductController {
     public ResponseEntity<?> addProduct(@RequestParam("file") MultipartFile file,
                                         @RequestPart("productRequest") ProductRequest productRequest) {
         try {
-            if (file != null && !file.isEmpty()) {
-                String imageUrl = saveImage(file);
-                productRequest.setImageUrl(imageUrl);
+            Tika tika = new Tika();
+            String mimeType = tika.detect(file.getInputStream());
+            if (!mimeType.startsWith("image")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only images are allowed.");
             }
 
-            productService.addProduct(productRequest);
+            productService.addProduct(productRequest,file);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (ProductAdditionException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -76,16 +71,6 @@ public class ProductController {
         }
     }
 
-    private String saveImage(MultipartFile file) throws IOException {
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        String uploadDirectory = servletContext.getRealPath(imageUploadDirectory);
-        String imageUrl = "/images/" + uniqueFileName;
-
-        Path uploadPath = Paths.get(uploadDirectory, uniqueFileName);
-
-        Files.copy(file.getInputStream(), uploadPath);
-        return imageUrl;
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{productId}")
@@ -93,12 +78,13 @@ public class ProductController {
                                            @RequestParam(name = "file", required = false) MultipartFile file,
                                            @RequestPart("productRequest") ProductRequest productRequest) {
         try {
-            if (file != null && !file.isEmpty()) {
-                String imageUrl = saveImage(file);
-                productRequest.setImageUrl(imageUrl);
+            Tika tika = new Tika();
+            String mimeType = tika.detect(file.getInputStream());
+            if (!mimeType.startsWith("image")) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only images are allowed.");
             }
 
-            productService.updateProduct(productId, productRequest);
+            productService.updateProduct(productId, productRequest, file);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (ProductUpdateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
