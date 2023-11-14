@@ -51,7 +51,7 @@ public class ProductController {
         }
     }
 
-    //  @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<?> addProduct(@RequestPart("file") MultipartFile file,
                                         ProductRequest productRequest) {
@@ -61,6 +61,7 @@ public class ProductController {
             if (!mimeType.startsWith("image")) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only images are allowed.");
             }
+
             productService.addProduct(productRequest,file);
             return new ResponseEntity<>(HttpStatus.CREATED);
         } catch (ProductAdditionException e) {
@@ -75,7 +76,7 @@ public class ProductController {
     @PutMapping("/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable Long productId,
                                            @RequestParam(name = "file", required = false) MultipartFile file,
-                                           @RequestPart("productRequest") ProductRequest productRequest) {
+                                           ProductRequest productRequest) {
         try {
             Tika tika = new Tika();
             String mimeType = tika.detect(file.getInputStream());
