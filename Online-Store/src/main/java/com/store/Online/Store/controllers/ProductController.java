@@ -1,23 +1,36 @@
 package com.store.Online.Store.controllers;
 
 import com.store.Online.Store.dto.ProductRequest;
+import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.ProductAdditionException;
 import com.store.Online.Store.exception.ProductDeletionException;
 import com.store.Online.Store.exception.ProductUpdateException;
 import com.store.Online.Store.service.productService;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import org.springframework.core.io.Resource;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
 
     private final productService productService;
+
+    @Value("Online-Store/images")
+    private String imageUploadDirectory;
+
 
     @Autowired
     public ProductController(productService productService) {
@@ -40,10 +53,11 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> addProduct(@RequestBody ProductRequest productRequest) {
+    public ResponseEntity<?> addProduct(@RequestPart("file") MultipartFile file,
+                                        ProductRequest productRequest) {
         try {
-            productService.addProduct(productRequest);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Product addedProduct=productService.addProduct(productRequest,file);
+            return ResponseEntity.ok(addedProduct);
         } catch (ProductAdditionException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -51,18 +65,22 @@ public class ProductController {
         }
     }
 
+
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{productId}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long productId, @RequestBody ProductRequest productRequest) {
+    public ResponseEntity<?> updateProduct(@PathVariable Long productId,
+                                           @RequestParam(name = "file", required = false) MultipartFile file,
+                                           ProductRequest productRequest) {
         try {
-            productService.updateProduct(productId, productRequest);
-            return new ResponseEntity<>(HttpStatus.OK);
+            Product updateProduct = productService.updateProduct(productId, productRequest, file);
+            return ResponseEntity.ok(updateProduct);
         } catch (ProductUpdateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
+
 
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{productId}")
@@ -76,4 +94,23 @@ public class ProductController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
         }
     }
+
+    @GetMapping("/images/{imageName}")
+    public ResponseEntity<Resource> serveImage(@PathVariable String imageName) {
+        try {
+            Path imagePath = Paths.get(imageUploadDirectory, imageName);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_PNG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

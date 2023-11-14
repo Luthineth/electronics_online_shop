@@ -11,8 +11,15 @@ import com.store.Online.Store.repository.*;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.InputStream;
+
+
+import java.io.IOException;
+import java.nio.file.*;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
@@ -32,8 +39,13 @@ public class ProductServiceImpl implements productService {
     private final commentService commentService;
     private final orderItemRepository orderItemRepository;
 
+    @Value("Online-Store/images")
+    private String directoryPath;
+
     @Autowired
-    public ProductServiceImpl(productRepository productRepository, com.store.Online.Store.repository.productCategoryRepository productCategoryRepository, com.store.Online.Store.repository.categoryRepository categoryRepository, com.store.Online.Store.repository.discountRepository discountRepository, commentService commentService, com.store.Online.Store.repository.orderItemRepository orderItemRepository) {
+    public ProductServiceImpl(productRepository productRepository, productCategoryRepository productCategoryRepository,
+                              categoryRepository categoryRepository, discountRepository discountRepository,
+                              commentService commentService, orderItemRepository orderItemRepository) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.categoryRepository = categoryRepository;
@@ -53,23 +65,14 @@ public class ProductServiceImpl implements productService {
 
     @Override
     public ProductRequest getProductRequestById(Long productId, Sort.Direction direction) {
-        Optional<Product> optionalProduct;
-        try {
-            optionalProduct = productRepository.findById(productId);
-        } catch (Exception e) {
-            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
-        }
+        Optional<Product> optionalProduct = getProductById(productId);
 
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
-            try {
-                List<CommentRequest> comments = commentService.getCommentsByProductId(productId, direction);
-                ProductRequest productRequest = mapToProductDto(product);
-                productRequest.setComments(comments);
-                return productRequest;
-            } catch (Exception e) {
-                throw new ProductNotFoundException("Failed to retrieve comments for product with ID: " + productId);
-            }
+            List<CommentRequest> comments = getCommentsForProduct(productId, direction);
+            ProductRequest productRequest = mapToProductDto(product);
+            productRequest.setComments(comments);
+            return productRequest;
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
@@ -77,71 +80,58 @@ public class ProductServiceImpl implements productService {
 
     @Transactional
     @Override
-    public void addProduct(ProductRequest productRequest) {
+    public Product addProduct(ProductRequest productRequest, MultipartFile file) {
+        Product product = new Product();
         try {
-            Product product = new Product();
             product.setProductName(productRequest.getProductName());
             product.setDescription(productRequest.getDescription());
             product.setStockQuantity(productRequest.getStockQuantity());
             product.setPrice(productRequest.getPrice());
             product.setPriceWithDiscount(productRequest.getPrice());
-            product.setImageUrl(productRequest.getImageUrl());
+            if (file == null) {
+                product.setImageUrl(directoryPath+"/2.png");
+            } else {
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                Path filePath = Paths.get(directoryPath, fileName);
+
+                try (InputStream inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, filePath);
+                } catch (IOException e) {
+                    throw new ImageNotLoadedException("Image loading error");
+                }
+                product.setImageUrl(fileName);
+            }
 
             Discount defaultDiscount = new Discount();
             defaultDiscount.setDiscountId(1L);
             product.setDiscountId(defaultDiscount);
+
             productRepository.save(product);
         } catch (Exception e) {
             throw new ProductAdditionException("Failed to add product: " + e.getMessage());
         }
+        return product;
     }
 
     @Transactional
     @Override
-    public void updateProduct(Long productId, ProductRequest productRequest) {
-        Optional<Product> optionalProduct;
-        try {
-            optionalProduct = productRepository.findById(productId);
-        } catch (Exception e) {
-            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
-        }
+    public Product updateProduct(Long productId, ProductRequest productRequest, MultipartFile file) {
+        Optional<Product> optionalProduct = getProductById(productId);
 
+        Product product = null;
         if (optionalProduct.isPresent()) {
             try {
-                Product product = optionalProduct.get();
-
-                product.setProductName(productRequest.getProductName());
-                product.setDescription(productRequest.getDescription());
-                product.setStockQuantity(productRequest.getStockQuantity());
-                product.setPrice(productRequest.getPrice());
-                product.setImageUrl(productRequest.getImageUrl());
-
-                updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
-
-
-                List<Long> categoryIds = productRequest.getCategoryId();
-
-                if (categoryIds != null) {
-
-                    productCategoryRepository.deleteByProductId(product);
-
-                    for (Long categoryId : categoryIds) {
-                        Category category = categoryRepository.findById(categoryId)
-                                .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
-
-                        ProductCategory productCategory = new ProductCategory(product, category);
-                        productCategoryRepository.save(productCategory);
-                    }
-                }
-
-
+                product = optionalProduct.get();
+                updateProductDetails(product, productRequest,file);
+                updateProductCategories(product, productRequest.getCategoryId());
                 productRepository.save(product);
-            }catch (Exception e){
+            } catch (Exception e) {
                 throw new ProductUpdateException("Failed to update product: " + e.getMessage());
             }
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
+        return product;
     }
 
     @Transactional
@@ -149,16 +139,13 @@ public class ProductServiceImpl implements productService {
     public void deleteProduct(Long productId) {
         if (productRepository.existsById(productId)) {
             try {
-                Product product = productRepository.findById(productId).
-                        orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
+                Product product = getProductById(productId)
+                        .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
 
                 orderItemRepository.deleteByProductId(product);
-
-                commentService.deleteProductComments(productId);
-
+                commentService.deleteProductComments(product.getProductId());
                 productCategoryRepository.deleteByProductId(product);
-
-                productRepository.deleteById(productId);
+                productRepository.deleteById(product.getProductId());
             } catch (Exception e) {
                 throw new ProductDeletionException("Failed to delete product: " + e.getMessage());
             }
@@ -191,6 +178,66 @@ public class ProductServiceImpl implements productService {
         return filteredProducts;
     }
 
+    private List<CommentRequest> getCommentsForProduct(Long productId, Sort.Direction direction) {
+        try {
+            return commentService.getCommentsByProductId(productId, direction);
+        } catch (Exception e) {
+            throw new ProductNotFoundException("Failed to retrieve comments for product with ID: " + productId);
+        }
+    }
+
+
+    private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image) throws IOException {
+        product.setProductName(productRequest.getProductName());
+        product.setDescription(productRequest.getDescription());
+        product.setStockQuantity(productRequest.getStockQuantity());
+        product.setPrice(productRequest.getPrice());
+
+        if (image != null) {
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+            Path filePath = Paths.get(directoryPath, fileName);
+            Files.deleteIfExists(filePath);
+
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }  catch (IOException e) {
+                throw new ImageNotLoadedException("Image loading error");
+            }
+            product.setImageUrl(fileName);
+
+        }
+
+        updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
+    }
+
+    private void updatePriceWithDiscount(Product product, BigDecimal discountPercentage) {
+        try {
+            Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
+                    .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
+
+            BigDecimal originalPrice = product.getPrice();
+            BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
+                    .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+            BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
+
+            product.setDiscountId(discount);
+            product.setPriceWithDiscount(discountedPrice);
+        } catch (Exception e) {
+            throw new DiscountNotFoundException("Failed to update product price with discount: " + e.getMessage());
+        }
+    }
+
+    private void updateProductCategories(Product product, List<Long> categoryIds) {
+        productCategoryRepository.deleteByProductId(product);
+
+        for (Long categoryId : categoryIds) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
+            ProductCategory productCategory = new ProductCategory(product, category);
+            productCategoryRepository.save(productCategory);
+        }
+    }
+
     private boolean isProductInRange(Product product, BigDecimal minPrice, BigDecimal maxPrice) {
         if (minPrice != null && maxPrice != null) {
             BigDecimal productPrice = product.getPriceWithDiscount();
@@ -218,7 +265,7 @@ public class ProductServiceImpl implements productService {
         return count > 0 ? (double) sum / count : null;
     }
 
-    public ProductRequest mapToProductDto(Product product) {
+    private ProductRequest mapToProductDto(Product product) {
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductName(product.getProductName());
         productRequest.setDescription(product.getDescription());
@@ -229,20 +276,4 @@ public class ProductServiceImpl implements productService {
         return productRequest;
     }
 
-    private void updatePriceWithDiscount(Product product, BigDecimal discountPercentage) {
-        try {
-            Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
-                    .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
-
-            BigDecimal originalPrice = product.getPrice();
-            BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
-                    .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
-            BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
-
-            product.setDiscountId(discount);
-            product.setPriceWithDiscount(discountedPrice);
-        } catch (Exception e) {
-            throw new DiscountNotFoundException("Failed to update product price with discount: " + e.getMessage());
-        }
-    }
 }

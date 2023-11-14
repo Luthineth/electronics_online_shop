@@ -2,6 +2,7 @@ package com.store.Online.Store.service.impl;
 
 import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Product;
+import com.store.Online.Store.exception.CategoryNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.service.productCategoryService;
 import com.store.Online.Store.repository.productCategoryRepository;
@@ -27,6 +28,11 @@ public class ProductCategoryServiceImpl implements productCategoryService {
 
     @Override
     public List<Product> getProductsByCategoryAndSubcategories(Long categoryId) {
+
+        if (!categoryRepository.existsById(categoryId)) {
+            throw new CategoryNotFoundException("Category with ID " + categoryId + " not found");
+        }
+
         List<Product> products = productCategoryRepository.findByCategoryId(categoryId);
 
         return getProductsRecursively(categoryId, products);
