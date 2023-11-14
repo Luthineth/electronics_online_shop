@@ -1,12 +1,12 @@
 package com.store.Online.Store.controllers;
 
 import com.store.Online.Store.dto.ProductRequest;
+import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.ProductAdditionException;
 import com.store.Online.Store.exception.ProductDeletionException;
 import com.store.Online.Store.exception.ProductUpdateException;
 import com.store.Online.Store.service.productService;
 import com.store.Online.Store.exception.ProductNotFoundException;
-import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.UrlResource;
@@ -56,14 +56,8 @@ public class ProductController {
     public ResponseEntity<?> addProduct(@RequestPart("file") MultipartFile file,
                                         ProductRequest productRequest) {
         try {
-            Tika tika = new Tika();
-            String mimeType = tika.detect(file.getInputStream());
-            if (!mimeType.startsWith("image")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only images are allowed.");
-            }
-
-            productService.addProduct(productRequest,file);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Product addedProduct=productService.addProduct(productRequest,file);
+            return ResponseEntity.ok(addedProduct);
         } catch (ProductAdditionException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -78,14 +72,8 @@ public class ProductController {
                                            @RequestParam(name = "file", required = false) MultipartFile file,
                                            ProductRequest productRequest) {
         try {
-            Tika tika = new Tika();
-            String mimeType = tika.detect(file.getInputStream());
-            if (!mimeType.startsWith("image")) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid file type. Only images are allowed.");
-            }
-
-            productService.updateProduct(productId, productRequest, file);
-            return new ResponseEntity<>(HttpStatus.OK);
+            Product updateProduct = productService.updateProduct(productId, productRequest, file);
+            return ResponseEntity.ok(updateProduct);
         } catch (ProductUpdateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
