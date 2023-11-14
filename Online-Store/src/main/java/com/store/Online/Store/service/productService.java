@@ -15,9 +15,9 @@ public interface productService {
 
     ProductRequest getProductRequestById(Long productId, Sort.Direction direction);
 
-    void addProduct(ProductRequest product, MultipartFile file);
+    Product addProduct(ProductRequest product, MultipartFile file);
 
-    void updateProduct(Long id, ProductRequest product, MultipartFile file);
+    Product updateProduct(Long id, ProductRequest product, MultipartFile file);
 
     void deleteProduct(Long productId);
 
