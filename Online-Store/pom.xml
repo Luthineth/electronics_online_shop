@@ -101,6 +101,11 @@
             <version>1.27</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-catalina</artifactId>
+            <version> 8.5.90</version>
+        </dependency>
     </dependencies>
 
 
