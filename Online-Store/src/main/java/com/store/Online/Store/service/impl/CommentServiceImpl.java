@@ -10,12 +10,20 @@ import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.repository.commentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +34,9 @@ public class CommentServiceImpl implements commentService{
     private final commentRepository commentRepository;
     private final productRepository productRepository;
     private final userRepository userRepository;
+
+    @Value("Online-Store/commentImages")
+    private String directoryPath;
 
     @Autowired
     public CommentServiceImpl(commentRepository commentrepository, productRepository productRepository, userRepository userRepository){
@@ -56,7 +67,7 @@ public class CommentServiceImpl implements commentService{
 
     @Transactional
     @Override
-    public Comment addComment(CommentRequest commentRequest) {
+    public Comment addComment(CommentRequest commentRequest, MultipartFile file) {
         Comment comment = new Comment();
 
         User user;
@@ -79,7 +90,18 @@ public class CommentServiceImpl implements commentService{
 
         comment.setText(commentRequest.getText());
         comment.setRating(commentRequest.getRating());
-        comment.setImageUrl(commentRequest.getImageUrl());
+
+        if (file != null) {
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(directoryPath, fileName);
+
+            try (InputStream inputStream = file.getInputStream()) {
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }  catch (IOException e) {
+                throw new ImageNotLoadedException("Image loading error");
+            }
+            comment.setImageUrl(fileName);
+        }
 
         try {
             return commentRepository.save(comment);

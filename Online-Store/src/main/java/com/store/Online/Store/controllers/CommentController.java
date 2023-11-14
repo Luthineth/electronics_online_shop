@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 
@@ -25,9 +26,10 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addComment(@RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<?> addComment(@RequestPart("file") MultipartFile file,
+                                        CommentRequest commentRequest) {
         try {
-            Comment addedComment = commentService.addComment(commentRequest);
+            Comment addedComment = commentService.addComment(commentRequest,file);
             return ResponseEntity.ok(addedComment);
         } catch (UserNotFoundException | ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
