@@ -195,7 +195,7 @@ public class ProductServiceImpl implements productService {
         product.setPrice(productRequest.getPrice());
 
         if (image != null) {
-            String fileName = image.getOriginalFilename();
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
             Path filePath = Paths.get(directoryPath, fileName);
             Files.deleteIfExists(filePath);
 
