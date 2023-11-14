@@ -80,23 +80,48 @@ public class ProductServiceImpl implements productService {
 
     @Transactional
     @Override
-    public void addProduct(ProductRequest productRequest, MultipartFile file) {
+    public Product addProduct(ProductRequest productRequest, MultipartFile file) {
+        Product product = new Product();
         try {
-            Product product = createProductFromRequest(productRequest,file);
+            product.setProductName(productRequest.getProductName());
+            product.setDescription(productRequest.getDescription());
+            product.setStockQuantity(productRequest.getStockQuantity());
+            product.setPrice(productRequest.getPrice());
+            product.setPriceWithDiscount(productRequest.getPrice());
+            if (file == null) {
+                product.setImageUrl(directoryPath+"/2.png");
+            } else {
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                Path filePath = Paths.get(directoryPath, fileName);
+
+                try (InputStream inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, filePath);
+                } catch (IOException e) {
+                    throw new ImageNotLoadedException("Image loading error");
+                }
+                product.setImageUrl(fileName);
+            }
+
+            Discount defaultDiscount = new Discount();
+            defaultDiscount.setDiscountId(1L);
+            product.setDiscountId(defaultDiscount);
+
             productRepository.save(product);
         } catch (Exception e) {
             throw new ProductAdditionException("Failed to add product: " + e.getMessage());
         }
+        return product;
     }
 
     @Transactional
     @Override
-    public void updateProduct(Long productId, ProductRequest productRequest, MultipartFile file) {
+    public Product updateProduct(Long productId, ProductRequest productRequest, MultipartFile file) {
         Optional<Product> optionalProduct = getProductById(productId);
 
+        Product product = null;
         if (optionalProduct.isPresent()) {
             try {
-                Product product = optionalProduct.get();
+                product = optionalProduct.get();
                 updateProductDetails(product, productRequest,file);
                 updateProductCategories(product, productRequest.getCategoryId());
                 productRepository.save(product);
@@ -106,6 +131,7 @@ public class ProductServiceImpl implements productService {
         } else {
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
+        return product;
     }
 
     @Transactional
@@ -160,33 +186,6 @@ public class ProductServiceImpl implements productService {
         }
     }
 
-    private Product createProductFromRequest(ProductRequest productRequest, MultipartFile image){
-        Product product = new Product();
-        product.setProductName(productRequest.getProductName());
-        product.setDescription(productRequest.getDescription());
-        product.setStockQuantity(productRequest.getStockQuantity());
-        product.setPrice(productRequest.getPrice());
-        product.setPriceWithDiscount(productRequest.getPrice());
-        if (image == null) {
-            product.setImageUrl(directoryPath+"/defaultImage.png");
-        } else {
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            Path filePath = Paths.get(directoryPath, fileName);
-
-            try (InputStream inputStream = image.getInputStream()) {
-                Files.copy(inputStream, filePath);
-            } catch (IOException e) {
-                throw new ImageNotLoadedException("Image loading error");
-            }
-            product.setImageUrl(fileName);
-        }
-
-        Discount defaultDiscount = new Discount();
-        defaultDiscount.setDiscountId(1L);
-        product.setDiscountId(defaultDiscount);
-
-        return product;
-    }
 
     private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image) throws IOException {
         product.setProductName(productRequest.getProductName());
