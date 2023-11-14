@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.io.InputStream;
+
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -158,21 +160,25 @@ public class ProductServiceImpl implements productService {
         }
     }
 
-    private Product createProductFromRequest(ProductRequest productRequest, MultipartFile image) throws IOException {
+    private Product createProductFromRequest(ProductRequest productRequest, MultipartFile image){
         Product product = new Product();
         product.setProductName(productRequest.getProductName());
         product.setDescription(productRequest.getDescription());
         product.setStockQuantity(productRequest.getStockQuantity());
         product.setPrice(productRequest.getPrice());
         product.setPriceWithDiscount(productRequest.getPrice());
-        String imageUrl = productRequest.getImageUrl();
-        if (imageUrl == null || imageUrl.isEmpty()) {
-            product.setImageUrl(directoryPath+"/defoltIamge");
+        if (image == null) {
+            product.setImageUrl(directoryPath+"/defaultImage.png");
         } else {
-            String fileName = productRequest.getProductName() + ".jpg";
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
             Path filePath = Paths.get(directoryPath, fileName);
-            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            product.setImageUrl(imageUrl);
+
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, filePath);
+            } catch (IOException e) {
+                throw new ImageNotLoadedException("Image loading error");
+            }
+            product.setImageUrl(fileName);
         }
 
         Discount defaultDiscount = new Discount();
@@ -188,15 +194,17 @@ public class ProductServiceImpl implements productService {
         product.setStockQuantity(productRequest.getStockQuantity());
         product.setPrice(productRequest.getPrice());
 
-        String imageUrl = productRequest.getImageUrl();
-        if (imageUrl != null || !imageUrl.isEmpty()) {
-            String fileName = Paths.get(imageUrl).getFileName().toString();
-            Path imagePath = Paths.get(directoryPath, fileName);
-            Files.deleteIfExists(imagePath);
-
+        if (image != null) {
+            String fileName = image.getOriginalFilename();
             Path filePath = Paths.get(directoryPath, fileName);
-            Files.copy(image.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-            product.setImageUrl(productRequest.getImageUrl());
+            Files.deleteIfExists(filePath);
+
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }  catch (IOException e) {
+                throw new ImageNotLoadedException("Image loading error");
+            }
+            product.setImageUrl(fileName);
 
         }
 
