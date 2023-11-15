@@ -33,7 +33,10 @@ public class CommentController {
             return ResponseEntity.ok(addedComment);
         } catch (UserNotFoundException | ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (CommentAdditionException e) {
+        } catch (ImageNotLoadedException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+        catch (CommentAdditionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
