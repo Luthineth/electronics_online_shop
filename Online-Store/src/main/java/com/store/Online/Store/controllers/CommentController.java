@@ -33,10 +33,9 @@ public class CommentController {
             return ResponseEntity.ok(addedComment);
         } catch (UserNotFoundException | ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (ImageNotLoadedException e) {
+        } catch (ImageNotLoadedException | IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-        catch (CommentAdditionException e) {
+        } catch (CommentAdditionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
@@ -48,10 +47,10 @@ public class CommentController {
         try {
             commentService.deleteImage(commentId);
             return ResponseEntity.ok().build();
-        } catch (CommentImageDeletionException | CommentNotFoundException e) {
+        } catch (CommentNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (CommentImageDeletionException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the comment image.");
         }
     }
 
@@ -62,10 +61,10 @@ public class CommentController {
         try {
             commentService.deleteComment(commentId);
             return ResponseEntity.ok().build();
-        } catch (CommentDeletionException | CommentNotFoundException e) {
+        } catch (CommentNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (CommentDeletionException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the comment.");
         }
     }
 }
