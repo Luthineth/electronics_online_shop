@@ -26,7 +26,7 @@ public class CommentController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addComment(@RequestPart("file") MultipartFile file,
+    public ResponseEntity<?> addComment(@RequestPart(value = "file", required = false) MultipartFile file,
                                         CommentRequest commentRequest) {
         try {
             Comment addedComment = commentService.addComment(commentRequest,file);
@@ -35,8 +35,6 @@ public class CommentController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (CommentAdditionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding a comment.");
         }
     }
 
