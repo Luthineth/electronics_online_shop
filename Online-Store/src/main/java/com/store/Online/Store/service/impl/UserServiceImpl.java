@@ -68,26 +68,24 @@ public class UserServiceImpl implements userService {
 
     @Override
     public Map<String, String> login(AuthenticationRequest authRequest) {
-        Optional<User> registeredUsers = userRepository.findByEmail(authRequest.getEmail());
-        if (registeredUsers.isPresent()) {
-            if (passwordEncoder.matches(authRequest.getPassword(), registeredUsers.get().getPassword())) {
-                Map<String, String> response = new HashMap<>();
-                response.put("firstName", registeredUsers.get().getFirstName());
-                response.put("secondName", registeredUsers.get().getSecondName());
-                response.put("email", registeredUsers.get().getEmail());
-                response.put("token",
-                        jwtTokenUtil.generateToken(
-                                authRequest.getEmail(),
-                                registeredUsers.get().getRoleId()
-                        )
-                );
-                return response;
-            } else {
-                throw new BadCredentialsException("Invalid password");
-            }
-        } else {
-            throw new UserNotFoundException("The user with this email" + authRequest.getEmail() + " not found");
+        Optional<User> registeredUser = userRepository.findByEmail(authRequest.getEmail());
+
+        if (!registeredUser.isPresent()) {
+            throw new UserNotFoundException("The user with this email " + authRequest.getEmail() + " not found");
         }
+
+        if (!passwordEncoder.matches(authRequest.getPassword(), registeredUser.get().getPassword())) {
+            throw new BadCredentialsException("Invalid password");
+        }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("firstName", registeredUser.get().getFirstName());
+        response.put("secondName", registeredUser.get().getSecondName());
+        response.put("email", registeredUser.get().getEmail());
+        response.put("token", jwtTokenUtil.generateToken(authRequest.getEmail(), registeredUser.get().getRoleId()));
+
+        return response;
+
     }
     @Override
     public Optional<User> getUserId(Long userId) {
