@@ -89,6 +89,10 @@ public class CommentServiceImpl implements commentService{
         }
 
         comment.setText(commentRequest.getText());
+
+        if (commentRequest.getRating() < 1 || commentRequest.getRating() > 5) {
+            throw new IllegalArgumentException("Rating must be between 1 and 5 inclusive.");
+        }
         comment.setRating(commentRequest.getRating());
 
         if (file != null) {
@@ -120,7 +124,7 @@ public class CommentServiceImpl implements commentService{
         try {
             commentRepository.deleteImageByCommentId(commentId);
         } catch (Exception e) {
-            throw new CommentDeletionException("Failed to delete image comment" + e.getMessage());
+            throw new CommentImageDeletionException("Failed to delete image comment" + e.getMessage());
         }
     }
 
