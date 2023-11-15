@@ -15,7 +15,7 @@
                 variant="underlined"
             />
 
-            <v-select
+            <v-autocomplete
                 clearable
                 v-model="selectedParentCategory"
                 label="Выберите родительскую категорию"

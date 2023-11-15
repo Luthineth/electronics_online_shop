@@ -25,7 +25,6 @@
         <v-file-input
             v-model="commentImage"
             variant="underlined"
-            class="imageInput"
             accept=".png, .jpeg, .bmp"
             placeholder="Выберите изображение"
             prepend-icon="mdi-camera-plus-outline"
@@ -174,18 +173,19 @@ const filteredComments = computed(() => {
 
 const addComment = async () => {
     const token = localStorage.getItem('token')
-    const rating = {
-        productId: productId,
-        text: commentText.value,
-        rating: commentRating.value,
-        imageUrl: commentImage.value?.[0]?.name,
-    }
+
+    const formData = new FormData();
+    formData.append('productId', productId);
+    formData.append('text', commentText.value);
+    formData.append('rating', commentRating.value);
+    formData.append('file', commentImage.value?.[0]);
 
     await axios
         .post(`http://localhost:8080/comments`,
-            rating,
+            formData,
             {headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data',
                 }})
 
     commentsRef.value = await fetch(`http://localhost:8080/products/${productId}`)
