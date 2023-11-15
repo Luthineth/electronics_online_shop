@@ -1,13 +1,39 @@
 <template>
     <div class="mainNav wrapper__links">
         <router-link to="/">Главная</router-link>
+        <div class="text-center">
+            <v-menu
+                open-on-hover
+            >
+                <template v-slot:activator="{ props }">
+                    <button
+                        v-bind="props"
+                    >
+                        Dropdown
+                    </button>
+                </template>
+
+                <v-list>
+                    <v-list-item
+                        v-for="(item, index) in items"
+                        :key="index"
+                    >
+                        <v-list-item-title>{{ item.title }}</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </div>
+
         <div class="show-all-categories">
             <button>
                 Каталог
                 <AllCategoriesModal/>
             </button>
         </div>
-        <router-link to="/frsdejn">О нас</router-link>
+
+        <router-link to="/frsdejn">
+            О нас
+        </router-link>
     </div>
     <div class="actions">
         <div class="actions__container">
