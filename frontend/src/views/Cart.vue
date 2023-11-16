@@ -156,20 +156,20 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .order-info{
-  margin: auto;
-  width: 100%;
-  max-width: 1390px;
-  display: flex;
+    margin: 100px auto 0;
+    width: 100%;
+    max-width: 1390px;
+    display: flex;
 }
 .order__items{
-  width: 70%;
+    width: 70%;
 }
 .order__details{
-  width: 30%;
-  display: flex;
-  justify-content: center;
+    width: 30%;
+    display: flex;
+    justify-content: center;
 }
 .order__summary{
-  background-color: transparent;
+    background-color: transparent;
 }
 </style>

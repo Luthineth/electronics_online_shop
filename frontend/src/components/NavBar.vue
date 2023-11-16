@@ -16,13 +16,20 @@ import {isSearchBarShown} from "../utils/utils.js";
 
 <style scoped lang="scss">
 .container{
-    height: 90px;
-    padding: .475rem 0;
-    z-index: 100;
-    position: relative;
-    margin-bottom: 3.8rem;
+    margin-bottom: 6rem;
     display: flex;
-    align-items: flex-end;
+    justify-content: center;
+}
+.container_centered{
+    z-index: 1;
+    position: fixed;
+    padding: 0 5rem;
+    display: flex;
+    background-color: #faf8f5;
+    border-bottom: #e2e2e2 1px solid;
+    height: 80px;
+    width: 100%;
+    max-width: 1500px;
 }
 .logo{
     width: 10vw;

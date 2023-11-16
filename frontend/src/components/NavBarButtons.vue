@@ -1,35 +1,8 @@
 <template>
     <div class="mainNav wrapper__links">
         <router-link to="/">Главная</router-link>
-        <div class="text-center">
-            <v-menu
-                open-on-hover
-            >
-                <template v-slot:activator="{ props }">
-                    <button
-                        v-bind="props"
-                    >
-                        Dropdown
-                    </button>
-                </template>
 
-                <v-list>
-                    <v-list-item
-                        v-for="(item, index) in items"
-                        :key="index"
-                    >
-                        <v-list-item-title>{{ item.title }}</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-        </div>
-
-        <div class="show-all-categories">
-            <button>
-                Каталог
-                <AllCategoriesModal/>
-            </button>
-        </div>
+        <AllCategoriesDropdown/>
 
         <router-link to="/frsdejn">
             О нас
@@ -72,7 +45,7 @@
 import {onMounted} from "vue";
 import {cartItemCount, checkAuthorisation, isSearchBarShown, loadNewPage, userAuthorized} from "../utils/utils.js";
 import store from "../stores/store";
-import AllCategoriesModal from "./AllCategoriesModal.vue";
+import AllCategoriesDropdown from "./AllCategoriesDropdown.vue";
 
 const returnUserName = () => {
     const firstName = localStorage.getItem('firstName').charAt(0)
@@ -105,30 +78,31 @@ onMounted(async () => {
 
 <style scoped lang="scss">
 a:hover {
-  color: darkgreen;
+    color: darkgreen;
 }
 .mainNav{
-  padding: 0 10px 10px 10px;
+    padding: 0 10px 10px 10px;
 }
 .wrapper__links{
-  display: flex;
-  align-items: flex-end;
-  gap: 1.425rem;
-  text-decoration: none;
-  -webkit-transition: all 0.2s ease-in-out;
-  transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: flex-end;
+    gap: 1.425rem;
+    text-decoration: none;
+    -webkit-transition: all 0.2s ease-in-out;
+    transition: all 0.2s ease-in-out;
 }
 .actions{
-  margin-left: auto;
-  margin-bottom: .475rem;
-  display: flex;
+    margin-left: auto;
+    margin-bottom: .475rem;
+    display: flex;
 }
 .actions__container{
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: .7125rem;
+    padding-top: 10px;
+    display: flex;
+    flex-flow: column nowrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: .7125rem;
 }
 .button__logout:hover{
     color: darkgreen;
