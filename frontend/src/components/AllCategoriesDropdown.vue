@@ -14,7 +14,7 @@
             <div class="dropdown-container">
                 <div v-if="userRole === 'ADMIN'">
                     <v-btn
-                        class="mb-2"
+                        class="mb-2 mt-2"
                         width="100%"
                         variant="tonal"
                     >
@@ -72,7 +72,7 @@ onMounted(async () => {
 .dropdown-container{
     margin-top: 10px;
     background-color: #e2e2e2;
-    padding: 10px 20px 0;
+    padding: 0 20px 0;
     max-height: 90vh;
     max-width: 800px;
     overflow: auto;
