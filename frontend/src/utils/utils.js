@@ -32,6 +32,24 @@ export const checkAuthorisation = () => {
     }
 };
 
+export function getFilterUrl(categoryId, range, inStock, minRating, direction) {
+    let filterUrl = `http://localhost:8080/products_category/${categoryId}?`;
+
+    filterUrl += `&minPrice=${range[0]}&maxPrice=${range[1]}`;
+
+    filterUrl += direction ? `&price=DESC` : `&price=ASC`;
+
+    if (minRating !== null) {
+        filterUrl += `&minRating=${minRating}`;
+    }
+
+    if (inStock) {
+        filterUrl += `&inStock=true`;
+    }
+
+    return filterUrl;
+}
+
 export function getImage(src) {
     //'../../public/no_img.png'
     return `http://localhost:8080/products/images/iphone14_image.png`

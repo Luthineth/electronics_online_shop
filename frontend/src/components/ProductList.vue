@@ -20,7 +20,7 @@ const { products } = defineProps({
 .product-list {
     display: grid;
     grid-template-columns: repeat(1, minmax(0, 1fr));
-    gap: 2rem;
+    gap: 20px;
 }
 
 </style>
