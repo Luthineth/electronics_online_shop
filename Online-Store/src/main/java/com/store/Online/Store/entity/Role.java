@@ -6,6 +6,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -50,15 +51,12 @@ public class Role {
 
         Role role = (Role) obj;
 
-        if (roleId != role.roleId) return false;
-        return roleName != null ? roleName.equals(role.roleName) : role.roleName == null;
+        return Objects.equals(roleId, role.roleId) && Objects.equals(roleName, role.roleName);
     }
 
     @Override
     public int hashCode() {
-        int result = roleId;
-        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
-        return result;
+        return Objects.hash(roleId, roleName);
     }
 
 }
