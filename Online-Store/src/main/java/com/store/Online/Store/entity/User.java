@@ -1,10 +1,7 @@
 package com.store.Online.Store.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -105,7 +102,5 @@ public class User implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
-//    public String generateJwtToken(JwtTokenUtil jwtTokenUtil) {
-//        return jwtTokenUtil.generateToken(this);
-//    }
+
 }
