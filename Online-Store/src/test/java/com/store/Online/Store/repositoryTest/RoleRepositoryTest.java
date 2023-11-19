@@ -31,7 +31,7 @@ public class RoleRepositoryTest {
     }
 
     @Test
-    void testExistsRole() {
+    void shouldFindExistingRole() {
         Optional<Role> role = roleRepository.findRoleByRoleName(existentRole.getRoleName());
         assertThat(role.orElse(null), equalTo(existentRole));
 
@@ -39,7 +39,7 @@ public class RoleRepositoryTest {
     }
 
     @Test
-    void testNotExistsRole() {
+    void shouldNotFindNonExistingRole() {
         Optional<Role> role = roleRepository.findRoleByRoleName(nonExistentRole.getRoleName());
         assertThat(Optional.empty(),equalTo(role));
     }
