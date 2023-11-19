@@ -11,6 +11,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import java.math.BigDecimal;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 
 
@@ -40,6 +42,33 @@ public class ProductRepositoryTest {
         Product updatedProduct = productRepository.findById(existentProduct.getProductId()).orElse(null);
 
         assertThat(updatedProduct, notNullValue());
-        assertThat(updatedProduct.getStockQuantity(), equalTo(newStockQuantity));    }
+        assertThat(updatedProduct.getStockQuantity(), equalTo(newStockQuantity));
+    }
 
+    @Test
+    void testSaveProduct() {
+        Product newProduct = new Product(
+                "Новый смартфон",
+                "Описание нового смартфона",
+                10,
+                new BigDecimal("999.99"),
+                new BigDecimal("899.99"),
+                "new_phone.jpg",
+                new Discount(new BigDecimal(5)));
+
+        productRepository.save(newProduct);
+
+        Product savedProduct = productRepository.findById(newProduct.getProductId()).orElse(null);
+
+        assertThat(savedProduct).isNotNull();
+
+        assertThat(savedProduct.getProductName()).isEqualTo(newProduct.getProductName());
+        assertThat(savedProduct.getDescription()).isEqualTo(newProduct.getDescription());
+        assertThat(savedProduct.getStockQuantity()).isEqualTo(newProduct.getStockQuantity());
+        assertThat(savedProduct.getPrice()).isEqualTo(newProduct.getPrice());
+        assertThat(savedProduct.getPriceWithDiscount()).isEqualTo(newProduct.getPriceWithDiscount());
+        assertThat(savedProduct.getImageUrl()).isEqualTo(newProduct.getImageUrl());
+        assertThat(savedProduct.getDiscountId().getDiscountPercentage())
+                .isEqualTo(newProduct.getDiscountId().getDiscountPercentage());
+    }
 }

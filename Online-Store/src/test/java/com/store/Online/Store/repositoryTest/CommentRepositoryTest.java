@@ -24,6 +24,7 @@ public class CommentRepositoryTest {
     private commentRepository commentRepository;
 
     private Product product;
+    private User user1;
 
     private Comment comment1;
 
@@ -32,7 +33,7 @@ public class CommentRepositoryTest {
     @BeforeEach
     void setUp() {
 
-        User user1 = new User(
+        user1 = new User(
                 "Artem",
                 "Lihachev",
                 "sofaross228@gmail.com",
@@ -96,5 +97,21 @@ public class CommentRepositoryTest {
         Comment updatedComment = commentRepository.findById(comment1.getCommentId()).orElse(null);
         assertThat(updatedComment).isNotNull();
         assertThat(updatedComment.getImageUrl()).isNull();
+    }
+
+    @Test
+    void testSaveComment() {
+        Comment comment = new Comment(user1,product,"EEeeeEE",4,"imaageSs.png");
+        Comment savedComment = commentRepository.save(comment);
+
+        Comment retrievedComment = commentRepository.findById(savedComment.getCommentId()).orElse(null);
+
+        assertThat(retrievedComment).isNotNull();
+        assertThat(retrievedComment.getCommentId()).isNotNull();
+        assertThat(retrievedComment.getUserId()).isEqualTo(comment.getUserId());
+        assertThat(retrievedComment.getProductId()).isEqualTo(comment.getProductId());
+        assertThat(retrievedComment.getText()).isEqualTo(comment.getText());
+        assertThat(retrievedComment.getRating()).isEqualTo(comment.getRating());
+        assertThat(retrievedComment.getImageUrl()).isEqualTo(comment.getImageUrl());
     }
 }

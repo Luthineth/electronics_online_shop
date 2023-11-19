@@ -3,7 +3,10 @@ package com.store.Online.Store.repositoryTest;
 import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
+import com.store.Online.Store.entity.ProductCategory;
+import com.store.Online.Store.repository.categoryRepository;
 import com.store.Online.Store.repository.productCategoryRepository;
+import com.store.Online.Store.repository.productRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,9 @@ public class ProductCategoryRepositoryTest {
 
     @Autowired
     private productCategoryRepository productCategoryRepository;
+
+    @Autowired
+    private categoryRepository categoryRepository;
 
     private  Category category;
 
@@ -55,7 +61,7 @@ public class ProductCategoryRepositoryTest {
                 new BigDecimal("77999.00"),
                 "iphone13_image.jpg",
                 new Discount(new BigDecimal(10)));
-        product1.setProductId(2L);
+        product2.setProductId(2L);
     }
 
     @Test
@@ -77,5 +83,22 @@ public class ProductCategoryRepositoryTest {
         productCategoryRepository.deleteByCategoryId(category);
         List<Product> foundProducts = productCategoryRepository.findByCategoryId(category.getCategoryId());
         assertEquals(0, foundProducts.size());
+    }
+
+    @Test
+    void testSaveProductWithCategory() {
+
+        Category categoryToSave = new Category(
+                "Новая категория",
+                null);
+        categoryRepository.save(categoryToSave);
+
+
+        ProductCategory productCategory = new ProductCategory(product1,categoryToSave);
+        productCategoryRepository.save(productCategory);
+
+        List<Product> foundProducts = productCategoryRepository.findByCategoryId(categoryToSave.getCategoryId());
+        assertEquals(1, foundProducts.size());
+        assertEquals(product1.getProductName(), foundProducts.get(0).getProductName());
     }
 }

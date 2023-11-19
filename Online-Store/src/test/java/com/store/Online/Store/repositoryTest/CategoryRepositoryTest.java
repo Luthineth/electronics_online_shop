@@ -52,4 +52,17 @@ public class CategoryRepositoryTest {
         String categoryName = categoryRepository.findCategoryNameByCategoryId(parentCategory.getCategoryId());
         assertThat(categoryName).isEqualTo("АудиоТехника");
     }
+    @Test
+    void testSaveCategory() {
+        Category categoryToSave = new Category("Новая категория", null);
+
+        Category savedCategory = categoryRepository.save(categoryToSave);
+
+        Category retrievedCategory = categoryRepository.findById(savedCategory.getCategoryId()).orElse(null);
+
+        assertThat(retrievedCategory).isNotNull();
+        assertThat(retrievedCategory.getCategoryId()).isNotNull();
+        assertThat(retrievedCategory.getCategoryName()).isEqualTo("Новая категория");
+        assertThat(retrievedCategory.getParentCategories()).isNull();
+    }
 }
