@@ -12,7 +12,6 @@ import java.util.Collection;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Table(name = "role")
 public class Role {
 
