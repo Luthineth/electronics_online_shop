@@ -31,7 +31,7 @@ class UserRepositoryTest {
     {
 
         passwordEncoder = new BCryptPasswordEncoder();
-        Role adminRole = new Role(1, "ADMIN");
+        Role adminRole = new Role(1L, "ADMIN");
         existentUser = new User("Artem", "Lihachev", "sofaross228@gmail.com", "504598", adminRole);
         nonExistentUser = new User("John", "Doe", "john.doe@example.com", "password123", adminRole);
 
