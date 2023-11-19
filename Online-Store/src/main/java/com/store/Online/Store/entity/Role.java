@@ -2,10 +2,7 @@ package com.store.Online.Store.entity;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -15,6 +12,7 @@ import java.util.Collection;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Table(name = "role")
 public class Role {
 
@@ -46,4 +44,22 @@ public class Role {
                 ", roleName='" + roleName + '\'' +
                 '}';
     }
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Role role = (Role) obj;
+
+        if (roleId != role.roleId) return false;
+        return roleName != null ? roleName.equals(role.roleName) : role.roleName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleId;
+        result = 31 * result + (roleName != null ? roleName.hashCode() : 0);
+        return result;
+    }
+
 }
