@@ -15,6 +15,4 @@ public interface userService {
     void register(UserRequest user) throws RoleDefinitionException, UserCreationException;
 
     Map<String,String> login(AuthenticationRequest authRequest);
-
-    Optional<User> getUserId(Long userId);
 }

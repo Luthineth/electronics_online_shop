@@ -52,8 +52,9 @@ public class UserServiceImpl implements userService {
         if (!isValidEmail(userRequest.getEmail())) {
             throw new IllegalArgumentException("Incorrect email format");
         }
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
-            throw new UserCreationException("The user with this email" + user.getEmail() + "already exists");
+        Optional<User> existingUser = userRepository.findByEmail(userRequest.getEmail());
+        if (existingUser.isPresent()) {
+            throw new UserCreationException("The user with this email " + user.getEmail() + " already exists");
         }
         user.setEmail(userRequest.getEmail());
         user.setFirstName(userRequest.getFirstName());
@@ -86,16 +87,6 @@ public class UserServiceImpl implements userService {
 
         return response;
 
-    }
-    @Override
-    public Optional<User> getUserId(Long userId) {
-        try {
-            return userRepository.findByUserId(userId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new UserNotFoundException("User not found with ID: " + userId);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve user with ID " + userId + ": " + e.getMessage(), e);
-        }
     }
 
     private boolean isValidEmail(String email) {
