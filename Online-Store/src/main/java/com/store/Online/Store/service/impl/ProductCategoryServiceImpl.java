@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ProductCategoryServiceImpl implements productCategoryService {
@@ -28,26 +30,29 @@ public class ProductCategoryServiceImpl implements productCategoryService {
 
     @Override
     public List<Product> getProductsByCategoryAndSubcategories(Long categoryId) {
-
         if (!categoryRepository.existsById(categoryId)) {
             throw new CategoryNotFoundException("Category with ID " + categoryId + " not found");
         }
 
-        List<Product> products = productCategoryRepository.findByCategoryId(categoryId);
+        List<Product> result = productCategoryRepository.findByCategoryId(categoryId);
 
-        return getProductsRecursively(categoryId, products);
+        Set<Product> products = new HashSet<>();
+
+        getProductsRecursively(categoryId, products);
+
+        result.addAll(products);
+        return result;
     }
 
     @Override
-    public List<Product> getProductsRecursively(Long categoryId, List<Product> products) {
-        List<Product> allProducts = new ArrayList<>(products);
-
+    public void getProductsRecursively(Long categoryId, Set<Product> products) {
         List<Category> subcategories = categoryRepository.findSubCategories(categoryId);
-        for (Category subcategory : subcategories) {
-            List<Product> productsForSubcategory = productCategoryRepository.findByCategoryId(subcategory.getCategoryId());
-            allProducts.addAll(getProductsRecursively(subcategory.getCategoryId(), productsForSubcategory));
-        }
 
-        return allProducts;
+        List<Product> productsForCategory = productCategoryRepository.findByCategoryId(categoryId);
+        products.addAll(productsForCategory);
+
+        for (Category subcategory : subcategories) {
+            getProductsRecursively(subcategory.getCategoryId(), products);
+        }
     }
 }
