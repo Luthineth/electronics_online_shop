@@ -3,7 +3,6 @@ package com.store.Online.Store.service.impl;
 import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.CategoryNotFoundException;
-import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.service.productCategoryService;
 import com.store.Online.Store.repository.productCategoryRepository;
 import com.store.Online.Store.repository.categoryRepository;
@@ -34,10 +33,10 @@ public class ProductCategoryServiceImpl implements productCategoryService {
             throw new CategoryNotFoundException("Category with ID " + categoryId + " not found");
         }
 
-        List<Product> result = productCategoryRepository.findByCategoryId(categoryId);
+        // List<Product> result = productCategoryRepository.findByCategoryId(categoryId);
 
         Set<Product> products = new HashSet<>();
-
+        List<Product> result = new ArrayList<>();
         getProductsRecursively(categoryId, products);
 
         result.addAll(products);
