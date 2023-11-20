@@ -77,12 +77,13 @@
         >
             <v-btn variant="text">
                 Редактировать
-                <ProductEdit/>
+                <ProductEdit :old-product-info="product" />
             </v-btn>
 
             <v-btn
                 variant="outlined"
                 color="red"
+                @click="deleteProduct()"
             >
                 Удалить
             </v-btn>
@@ -96,6 +97,7 @@ import store from "../stores/store";
 import {cartItemCount, getImage, scrollToTop, userAuthorized, userRole} from "../utils/utils";
 import ProductEdit from "./ProductEdit.vue";
 import AlertContainer from "./AlertContainer.vue";
+import axios from "axios";
 
 const { product } = defineProps(['product']);
 const {
@@ -144,20 +146,33 @@ const addToCart = async () => {
         }, 1500);
     }
 };
+
+const deleteProduct = async () => {
+    const token = localStorage.getItem('token')
+
+    await axios
+        .delete(`http://localhost:8080/products/${productId}`,
+            {headers: {
+                    'Authorization': `Bearer ${token}`
+                }})
+
+    location.reload()
+};
 </script>
 
 <style scoped lang="scss">
 .product{
     width: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-}
-.product__admin-actions{
-    display: flex;
     flex-direction: column;
     align-items: center;
+}
+.product__admin-actions{
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 .product__info{
     padding: 10px 20px;
