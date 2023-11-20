@@ -193,7 +193,7 @@ public class ProductServiceImpl implements productService {
         product.setStockQuantity(productRequest.getStockQuantity());
         product.setPrice(productRequest.getPrice());
 
-        if (!image.isEmpty()) {
+        if (image != null && !image.isEmpty()) {
             String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
             Path filePath = Paths.get(directoryPath, fileName);
             Files.deleteIfExists(filePath);
