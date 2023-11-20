@@ -3,6 +3,7 @@ package com.store.Online.Store.config.jwt;
 import com.store.Online.Store.entity.Role;
 import com.store.Online.Store.exception.InvalidJwtTokenException;
 import io.jsonwebtoken.*;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +24,7 @@ import java.util.List;
 
 
 @Component
+@Setter
 public class JwtTokenUtil {
 
     @Value("${jwt.secret}")
