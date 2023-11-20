@@ -9,6 +9,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -40,5 +41,20 @@ public class Discount {
                 "discountId=" + discountId +
                 ", discountPercentage=" + discountPercentage +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Discount discount = (Discount) o;
+
+        return Objects.equals(discountId, discount.discountId) && Objects.equals(discountPercentage, discount.discountPercentage);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(discountId, discountPercentage);
     }
 }

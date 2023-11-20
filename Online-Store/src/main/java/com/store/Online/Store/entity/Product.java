@@ -9,6 +9,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -58,13 +59,14 @@ public class Product {
     private Collection<Comment> comments;
 
 
-    public Product(String productName, String description, int stockQuantity, BigDecimal price, BigDecimal priceWithDiscount, Discount discountId){
+    public Product(String productName, String description, int stockQuantity, BigDecimal price, BigDecimal priceWithDiscount,String imageUrl ,Discount discountId){
         this.productName = productName;
         this.description = description;
         this.price = price;
         this.stockQuantity = stockQuantity;
         this.priceWithDiscount = priceWithDiscount;
         this.discountId = discountId;
+        this.imageUrl=imageUrl;
     }
 
     @Override
@@ -78,5 +80,27 @@ public class Product {
                 ", priceWithDiscount=" + priceWithDiscount +
                 ", imageUrl='" + imageUrl + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Product product = (Product) o;
+
+        return Objects.equals(discountId, product.discountId) &&
+               Objects.equals(stockQuantity, product.stockQuantity) &&
+               Objects.equals(productId, product.productId) &&
+               Objects.equals(productName, product.productName) &&
+               Objects.equals(description, product.description) &&
+               Objects.equals(price, product.price) &&
+               Objects.equals(priceWithDiscount, product.priceWithDiscount) &&
+               Objects.equals(imageUrl, product.imageUrl);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(productId, productName, description, stockQuantity, price, priceWithDiscount, imageUrl, discountId);
     }
 }
