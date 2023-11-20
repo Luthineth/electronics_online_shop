@@ -105,7 +105,7 @@ public class ProductServiceImpl implements productService {
             Discount defaultDiscount = new Discount();
             defaultDiscount.setDiscountId(1L);
             product.setDiscountId(defaultDiscount);
-
+            updateProductCategories(product, productRequest.getCategoryId());
             productRepository.save(product);
         } catch (Exception e) {
             throw new ProductAdditionException("Failed to add product: " + e.getMessage());
