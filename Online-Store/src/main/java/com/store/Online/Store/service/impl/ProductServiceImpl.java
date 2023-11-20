@@ -228,7 +228,8 @@ public class ProductServiceImpl implements productService {
     }
 
     private void updateProductCategories(Product product, List<Long> categoryIds) {
-        productCategoryRepository.deleteByProductId(product);
+        if(product.getProductId() != null)
+            productCategoryRepository.deleteByProductId(product);
 
         for (Long categoryId : categoryIds) {
             Category category = categoryRepository.findById(categoryId)
