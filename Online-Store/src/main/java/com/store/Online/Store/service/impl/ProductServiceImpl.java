@@ -122,7 +122,7 @@ public class ProductServiceImpl implements productService {
         if (optionalProduct.isPresent()) {
             try {
                 product = optionalProduct.get();
-                updateProductDetails(product, productRequest,file);
+                updateProductDetails(product, productRequest,file,productId);
                 updateProductCategories(product, productRequest.getCategoryId());
                 productRepository.save(product);
             } catch (Exception e) {
@@ -187,13 +187,13 @@ public class ProductServiceImpl implements productService {
     }
 
 
-    private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image) throws IOException {
+    private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image,Long productId) throws IOException {
         product.setProductName(productRequest.getProductName());
         product.setDescription(productRequest.getDescription());
         product.setStockQuantity(productRequest.getStockQuantity());
         product.setPrice(productRequest.getPrice());
 
-        if (image != null) {
+        if (!image.isEmpty()) {
             String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
             Path filePath = Paths.get(directoryPath, fileName);
             Files.deleteIfExists(filePath);
@@ -204,8 +204,7 @@ public class ProductServiceImpl implements productService {
                 throw new ImageNotLoadedException("Image loading error");
             }
             product.setImageUrl(fileName);
-
-        }
+        } else product.setImageUrl(productRepository.findImageUrlByProductId(productId));
 
         updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
     }
