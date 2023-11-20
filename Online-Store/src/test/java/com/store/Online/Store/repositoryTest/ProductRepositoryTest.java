@@ -3,6 +3,7 @@ package com.store.Online.Store.repositoryTest;
 import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.repository.productRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -23,10 +24,11 @@ public class ProductRepositoryTest {
     @Autowired
     private productRepository productRepository;
 
-    @Test
-    void testUpdateStockQuantity() {
+    private Product existentProduct;
 
-        Product existentProduct = new Product(
+    @BeforeEach
+    void setUp(){
+        existentProduct = new Product(
                 "Смартфон Apple iPhone 14",
                 "У iPhone 14 Pro ",
                 0,
@@ -35,7 +37,9 @@ public class ProductRepositoryTest {
                 "iphone14_image.jpg",
                 new Discount(new BigDecimal(10)));
         existentProduct.setProductId(1L);
-
+    }
+    @Test
+    void testUpdateStockQuantity() {
         int newStockQuantity = 50;
         productRepository.updateStockQuantity(existentProduct.getProductId(), newStockQuantity);
 
@@ -70,5 +74,13 @@ public class ProductRepositoryTest {
         assertThat(savedProduct.getImageUrl()).isEqualTo(newProduct.getImageUrl());
         assertThat(savedProduct.getDiscountId().getDiscountPercentage())
                 .isEqualTo(newProduct.getDiscountId().getDiscountPercentage());
+    }
+
+    @Test
+    void testFindImageUrlByProductId() {
+        String imageUrl = productRepository.findImageUrlByProductId(existentProduct.getProductId());
+
+        assertThat(imageUrl).isNotNull();
+        assertThat(imageUrl).isEqualTo(existentProduct.getImageUrl());
     }
 }
