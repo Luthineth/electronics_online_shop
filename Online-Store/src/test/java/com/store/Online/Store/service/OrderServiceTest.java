@@ -1,9 +1,7 @@
 package com.store.Online.Store.service;
 
 import com.store.Online.Store.dto.OrderItemRequest;
-import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
-import com.store.Online.Store.entity.Role;
 import com.store.Online.Store.entity.User;
 import com.store.Online.Store.exception.InvalidOrderQuantityException;
 import com.store.Online.Store.exception.OrderCreationException;
