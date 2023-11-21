@@ -15,7 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,7 +100,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void addProduct_ValidProductRequestAndFile_ProductAddedSuccessfully() throws IOException {
+    void addProduct_ValidProductRequestAndFile_ProductAddedSuccessfully() {
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductName("Test Product");
         productRequest.setDescription("Test Description");
@@ -123,7 +122,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void addProduct_NullFile_DefaultImageUsed() throws IOException {
+    void addProduct_NullFile_DefaultImageUsed() {
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductName("Test Product");
         productRequest.setDescription("Test Description");
@@ -144,7 +143,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void updateProduct_ExistingProductId_ProductUpdatedSuccessfully() throws IOException {
+    void updateProduct_ExistingProductId_ProductUpdatedSuccessfully() {
         Long productId = 1L;
         ProductRequest productRequest = new ProductRequest();
         productRequest.setProductName("Updated Product");
@@ -238,7 +237,7 @@ class ProductServiceTest {
         assertThrows(CategoryNotFoundException.class, () -> productService.updateProduct(existingProduct.getProductId(), productRequest, null));
         verify(productRepository, times(1)).findById(existingProduct.getProductId());
         verify(discountRepository, times(1))
-                .findDiscountsByDiscountPercentage(any(BigDecimal.class));;
+                .findDiscountsByDiscountPercentage(any(BigDecimal.class));
         verify(categoryRepository, times(1)).findById(any(Long.class));
     }
 
