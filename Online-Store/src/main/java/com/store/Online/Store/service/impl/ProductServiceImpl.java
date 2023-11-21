@@ -56,10 +56,12 @@ public class ProductServiceImpl implements productService {
 
     @Override
     public Optional<Product> getProductById(Long productId) {
-        try {
-            return productRepository.findById(productId);
-        } catch (Exception e) {
-            throw new ProductNotFoundException("Failed to retrieve product with ID: " + productId);
+        Optional<Product> product = productRepository.findById(productId);
+
+        if (product.isPresent())
+            return product;
+        else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
     }
 
@@ -122,10 +124,14 @@ public class ProductServiceImpl implements productService {
         if (optionalProduct.isPresent()) {
             try {
                 product = optionalProduct.get();
-                updateProductDetails(product, productRequest,file,productId);
+                updateProductDetails(product, productRequest, file, productId);
                 updateProductCategories(product, productRequest.getCategoryId());
                 productRepository.save(product);
-            } catch (Exception e) {
+            } catch (DiscountNotFoundException e) {
+                throw new DiscountNotFoundException("Failed to update product price with discount: " + e.getMessage());
+            } catch (CategoryNotFoundException e ) {
+                throw new CategoryNotFoundException("Category not found: " + e.getMessage());
+            }catch (Exception e) {
                 throw new ProductUpdateException("Failed to update product: " + e.getMessage());
             }
         } else {
@@ -137,20 +143,17 @@ public class ProductServiceImpl implements productService {
     @Transactional
     @Override
     public void deleteProduct(Long productId) {
-        if (productRepository.existsById(productId)) {
-            try {
-                Product product = getProductById(productId)
-                        .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
-
-                orderItemRepository.deleteByProductId(product);
-                commentService.deleteProductComments(product.getProductId());
-                productCategoryRepository.deleteByProductId(product);
-                productRepository.deleteById(product.getProductId());
-            } catch (Exception e) {
-                throw new ProductDeletionException("Failed to delete product: " + e.getMessage());
-            }
-        } else {
+        try {
+            Product product = getProductById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
+            orderItemRepository.deleteByProductId(product);
+            commentService.deleteProductComments(product.getProductId());
+            productCategoryRepository.deleteByProductId(product);
+            productRepository.deleteById(product.getProductId());
+        } catch (ProductNotFoundException e){
             throw new ProductNotFoundException("Product with ID " + productId + " not found.");
+        } catch (Exception e) {
+            throw new ProductDeletionException("Failed to delete product: " + e.getMessage());
         }
     }
 
@@ -204,7 +207,8 @@ public class ProductServiceImpl implements productService {
                 throw new ImageNotLoadedException("Image loading error");
             }
             product.setImageUrl(fileName);
-        } else product.setImageUrl(productRepository.findImageUrlByProductId(productId));
+        } else
+            product.setImageUrl(productRepository.findImageUrlByProductId(productId));
 
         updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
     }
@@ -213,6 +217,7 @@ public class ProductServiceImpl implements productService {
         try {
             Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
                     .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
+
 
             BigDecimal originalPrice = product.getPrice();
             BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
