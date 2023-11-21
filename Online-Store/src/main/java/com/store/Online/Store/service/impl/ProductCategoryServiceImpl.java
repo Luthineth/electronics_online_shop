@@ -33,8 +33,6 @@ public class ProductCategoryServiceImpl implements productCategoryService {
             throw new CategoryNotFoundException("Category with ID " + categoryId + " not found");
         }
 
-        // List<Product> result = productCategoryRepository.findByCategoryId(categoryId);
-
         Set<Product> products = new HashSet<>();
         List<Product> result = new ArrayList<>();
         getProductsRecursively(categoryId, products);
