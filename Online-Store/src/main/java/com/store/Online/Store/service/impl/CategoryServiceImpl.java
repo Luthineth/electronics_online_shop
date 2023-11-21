@@ -56,6 +56,8 @@ public class CategoryServiceImpl implements categoryService {
 
         try {
             return categoryRepository.save(category);
+        } catch (CategoryNotFoundException e ){
+            throw new CategoryNotFoundException("Parent category not found with ID: ");
         } catch (Exception e) {
             throw new CategoryAdditionException("Failed to add category. Reason: " + e.getMessage());
         }
@@ -89,7 +91,8 @@ public class CategoryServiceImpl implements categoryService {
 
         try {
             return categoryRepository.save(category);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new CategoryUpdateException("Failed to update category. Reason: " + e.getMessage());
         }
     }
