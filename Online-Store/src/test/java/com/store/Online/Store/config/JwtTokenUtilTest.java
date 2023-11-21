@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,6 +30,7 @@ class JwtTokenUtilTest {
 
     @BeforeEach
     void setUp() {
+        MockitoAnnotations.initMocks(this);
         jwtTokenUtil.setSecret("random_secret_key");
         jwtTokenUtil.setExpiration(60000L);
     }
