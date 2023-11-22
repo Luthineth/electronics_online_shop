@@ -13,6 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
@@ -20,7 +22,6 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -123,7 +124,7 @@ class CommentServiceTest {
     }
 
     @Test
-    void addComment_ValidCommentRequestAndFile_CommentAddedSuccessfully() throws IOException {
+    void addComment_ValidCommentRequestAndFile_CommentAddedSuccessfully() {
         CommentRequest commentRequest = new CommentRequest();
         commentRequest.setProductId(1L);
         commentRequest.setText("Test Comment");
@@ -254,4 +255,20 @@ class CommentServiceTest {
         verify(productRepository, times(1)).findById(productId);
         verify(commentRepository, never()).deleteByProductId(any(Product.class));
     }
+
+    @Test
+    void getImageContent_ExistingImage_ReturnsResource() {
+        String imageName = "1700008008729_alica_image.png";
+        Resource result = commentService.getImageContent(imageName);
+        assertNotNull(result);
+        assertTrue(result instanceof UrlResource);
+        assertTrue(result.isReadable());
+    }
+
+    @Test
+    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
+        String imageName = "Test.png";
+        assertThrows(ImageNotLoadedException.class, () -> commentService.getImageContent(imageName));
+    }
+
 }
