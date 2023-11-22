@@ -78,7 +78,7 @@
 import {baseBackendUrl, cartItemCount, userAuthorized} from "../utils/utils";
 import {computed, onMounted, ref} from "vue";
 import store from "../stores/store";
-import OrderList from "../components/OrderList.vue";
+import OrderList from "../components/order/OrderList.vue";
 import axios from "axios";
 import AlertContainer from "../components/AlertContainer.vue";
 

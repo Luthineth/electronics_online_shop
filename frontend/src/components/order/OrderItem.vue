@@ -65,9 +65,9 @@
 
 <script setup>
 import {ref} from "vue";
-import {baseBackendUrl, cartItemCount, getImage} from "../utils/utils";
-import store from "../stores/store";
-import AlertContainer from "./AlertContainer.vue";
+import {baseBackendUrl, cartItemCount, getImage} from "../../utils/utils";
+import store from "../../stores/store";
+import AlertContainer from "../AlertContainer.vue";
 const { product, quantity, productId } = defineProps(['product', 'quantity', 'productId']);
 const {
     productName,

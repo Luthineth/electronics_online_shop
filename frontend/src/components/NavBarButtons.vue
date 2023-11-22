@@ -34,7 +34,7 @@
 import {onMounted} from "vue";
 import {cartItemCount, checkAuthorisation, loadNewPage, userAuthorized} from "../utils/utils.js";
 import store from "../stores/store";
-import AllCategoriesDropdown from "./AllCategoriesDropdown.vue";
+import AllCategoriesDropdown from "./categories/AllCategoriesDropdown.vue";
 
 const returnUserName = () => {
     const firstName = localStorage.getItem('firstName').charAt(0)

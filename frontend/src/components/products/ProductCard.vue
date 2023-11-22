@@ -93,10 +93,10 @@
 
 <script setup>
 import {ref} from "vue";
-import store from "../stores/store";
-import {baseBackendUrl, cartItemCount, getImage, scrollToTop, userAuthorized, userRole} from "../utils/utils";
+import store from "../../stores/store";
+import {baseBackendUrl, cartItemCount, getImage, scrollToTop, userAuthorized, userRole} from "../../utils/utils";
 import ProductEdit from "./ProductEdit.vue";
-import AlertContainer from "./AlertContainer.vue";
+import AlertContainer from "../AlertContainer.vue";
 import axios from "axios";
 
 const { product } = defineProps(['product']);

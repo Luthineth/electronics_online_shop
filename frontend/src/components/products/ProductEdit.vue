@@ -102,8 +102,8 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
-import router from "../router/router";
-import {baseBackendUrl, getImage} from "../utils/utils";
+import router from "../../router/router";
+import {baseBackendUrl, getImage} from "../../utils/utils";
 import {useField, useForm} from "vee-validate";
 
 const { oldProductInfo } = defineProps(['oldProductInfo']);
