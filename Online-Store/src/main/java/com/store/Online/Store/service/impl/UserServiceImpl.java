@@ -52,8 +52,9 @@ public class UserServiceImpl implements userService {
         if (!isValidEmail(userRequest.getEmail())) {
             throw new IllegalArgumentException("Incorrect email format");
         }
-        if (userRepository.existsByEmail(userRequest.getEmail())) {
-            throw new UserCreationException("The user with this email" + user.getEmail() + "already exists");
+        Optional<User> existingUser = userRepository.findByEmail(userRequest.getEmail());
+        if (existingUser.isPresent()) {
+            throw new UserCreationException("The user with this email " + user.getEmail() + " already exists");
         }
         user.setEmail(userRequest.getEmail());
         user.setFirstName(userRequest.getFirstName());
@@ -68,36 +69,24 @@ public class UserServiceImpl implements userService {
 
     @Override
     public Map<String, String> login(AuthenticationRequest authRequest) {
-        Optional<User> registeredUsers = userRepository.findByEmail(authRequest.getEmail());
-        if (registeredUsers.isPresent()) {
-            if (passwordEncoder.matches(authRequest.getPassword(), registeredUsers.get().getPassword())) {
-                Map<String, String> response = new HashMap<>();
-                response.put("firstName", registeredUsers.get().getFirstName());
-                response.put("secondName", registeredUsers.get().getSecondName());
-                response.put("email", registeredUsers.get().getEmail());
-                response.put("token",
-                        jwtTokenUtil.generateToken(
-                                authRequest.getEmail(),
-                                registeredUsers.get().getRoleId()
-                        )
-                );
-                return response;
-            } else {
-                throw new BadCredentialsException("Invalid password");
-            }
-        } else {
-            throw new UserNotFoundException("The user with this email" + authRequest.getEmail() + " not found");
+        Optional<User> registeredUser = userRepository.findByEmail(authRequest.getEmail());
+
+        if (!registeredUser.isPresent()) {
+            throw new UserNotFoundException("The user with this email " + authRequest.getEmail() + " not found");
         }
-    }
-    @Override
-    public Optional<User> getUserId(Long userId) {
-        try {
-            return userRepository.findByUserId(userId);
-        } catch (EmptyResultDataAccessException e) {
-            throw new UserNotFoundException("User not found with ID: " + userId);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to retrieve user with ID " + userId + ": " + e.getMessage(), e);
+
+        if (!passwordEncoder.matches(authRequest.getPassword(), registeredUser.get().getPassword())) {
+            throw new BadCredentialsException("Invalid password");
         }
+
+        Map<String, String> response = new HashMap<>();
+        response.put("firstName", registeredUser.get().getFirstName());
+        response.put("secondName", registeredUser.get().getSecondName());
+        response.put("email", registeredUser.get().getEmail());
+        response.put("token", jwtTokenUtil.generateToken(authRequest.getEmail(), registeredUser.get().getRoleId()));
+
+        return response;
+
     }
 
     private boolean isValidEmail(String email) {

@@ -8,8 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.transaction.Transactional;
-import java.math.BigDecimal;
-import java.util.List;
 
 @Repository
 @Transactional
@@ -19,4 +17,6 @@ public interface productRepository extends JpaRepository<Product,Long> {
     @Query("UPDATE Product p SET p.stockQuantity = :newStockQuantity WHERE p.productId = :productId")
     void updateStockQuantity(@Param("productId") Long productId, @Param("newStockQuantity") int newStockQuantity);
 
+    @Query("SELECT p.imageUrl FROM Product p WHERE p.productId = :productId")
+    String findImageUrlByProductId(@Param("productId") Long productId);
 }

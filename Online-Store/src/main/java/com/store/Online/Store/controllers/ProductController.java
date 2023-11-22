@@ -1,6 +1,7 @@
 package com.store.Online.Store.controllers;
 
 import com.store.Online.Store.dto.ProductRequest;
+import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.ProductAdditionException;
 import com.store.Online.Store.exception.ProductDeletionException;
 import com.store.Online.Store.exception.ProductUpdateException;
@@ -18,12 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.core.io.Resource;
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/products")
@@ -33,9 +30,6 @@ public class ProductController {
 
     @Value("Online-Store/images")
     private String imageUploadDirectory;
-
-    @Autowired
-    private ServletContext servletContext;
 
 
     @Autowired
@@ -59,16 +53,11 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<?> addProduct(@RequestParam("file") MultipartFile file,
-                                        @RequestPart("productRequest") ProductRequest productRequest) {
+    public ResponseEntity<?> addProduct(@RequestPart("file") MultipartFile file,
+                                        ProductRequest productRequest) {
         try {
-            if (file != null && !file.isEmpty()) {
-                String imageUrl = saveImage(file);
-                productRequest.setImageUrl(imageUrl);
-            }
-
-            productService.addProduct(productRequest);
-            return new ResponseEntity<>(HttpStatus.CREATED);
+            Product addedProduct=productService.addProduct(productRequest,file);
+            return ResponseEntity.ok(addedProduct);
         } catch (ProductAdditionException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -76,30 +65,15 @@ public class ProductController {
         }
     }
 
-    private String saveImage(MultipartFile file) throws IOException {
-        String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-        String uploadDirectory = servletContext.getRealPath(imageUploadDirectory);
-        String imageUrl = "/images/" + uniqueFileName;
-
-        Path uploadPath = Paths.get(uploadDirectory, uniqueFileName);
-
-        Files.copy(file.getInputStream(), uploadPath);
-        return imageUrl;
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{productId}")
     public ResponseEntity<?> updateProduct(@PathVariable Long productId,
                                            @RequestParam(name = "file", required = false) MultipartFile file,
-                                           @RequestPart("productRequest") ProductRequest productRequest) {
+                                           ProductRequest productRequest) {
         try {
-            if (file != null && !file.isEmpty()) {
-                String imageUrl = saveImage(file);
-                productRequest.setImageUrl(imageUrl);
-            }
-
-            productService.updateProduct(productId, productRequest);
-            return new ResponseEntity<>(HttpStatus.OK);
+            Product updateProduct = productService.updateProduct(productId, productRequest, file);
+            return ResponseEntity.ok(updateProduct);
         } catch (ProductUpdateException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {

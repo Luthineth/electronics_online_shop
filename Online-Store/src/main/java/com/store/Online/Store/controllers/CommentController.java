@@ -5,12 +5,19 @@ import com.store.Online.Store.entity.Comment;
 import com.store.Online.Store.exception.*;
 import com.store.Online.Store.service.commentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 
 @RestController
@@ -19,22 +26,25 @@ public class CommentController {
 
     private final commentService commentService;
 
+    @Value("Online-Store/commentImages")
+    private String imageUploadDirectory;
     @Autowired
     public CommentController(commentService commentService) {
         this.commentService = commentService;
     }
 
     @PostMapping
-    public ResponseEntity<?> addComment(@RequestBody CommentRequest commentRequest) {
+    public ResponseEntity<?> addComment(@RequestPart(value = "file", required = false) MultipartFile file,
+                                        CommentRequest commentRequest) {
         try {
-            Comment addedComment = commentService.addComment(commentRequest);
+            Comment addedComment = commentService.addComment(commentRequest,file);
             return ResponseEntity.ok(addedComment);
         } catch (UserNotFoundException | ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (ImageNotLoadedException | IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (CommentAdditionException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while adding a comment.");
         }
     }
 
@@ -45,10 +55,10 @@ public class CommentController {
         try {
             commentService.deleteImage(commentId);
             return ResponseEntity.ok().build();
-        } catch (CommentImageDeletionException | CommentNotFoundException e) {
+        } catch (CommentNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (CommentImageDeletionException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the comment image.");
         }
     }
 
@@ -59,10 +69,29 @@ public class CommentController {
         try {
             commentService.deleteComment(commentId);
             return ResponseEntity.ok().build();
-        } catch (CommentDeletionException | CommentNotFoundException e) {
+        } catch (CommentNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (CommentDeletionException e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while deleting the comment.");
         }
     }
+
+    @GetMapping("/images/{imageName}")
+    public ResponseEntity<Resource> serveImage(@PathVariable String imageName) {
+        try {
+            Path imagePath = Paths.get(imageUploadDirectory, imageName);
+            Resource resource = new UrlResource(imagePath.toUri());
+
+            if (resource.exists() && resource.isReadable()) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_PNG)
+                        .body(resource);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
 }

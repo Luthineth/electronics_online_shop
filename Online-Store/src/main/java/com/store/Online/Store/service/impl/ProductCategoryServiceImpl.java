@@ -3,7 +3,6 @@ package com.store.Online.Store.service.impl;
 import com.store.Online.Store.entity.Category;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.CategoryNotFoundException;
-import com.store.Online.Store.exception.ProductNotFoundException;
 import com.store.Online.Store.service.productCategoryService;
 import com.store.Online.Store.repository.productCategoryRepository;
 import com.store.Online.Store.repository.categoryRepository;
@@ -11,7 +10,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ProductCategoryServiceImpl implements productCategoryService {
@@ -28,26 +29,27 @@ public class ProductCategoryServiceImpl implements productCategoryService {
 
     @Override
     public List<Product> getProductsByCategoryAndSubcategories(Long categoryId) {
-
         if (!categoryRepository.existsById(categoryId)) {
             throw new CategoryNotFoundException("Category with ID " + categoryId + " not found");
         }
 
-        List<Product> products = productCategoryRepository.findByCategoryId(categoryId);
+        Set<Product> products = new HashSet<>();
+        List<Product> result = new ArrayList<>();
+        getProductsRecursively(categoryId, products);
 
-        return getProductsRecursively(categoryId, products);
+        result.addAll(products);
+        return result;
     }
 
     @Override
-    public List<Product> getProductsRecursively(Long categoryId, List<Product> products) {
-        List<Product> allProducts = new ArrayList<>(products);
-
+    public void getProductsRecursively(Long categoryId, Set<Product> products) {
         List<Category> subcategories = categoryRepository.findSubCategories(categoryId);
-        for (Category subcategory : subcategories) {
-            List<Product> productsForSubcategory = productCategoryRepository.findByCategoryId(subcategory.getCategoryId());
-            allProducts.addAll(getProductsRecursively(subcategory.getCategoryId(), productsForSubcategory));
-        }
 
-        return allProducts;
+        List<Product> productsForCategory = productCategoryRepository.findByCategoryId(categoryId);
+        products.addAll(productsForCategory);
+
+        for (Category subcategory : subcategories) {
+            getProductsRecursively(subcategory.getCategoryId(), products);
+        }
     }
 }

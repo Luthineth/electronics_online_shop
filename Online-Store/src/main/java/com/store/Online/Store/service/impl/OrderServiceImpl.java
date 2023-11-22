@@ -60,6 +60,12 @@ public class OrderServiceImpl implements orderService {
             Product product = productRepository.findById(orderItemRequest.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException("Product not found with ID: " + orderItemRequest.getProductId()));
 
+            int newStockQuantity = product.getStockQuantity() - orderItemRequest.getQuantity();
+            if (newStockQuantity < 0) {
+                throw new InvalidOrderQuantityException("Invalid order quantity for product with ID: " + product.getProductId());
+            }
+
+
             if (product != null) {
                 OrderItem orderItem = new OrderItem();
                 orderItem.setProductId(product);
@@ -90,9 +96,6 @@ public class OrderServiceImpl implements orderService {
 
             if (product != null) {
                 int newStockQuantity = product.getStockQuantity() - orderItemRequest.getQuantity();
-                if (newStockQuantity < 0) {
-                    throw new InvalidOrderQuantityException("Invalid order quantity for product with ID: " + product.getProductId());
-                }
                 product.setStockQuantity(newStockQuantity);
                 productRepository.updateStockQuantity(product.getProductId(), newStockQuantity);
             }
