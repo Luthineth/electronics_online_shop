@@ -53,7 +53,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testGetAllSubCategories_Success() {
+    void testGetAllSubCategories_Success_ReturnsHttpStatusOk() {
         List<Category> subCategories = new ArrayList<>();
         subCategories.add(subCategory1);
         subCategories.add(subCategory2);
@@ -66,7 +66,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testGetAllSubCategories_CategoryNotFound() {
+    void testGetAllSubCategories_CategoryNotFound_ReturnsHttpStatusNOT_FOUND() {
         when(categoryService.getSubCategories()).thenThrow(new CategoryNotFoundException("Category not found"));
 
         ResponseEntity<?> response = categoryController.getAllSubCategories();
@@ -76,7 +76,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testGetAllSubCategories_InternalServerError() {
+    void testGetAllSubCategories_InternalServerError_ReturnsHttpStatusINTERNAL_SERVER_ERROR() {
         when(categoryService.getSubCategories()).thenThrow(new RuntimeException());
 
         ResponseEntity<?> response = categoryController.getAllSubCategories();
@@ -86,7 +86,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testAddCategory_Success() {
+    void testAddCategory_Success_ReturnsHttpStatusCREATED() {
         when(categoryService.addCategory(categoryRequest)).thenReturn(parentCategory);
 
         ResponseEntity<?> response = categoryController.addCategory(categoryRequest);
@@ -96,7 +96,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testAddCategory_NoCategoryName() {
+    void testAddCategory_NoCategoryName_ReturnsHttpStatusBAD_REQUEST() {
         when(categoryService.addCategory(categoryRequest)).thenThrow(new NoCategoryName("Missing category name"));
 
         ResponseEntity<?> response = categoryController.addCategory(categoryRequest);
@@ -106,7 +106,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testAddCategory_CategoryNotFound() {
+    void testAddCategory_CategoryNotFound_ReturnsHttpStatusNOT_FOUND() {
         when(categoryService.addCategory(categoryRequest)).thenThrow(new CategoryNotFoundException("Category not found"));
 
         ResponseEntity<?> response = categoryController.addCategory(categoryRequest);
@@ -116,7 +116,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testAddCategory_CategoryAdditionException() {
+    void testAddCategory_CategoryAdditionException_ReturnsHttpStatusINTERNAL_SERVER_ERROR() {
         when(categoryService.addCategory(categoryRequest)).thenThrow(new CategoryAdditionException("Error adding category"));
 
         ResponseEntity<?> response = categoryController.addCategory(categoryRequest);
@@ -126,7 +126,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testUpdateCategory_Success() {
+    void testUpdateCategory_Success_ReturnsHttpStatusOk() {
         Category updatedCategory = new Category("Аудиотехника2", null);
         when(categoryService.updateCategory(parentCategory.getCategoryId(), categoryRequest)).thenReturn(updatedCategory);
 
@@ -137,7 +137,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testUpdateCategory_NoCategoryName() {
+    void testUpdateCategory_NoCategoryName_ReturnsHttpStatusBAD_REQUEST() {
         when(categoryService.updateCategory(parentCategory.getCategoryId(), categoryRequest)).thenThrow(new NoCategoryName("Missing category name"));
 
         ResponseEntity<?> response = categoryController.updateCategory(parentCategory.getCategoryId(), categoryRequest);
@@ -147,7 +147,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testUpdateCategory_CategoryNotFound() {
+    void testUpdateCategory_CategoryNotFoundReturnsHttpStatusNOT_FOUND() {
         when(categoryService.updateCategory(parentCategory.getCategoryId(), categoryRequest)).thenThrow(new CategoryNotFoundException("Category not found"));
 
         ResponseEntity<?> response = categoryController.updateCategory(parentCategory.getCategoryId(), categoryRequest);
@@ -157,7 +157,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testUpdateCategory_CategoryUpdateException() {
+    void testUpdateCategory_CategoryUpdateExceptionReturnsHttpStatusINTERNAL_SERVER_ERROR() {
         when(categoryService.updateCategory(parentCategory.getCategoryId(), categoryRequest)).thenThrow(new CategoryUpdateException("Error updating category"));
 
         ResponseEntity<?> response = categoryController.updateCategory(parentCategory.getCategoryId(), categoryRequest);
@@ -167,7 +167,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testDeleteCategory_Success() {
+    void testDeleteCategory_Success_ReturnsHttpStatusOk() {
         doNothing().when(categoryService).deleteCategory(parentCategory.getCategoryId());
 
         ResponseEntity<?> response = categoryController.deleteCategory(parentCategory.getCategoryId());
@@ -177,7 +177,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testDeleteCategory_CategoryNotFound() {
+    void testDeleteCategory_CategoryNotFound_ReturnsHttpStatusNOT_FOUND() {
         doThrow(new CategoryNotFoundException("Category not found")).when(categoryService).deleteCategory(parentCategory.getCategoryId());
 
         ResponseEntity<?> response = categoryController.deleteCategory(parentCategory.getCategoryId());
@@ -187,7 +187,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testDeleteCategory_SubCategoryNotFound() {
+    void testDeleteCategory_SubCategoryNotFound_ReturnsHttpStatusBAD_REQUEST() {
         doThrow(new SubCategoryNotFoundException("Subcategory not found")).when(categoryService).deleteCategory(parentCategory.getCategoryId());
 
         ResponseEntity<?> response = categoryController.deleteCategory(parentCategory.getCategoryId());
@@ -197,7 +197,7 @@ class CategoryControllerTest {
     }
 
     @Test
-    void testDeleteCategory_CategoryDeletionException() {
+    void testDeleteCategory_CategoryDeletionException_ReturnsHttpStatusINTERNAL_SERVER_ERROR() {
         doThrow(new CategoryDeletionException("Error deleting category")).when(categoryService).deleteCategory(parentCategory.getCategoryId());
 
         ResponseEntity<?> response = categoryController.deleteCategory(parentCategory.getCategoryId());

@@ -169,7 +169,7 @@ class CommentControllerTest {
     }
 
     @Test
-    void testDeleteComment_CommentDeletionExceptionReturnHttpStatusINTERNAL_SERVER_ERROR() {
+    void testDeleteComment_CommentDeletionException_ReturnHttpStatusINTERNAL_SERVER_ERROR() {
         doThrow(new CommentDeletionException("Comment deletion exception")).when(commentService).deleteComment(comment.getCommentId());
         ResponseEntity<?> response = commentController.deleteComment(comment.getCommentId());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
