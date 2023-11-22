@@ -11,6 +11,8 @@ import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.repository.commentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -158,6 +161,22 @@ public class CommentServiceImpl implements commentService{
         return commentRequests;
     }
 
+    @Override
+    public Resource getImageContent(String imageName) {
+        try {
+            Path imagePath = Paths.get(directoryPath, imageName);
+            Resource resource = new UrlResource(imagePath.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else{
+                throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
+            }
+        } catch (ImageNotLoadedException e) {
+            throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
     private CommentRequest mapToCommentRequest(Comment comment) {
         return CommentRequest.builder()
                 .firstName(comment.getUserId().getFirstName())
