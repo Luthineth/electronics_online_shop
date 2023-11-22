@@ -35,7 +35,7 @@
 import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
 import {onMounted, ref} from "vue";
 import CategoryEdit from "./CategoryEdit.vue";
-import {baseBackendUrl, userRole} from "../utils/utils";
+import {baseBackendUrl, userRole} from "../../utils/utils";
 
 let categories = ref([])
 let hierarchy = ref([])

@@ -119,10 +119,10 @@
 
 <script setup>
 import {onMounted, ref} from "vue"
-import ProductList from "../components/ProductList.vue";
+import ProductList from "../components/products/ProductList.vue";
 import router from "../router/router";
 import {baseBackendUrl, getFilterUrl, userRole} from "../utils/utils";
-import ProductEdit from "../components/ProductEdit.vue";
+import ProductEdit from "../components/products/ProductEdit.vue";
 
 const categoryId = router.currentRoute.value.params.id
 

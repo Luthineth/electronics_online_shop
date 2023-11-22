@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import {baseBackendUrl, loadNewPage, userRole} from "../utils/utils";
+import {baseBackendUrl, loadNewPage, userRole} from "../../utils/utils";
 import CategoryEdit from "./CategoryEdit.vue";
 import axios from "axios";
 
