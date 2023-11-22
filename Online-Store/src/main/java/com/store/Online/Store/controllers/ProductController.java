@@ -2,14 +2,9 @@ package com.store.Online.Store.controllers;
 
 import com.store.Online.Store.dto.ProductRequest;
 import com.store.Online.Store.entity.Product;
-import com.store.Online.Store.exception.ProductAdditionException;
-import com.store.Online.Store.exception.ProductDeletionException;
-import com.store.Online.Store.exception.ProductUpdateException;
+import com.store.Online.Store.exception.*;
 import com.store.Online.Store.service.productService;
-import com.store.Online.Store.exception.ProductNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,18 +14,12 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import org.springframework.core.io.Resource;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @RestController
 @RequestMapping("/products")
 public class ProductController {
 
     private final productService productService;
-
-    @Value("Online-Store/images")
-    private String imageUploadDirectory;
-
 
     @Autowired
     public ProductController(productService productService) {
@@ -96,21 +85,18 @@ public class ProductController {
     }
 
     @GetMapping("/images/{imageName}")
-    public ResponseEntity<Resource> serveImage(@PathVariable String imageName) {
+    public ResponseEntity<?> serveImage(@PathVariable String imageName) {
         try {
-            Path imagePath = Paths.get(imageUploadDirectory, imageName);
-            Resource resource = new UrlResource(imagePath.toUri());
-
-            if (resource.exists() && resource.isReadable()) {
+            Resource resource = productService.getImageContent(imageName);
+            if (resource != null) {
                 return ResponseEntity.ok()
                         .contentType(MediaType.IMAGE_PNG)
                         .body(resource);
-            } else {
+            }else {
                 return ResponseEntity.notFound().build();
             }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        } catch (ImageNotLoadedException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
-
 }
