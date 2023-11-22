@@ -13,7 +13,7 @@
         >
             <v-img
                 class="product__picture"
-                :src="getImage(imageUrl)"
+                :src="getImage('products', imageUrl)"
             />
 
             <div class="product__description">
@@ -94,7 +94,7 @@
 <script setup>
 import {ref} from "vue";
 import store from "../stores/store";
-import {cartItemCount, getImage, scrollToTop, userAuthorized, userRole} from "../utils/utils";
+import {baseBackendUrl, cartItemCount, getImage, scrollToTop, userAuthorized, userRole} from "../utils/utils";
 import ProductEdit from "./ProductEdit.vue";
 import AlertContainer from "./AlertContainer.vue";
 import axios from "axios";
@@ -128,7 +128,7 @@ function getProductStockStatus(stockQuantity) {
 const addToCart = async () => {
     addToCartError.value = false
 
-    let currentStockQuantity = await fetch(`http://localhost:8080/products/${productId}`)
+    let currentStockQuantity = await fetch(baseBackendUrl + `/products/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (currentStockQuantity !== 0) {
@@ -151,7 +151,7 @@ const deleteProduct = async () => {
     const token = localStorage.getItem('token')
 
     await axios
-        .delete(`http://localhost:8080/products/${productId}`,
+        .delete(baseBackendUrl + `/products/${productId}`,
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})

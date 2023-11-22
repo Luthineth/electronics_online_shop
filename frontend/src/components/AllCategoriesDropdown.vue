@@ -35,7 +35,7 @@
 import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
 import {onMounted, ref} from "vue";
 import CategoryEdit from "./CategoryEdit.vue";
-import {userRole} from "../utils/utils";
+import {baseBackendUrl, userRole} from "../utils/utils";
 
 let categories = ref([])
 let hierarchy = ref([])
@@ -62,7 +62,7 @@ function buildHierarchyTree(categories){
 }
 
 onMounted(async () => {
-    categories.value = await fetch(`http://localhost:8080/main`)
+    categories.value = await fetch(baseBackendUrl + '/main')
         .then(res => res.json())
     hierarchy = buildHierarchyTree(categories.value)
 });

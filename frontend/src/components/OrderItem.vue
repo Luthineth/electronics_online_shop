@@ -14,7 +14,7 @@
         >
             <v-img
                     class="product__picture"
-                    :src="getImage(imageUrl)"
+                    :src="getImage('products', imageUrl)"
             />
 
             <div class="product__description">
@@ -65,7 +65,7 @@
 
 <script setup>
 import {ref} from "vue";
-import {cartItemCount, getImage} from "../utils/utils";
+import {baseBackendUrl, cartItemCount, getImage} from "../utils/utils";
 import store from "../stores/store";
 import AlertContainer from "./AlertContainer.vue";
 const { product, quantity, productId } = defineProps(['product', 'quantity', 'productId']);
@@ -82,7 +82,7 @@ let quantityRef = ref(quantity)
 let addToCartError = ref(false)
 
 const increaseOrderItemQuantity = async () => {
-    let currentStockQuantity = await fetch(`http://localhost:8080/products/${productId}`)
+    let currentStockQuantity = await fetch(baseBackendUrl + `/products/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (quantityRef.value < currentStockQuantity) {

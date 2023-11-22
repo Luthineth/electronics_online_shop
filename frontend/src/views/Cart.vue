@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import {cartItemCount, userAuthorized} from "../utils/utils";
+import {baseBackendUrl, cartItemCount, userAuthorized} from "../utils/utils";
 import {computed, onMounted, ref} from "vue";
 import store from "../stores/store";
 import OrderList from "../components/OrderList.vue";
@@ -96,7 +96,7 @@ const confirmOrder = async () => {
     problematicProductsNames.value = [];
 
     for (const cartItem of store.state.cart) {
-        let currentStockQuantity = await fetch(`http://localhost:8080/products/${cartItem.productId}`)
+        let currentStockQuantity = await fetch(baseBackendUrl + `/products/${cartItem.productId}`)
             .then(res => res.json())
             .then(res => res.stockQuantity)
         if (cartItem.quantity <= currentStockQuantity) {
@@ -124,7 +124,7 @@ const sendOrderToServer = async (orderItemsArray) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .post(`http://localhost:8080/orders`,
+        .post(baseBackendUrl + '/orders',
             orderItemsArray,
             {headers: {
                     'Authorization': `Bearer ${token}`

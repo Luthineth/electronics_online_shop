@@ -97,7 +97,7 @@
                     class="mb-2"
                     v-if="comment.imageUrl"
                 >
-                    <v-img :src="getImage(comment.imageUrl)"/>
+                    <v-img :src="getImage('comments', comment.imageUrl)"/>
                 </v-avatar>
 
                 <div>{{ comment.text }}</div>
@@ -138,7 +138,7 @@
 </template>
 
 <script setup>
-import {getImage, userAuthorized, userRole} from "../utils/utils";
+import {baseBackendUrl, getImage, userAuthorized, userRole} from "../utils/utils";
 import axios from "axios";
 import {computed, ref} from "vue";
 
@@ -181,14 +181,14 @@ const addComment = async () => {
     formData.append('file', commentImage.value?.[0]);
 
     await axios
-        .post(`http://localhost:8080/comments`,
+        .post(baseBackendUrl + '/comments',
             formData,
             {headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
                 }})
 
-    commentsRef.value = await fetch(`http://localhost:8080/products/${productId}`)
+    commentsRef.value = await fetch(baseBackendUrl + `/products/${productId}`)
         .then(res => res.json())
         .then(res => res.comments)
 
@@ -201,13 +201,13 @@ const deleteCommentPhoto = async (commentId) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .put(`http://localhost:8080/comments/${commentId}/image`,
+        .put(baseBackendUrl + `/comments/${commentId}/image`,
             {},
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})
 
-    commentsRef.value = await fetch(`http://localhost:8080/products/${productId}`)
+    commentsRef.value = await fetch(baseBackendUrl + `/products/${productId}`)
         .then(res => res.json())
         .then(res => res.comments)
 };
@@ -216,12 +216,12 @@ const deleteComment = async (commentId) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .delete(`http://localhost:8080/comments/${commentId}`,
+        .delete(baseBackendUrl + `/comments/${commentId}`,
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})
 
-    commentsRef.value = await fetch(`http://localhost:8080/products/${productId}`)
+    commentsRef.value = await fetch(baseBackendUrl + `/products/${productId}`)
         .then(res => res.json())
         .then(res => res.comments)
 };

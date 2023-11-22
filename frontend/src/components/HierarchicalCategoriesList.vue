@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-import {loadNewPage, userRole} from "../utils/utils";
+import {baseBackendUrl, loadNewPage, userRole} from "../utils/utils";
 import CategoryEdit from "./CategoryEdit.vue";
 import axios from "axios";
 
@@ -51,7 +51,7 @@ const deleteCategory = async (categoryId) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .delete(`http://localhost:8080/categories/${categoryId}`,
+        .delete(baseBackendUrl + `/categories/${categoryId}`,
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})

@@ -13,7 +13,7 @@
         <div class="product__info">
             <div class="product__image">
                 <v-img
-                    :src="getImage(product.imageUrl)"
+                    :src="getImage('products', product.imageUrl)"
                 />
             </div>
 
@@ -74,7 +74,7 @@
 import {onMounted, ref} from "vue"
 import router from "../router/router";
 import Comments from "../components/Comments.vue";
-import {cartItemCount, getImage, userAuthorized} from "../utils/utils";
+import {baseBackendUrl, cartItemCount, getImage, userAuthorized} from "../utils/utils";
 import store from "../stores/store";
 import AlertContainer from "../components/AlertContainer.vue";
 
@@ -85,7 +85,7 @@ let product = ref([])
 
 onMounted(async () => {
     try {
-        const response = await fetch(`http://localhost:8080/products/${productId}`);
+        const response = await fetch(baseBackendUrl + `/products/${productId}`);
 
         if (!response.ok) {
             isFetchError.value = true;
@@ -102,7 +102,7 @@ onMounted(async () => {
 });
 
 const addToCart = async () => {
-    let currentStockQuantity = await fetch(`http://localhost:8080/products/${productId}`)
+    let currentStockQuantity = await fetch(baseBackendUrl + `/products/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (currentStockQuantity !== 0) {

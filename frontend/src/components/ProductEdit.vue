@@ -65,7 +65,10 @@
                 </v-file-input>
                 <div v-if="imageUrl">
                     <span>
-                        <v-img :src="getImage()" width="40px"/>
+                        <v-img
+                            :src="getImage('products', imageUrl)"
+                            width="40px"
+                        />
                         Текущее фото: {{ imageUrl }}
                     </span>
                     <v-switch
@@ -100,7 +103,7 @@
 import {onMounted, ref} from "vue";
 import axios from "axios";
 import router from "../router/router";
-import {getImage} from "../utils/utils";
+import {baseBackendUrl, getImage} from "../utils/utils";
 import {useField, useForm} from "vee-validate";
 
 const { oldProductInfo } = defineProps(['oldProductInfo']);
@@ -184,7 +187,7 @@ const addProduct = async () => {
     formData.append('file', newProductImage.value?.[0]);
 
     await axios
-        .post(`http://localhost:8080/products`,
+        .post(baseBackendUrl + '/products',
             formData,
             {headers: {
                     'Authorization': `Bearer ${token}`,
@@ -210,7 +213,7 @@ const editProduct = async () => {
         : formData.append('file', newProductImage.value?.[0]);
 
     await axios
-        .put(`http://localhost:8080/products/${productId.value}`,
+        .put(baseBackendUrl + `/products/${productId.value}`,
             formData,
             {headers: {
                     'Authorization': `Bearer ${token}`,
@@ -221,7 +224,7 @@ const editProduct = async () => {
 };
 
 onMounted(async () => {
-    categoriesList.value = await fetch(`http://localhost:8080/main`)
+    categoriesList.value = await fetch(baseBackendUrl + '/main')
         .then(res => res.json())
     selectedCategories.value.push(parseInt(categoryId));
 });

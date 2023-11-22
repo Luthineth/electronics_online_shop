@@ -1,5 +1,7 @@
 import {ref} from "vue";
 
+export const baseBackendUrl = 'http://localhost:8080'
+
 export let userAuthorized = ref(false);
 
 export let cartItemCount = ref(0);
@@ -31,7 +33,7 @@ export const checkAuthorisation = () => {
 };
 
 export function getFilterUrl(categoryId, range, inStock, minRating, direction) {
-    let filterUrl = `http://localhost:8080/products_category/${categoryId}?`;
+    let filterUrl = baseBackendUrl + `/products_category/${categoryId}?`;
 
     filterUrl += `&minPrice=${range[0]}&maxPrice=${range[1]}`;
 
@@ -48,7 +50,7 @@ export function getFilterUrl(categoryId, range, inStock, minRating, direction) {
     return filterUrl;
 }
 
-export function getImage(src) {
+export function getImage(type, src) {
     //'../../public/no_img.png'
-    return `http://localhost:8080/products/images/iphone14_image.png`
+    return baseBackendUrl + `/${type}/images/${src}`
 }

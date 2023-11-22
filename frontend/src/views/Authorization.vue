@@ -126,7 +126,7 @@ import {ref} from 'vue';
 import {useField, useForm} from 'vee-validate'
 import axios from "axios";
 import router from "../router/router";
-import {userAuthorized} from "../utils/utils";
+import {baseBackendUrl, userAuthorized} from "../utils/utils";
 import AlertContainer from "../components/AlertContainer.vue";
 
 const isLogin = ref(true);
@@ -172,7 +172,7 @@ const userLogIn = async () => {
     }
 
     await axios
-        .post(`http://localhost:8080/login`, user)
+        .post(baseBackendUrl + '/login', user)
         .catch(() => {
             logInError.value = true
         })
@@ -200,7 +200,7 @@ const userSignUp = handleSubmit(async () => {
     }
 
     await axios
-        .post(`http://localhost:8080/authenticate`, user)
+        .post(baseBackendUrl + '/authenticate', user)
         .catch(() => {
             signUpError.value = true
         })

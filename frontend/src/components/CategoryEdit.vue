@@ -40,6 +40,7 @@
 <script setup>
 import {onMounted, ref} from "vue";
 import axios from "axios";
+import {baseBackendUrl} from "../utils/utils";
 
 const { categoryId, oldCategoryName, oldParentCategoryId } =
     defineProps(['categoryId', 'oldCategoryName', 'oldParentCategoryId']);
@@ -56,7 +57,7 @@ const addCategory = async () => {
     }
 
     await axios
-        .post(`http://localhost:8080/categories`,
+        .post(baseBackendUrl + '/categories',
             categoryData,
             {headers: {
                     'Authorization': `Bearer ${token}`
@@ -73,7 +74,7 @@ const editCategory = async () => {
     }
 
     await axios
-        .put(`http://localhost:8080/categories/${categoryId}`,
+        .put(baseBackendUrl + `/categories/${categoryId}`,
             categoryData,
             {headers: {
                     'Authorization': `Bearer ${token}`
@@ -83,7 +84,7 @@ const editCategory = async () => {
 };
 
 onMounted(async () => {
-    categoriesList.value = await fetch(`http://localhost:8080/main`)
+    categoriesList.value = await fetch(baseBackendUrl + '/main')
         .then(res => res.json())
     if (categoryId) {
         categoriesList.value = categoriesList.value.filter(item => item.categoryId !== categoryId);
