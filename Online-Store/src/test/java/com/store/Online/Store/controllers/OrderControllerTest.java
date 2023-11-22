@@ -28,14 +28,20 @@ class OrderControllerTest {
     @InjectMocks
     private OrderController orderController;
 
+    @Mock
+    List<OrderItemRequest> orderItems;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        orderItems = new ArrayList<>();
+        orderItems.add(new OrderItemRequest(1L,1));
+        orderItems.add(new OrderItemRequest(2L,1));
+
     }
 
     @Test
     void testCreateOrder_Successful_ReturnsHttpStatusCreated() {
-        List<OrderItemRequest> orderItems = new ArrayList<>();
         doNothing().when(orderService).createOrder(orderItems);
         ResponseEntity<?> response = orderController.createOrder(orderItems);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -44,7 +50,6 @@ class OrderControllerTest {
 
     @Test
     void testCreateOrder_ProductNotFoundException_ReturnsHttpStatusBadRequest() {
-        List<OrderItemRequest> orderItems = new ArrayList<>();
         doThrow(new ProductNotFoundException("Product not found")).when(orderService).createOrder(orderItems);
         ResponseEntity<?> response = orderController.createOrder(orderItems);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -54,7 +59,6 @@ class OrderControllerTest {
 
     @Test
     void testCreateOrder_InvalidOrderQuantityException_ReturnsHttpStatusBadRequest() {
-        List<OrderItemRequest> orderItems = new ArrayList<>();
         doThrow(new InvalidOrderQuantityException("Invalid order quantity for product")).when(orderService).createOrder(orderItems);
         ResponseEntity<?> response = orderController.createOrder(orderItems);
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -63,7 +67,6 @@ class OrderControllerTest {
     }
     @Test
     void testCreateOrder_OrderCreationException_ReturnsHttpStatusInternalServerError() {
-        List<OrderItemRequest> orderItems = new ArrayList<>();
         doThrow(new OrderCreationException("Error creating order")).when(orderService).createOrder(orderItems);
         ResponseEntity<?> response = orderController.createOrder(orderItems);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());

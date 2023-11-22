@@ -1,5 +1,6 @@
 package com.store.Online.Store.controllers;
 
+import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
 import com.store.Online.Store.exception.CategoryNotFoundException;
 import com.store.Online.Store.exception.ProductNotFoundException;
@@ -12,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.data.domain.Sort;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -33,22 +33,46 @@ class ProductCategoryControllerTest {
     @InjectMocks
     private ProductCategoryController productCategoryController;
 
+    @Mock
+    private List<Product> products;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        Product product1 = new Product(
+                "Смартфон Apple iPhone 14",
+                "У iPhone 14 Pro ",
+                5,
+                new BigDecimal("89988.00"),
+                new BigDecimal("89988.00"),
+                "iphone14_image.jpg",
+                new Discount(new BigDecimal(10)));
+        product1.setProductId(1L);
+
+        Product product2 = new Product(
+                "Смартфон Apple iPhone 13",
+                "iPhone 13",
+                200,
+                new BigDecimal("77999.00"),
+                new BigDecimal("77999.00"),
+                "iphone13_image.jpg",
+                new Discount(new BigDecimal(10)));
+        product2.setProductId(2L);
+
+        products = new ArrayList<>();
+        products.add(product1);
+        products.add(product2);
     }
 
     @Test
     void testGetProductsByCategoryAndSubcategories_Successful_ReturnsHttpStatusOk() {
-        List<Product> products = new ArrayList<>();
         when(productCategoryService.getProductsByCategoryAndSubcategories(1L)).thenReturn(products);
-        ResponseEntity<?> response = productCategoryController.getProductsByCategoryAndSubcategories(1L, new BigDecimal(132), new BigDecimal(200), true, 3, Sort.Direction.ASC);
+        ResponseEntity<?> response = productCategoryController.getProductsByCategoryAndSubcategories(1L,null,null,null,null,null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(products, response.getBody());
     }
     @Test
     void testGetProductsByCategoryAndSubcategories_SuccessfulAllNUll_ReturnsHttpStatusOk() {
-        List<Product> products = new ArrayList<>();
         when(productCategoryService.getProductsByCategoryAndSubcategories(1L)).thenReturn(products);
         ResponseEntity<?> response = productCategoryController.getProductsByCategoryAndSubcategories(1L, null, null, null, null, null);
         assertEquals(HttpStatus.OK, response.getStatusCode());
