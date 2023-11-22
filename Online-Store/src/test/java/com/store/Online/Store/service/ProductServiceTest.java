@@ -11,10 +11,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import org.springframework.core.io.Resource;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -270,7 +272,6 @@ class ProductServiceTest {
 
     @Test
     void searchProducts_FilteredProducts_ReturnsFilteredProducts() {
-        // Arrange
         BigDecimal minPrice = BigDecimal.valueOf(110.00);
         BigDecimal maxPrice = BigDecimal.valueOf(250.00);
         Boolean inStock = true;
@@ -293,7 +294,7 @@ class ProductServiceTest {
     }
 
     private Product createProduct(Long id, String name, BigDecimal price) {
-         return new Product(
+        return new Product(
                 name,
                 "Описание нового смартфона",
                 10,
@@ -301,6 +302,22 @@ class ProductServiceTest {
                 price,
                 "new_phone.jpg",
                 new Discount(new BigDecimal(5)));
+    }
+
+
+    @Test
+    void getImageContent_ExistingImage_ReturnsResource() {
+        String imageName = "alica_image.png";
+        Resource result = productService.getImageContent(imageName);
+        assertNotNull(result);
+        assertTrue(result instanceof UrlResource);
+        assertTrue(result.isReadable());
+    }
+
+    @Test
+    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
+        String imageName = "Test.png";
+        assertThrows(ImageNotLoadedException.class, () -> productService.getImageContent(imageName));
     }
 
 }
