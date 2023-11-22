@@ -12,6 +12,8 @@ import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,7 @@ import java.io.InputStream;
 
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.*;
 
 import javax.transaction.Transactional;
@@ -181,6 +184,7 @@ public class ProductServiceImpl implements productService {
         return filteredProducts;
     }
 
+
     private List<CommentRequest> getCommentsForProduct(Long productId, Sort.Direction direction) {
         try {
             return commentService.getCommentsByProductId(productId, direction);
@@ -189,6 +193,23 @@ public class ProductServiceImpl implements productService {
         }
     }
 
+    @Override
+    public Resource getImageContent(String imageName) {
+
+        try {
+            Path imagePath = Paths.get(directoryPath, imageName);
+            Resource resource = new UrlResource(imagePath.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else{
+                throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
+            }
+        } catch (ImageNotLoadedException e) {
+            throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image,Long productId) throws IOException {
         product.setProductName(productRequest.getProductName());
