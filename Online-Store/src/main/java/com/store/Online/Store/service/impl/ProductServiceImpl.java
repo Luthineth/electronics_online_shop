@@ -1,102 +1,305 @@
-package com.store.Online.Store.controllers;
+package com.store.Online.Store.service.impl;
 
+import com.store.Online.Store.dto.CommentRequest;
 import com.store.Online.Store.dto.ProductRequest;
+import com.store.Online.Store.entity.Category;
+import com.store.Online.Store.entity.Discount;
 import com.store.Online.Store.entity.Product;
+import com.store.Online.Store.entity.ProductCategory;
 import com.store.Online.Store.exception.*;
+import com.store.Online.Store.repository.*;
+import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.InputStream;
 
-@RestController
-@RequestMapping("/products")
-public class ProductController {
 
-    private final productService productService;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.nio.file.*;
+
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ProductServiceImpl implements productService {
+
+    private final productRepository productRepository;
+    private final productCategoryRepository productCategoryRepository;
+    private final categoryRepository categoryRepository;
+    private final discountRepository discountRepository;
+    private final commentService commentService;
+    private final orderItemRepository orderItemRepository;
+
+    @Value("Online-Store/images")
+    private String directoryPath;
 
     @Autowired
-    public ProductController(productService productService) {
-        this.productService = productService;
+    public ProductServiceImpl(productRepository productRepository, productCategoryRepository productCategoryRepository,
+                              categoryRepository categoryRepository, discountRepository discountRepository,
+                              commentService commentService, orderItemRepository orderItemRepository) {
+        this.productRepository = productRepository;
+        this.productCategoryRepository = productCategoryRepository;
+        this.categoryRepository = categoryRepository;
+        this.discountRepository = discountRepository;
+        this.commentService = commentService;
+        this.orderItemRepository = orderItemRepository;
     }
 
-    @GetMapping("/{productId}")
-    public ResponseEntity<?> getProductById(
-            @PathVariable Long productId,
-            @RequestParam(defaultValue = "DESC") Sort.Direction direction){
-        try {
-            ProductRequest productRequest = productService.getProductRequestById(productId,direction);
-                return ResponseEntity.ok(productRequest);
-            } catch (ProductNotFoundException e){
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+    @Override
+    public Optional<Product> getProductById(Long productId) {
+        Optional<Product> product = productRepository.findById(productId);
+
+        if (product.isPresent())
+            return product;
+        else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         }
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping
-    public ResponseEntity<?> addProduct(@RequestPart("file") MultipartFile file,
-                                        ProductRequest productRequest) {
+    @Override
+    public ProductRequest getProductRequestById(Long productId, Sort.Direction direction) {
+        Optional<Product> optionalProduct = getProductById(productId);
+
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            List<CommentRequest> comments = getCommentsForProduct(productId, direction);
+            ProductRequest productRequest = mapToProductDto(product);
+            productRequest.setComments(comments);
+            return productRequest;
+        } else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
+        }
+    }
+
+    @Transactional
+    @Override
+    public Product addProduct(ProductRequest productRequest, MultipartFile file) {
+        Product product = new Product();
         try {
-            Product addedProduct=productService.addProduct(productRequest,file);
-            return ResponseEntity.ok(addedProduct);
-        } catch (ProductAdditionException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            product.setProductName(productRequest.getProductName());
+            product.setDescription(productRequest.getDescription());
+            product.setStockQuantity(productRequest.getStockQuantity());
+            product.setPrice(productRequest.getPrice());
+            product.setPriceWithDiscount(productRequest.getPrice());
+            if (file == null) {
+                product.setImageUrl(directoryPath+"/2.png");
+            } else {
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+                Path filePath = Paths.get(directoryPath, fileName);
+
+                try (InputStream inputStream = file.getInputStream()) {
+                    Files.copy(inputStream, filePath);
+                } catch (IOException e) {
+                    throw new ImageNotLoadedException("Image loading error");
+                }
+                product.setImageUrl(fileName);
+            }
+
+            Discount defaultDiscount = new Discount();
+            defaultDiscount.setDiscountId(1L);
+            product.setDiscountId(defaultDiscount);
+            updateProductCategories(product, productRequest.getCategoryId());
+            productRepository.save(product);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+            throw new ProductAdditionException("Failed to add product: " + e.getMessage());
         }
+        return product;
     }
 
+    @Transactional
+    @Override
+    public Product updateProduct(Long productId, ProductRequest productRequest, MultipartFile file) {
+        Optional<Product> optionalProduct = getProductById(productId);
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{productId}")
-    public ResponseEntity<?> updateProduct(@PathVariable Long productId,
-                                           @RequestParam(name = "file", required = false) MultipartFile file,
-                                           ProductRequest productRequest) {
+        Product product = null;
+        if (optionalProduct.isPresent()) {
+            try {
+                product = optionalProduct.get();
+                updateProductDetails(product, productRequest, file, productId);
+                updateProductCategories(product, productRequest.getCategoryId());
+                productRepository.save(product);
+            } catch (DiscountNotFoundException e) {
+                throw new DiscountNotFoundException("Failed to update product price with discount: " + e.getMessage());
+            } catch (CategoryNotFoundException e ) {
+                throw new CategoryNotFoundException("Category not found: " + e.getMessage());
+            }catch (Exception e) {
+                throw new ProductUpdateException("Failed to update product: " + e.getMessage());
+            }
+        } else {
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
+        }
+        return product;
+    }
+
+    @Transactional
+    @Override
+    public void deleteProduct(Long productId) {
         try {
-            Product updateProduct = productService.updateProduct(productId, productRequest, file);
-            return ResponseEntity.ok(updateProduct);
-        } catch (ProductUpdateException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            Product product = getProductById(productId)
+                    .orElseThrow(() -> new ProductNotFoundException("Product with ID " + productId + " not found."));
+            orderItemRepository.deleteByProductId(product);
+            commentService.deleteProductComments(product.getProductId());
+            productCategoryRepository.deleteByProductId(product);
+            productRepository.deleteById(product.getProductId());
+        } catch (ProductNotFoundException e){
+            throw new ProductNotFoundException("Product with ID " + productId + " not found.");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+            throw new ProductDeletionException("Failed to delete product: " + e.getMessage());
         }
     }
 
+    @Override
+    public List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, Sort.Direction price, List<Product> products) {
+        List<Product> filteredProducts = new ArrayList<>();
 
-    @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{productId}")
-    public ResponseEntity<?> deleteProduct(@PathVariable Long productId) {
+        for (Product product : products) {
+            boolean isInRange = isProductInRange(product, minPrice, maxPrice);
+            boolean isStockValid = (inStock == null) || (inStock && product.getStockQuantity() > 0);
+            boolean isRatingValid = (minRating == null) || (calculateAverageRating(product) != null && calculateAverageRating(product) >= minRating);
+
+            if (isInRange && isStockValid && isRatingValid) {
+                filteredProducts.add(product);
+            }
+        }
+
+        if (price != null) {
+            filteredProducts.sort((product1, product2) -> {
+                BigDecimal price1 = product1.getPrice();
+                BigDecimal price2 = product2.getPrice();
+                return price == Sort.Direction.ASC ? price1.compareTo(price2) : price2.compareTo(price1);
+            });
+        }
+        return filteredProducts;
+    }
+
+
+    private List<CommentRequest> getCommentsForProduct(Long productId, Sort.Direction direction) {
         try {
-            productService.deleteProduct(productId);
-            return ResponseEntity.ok().build();
-        } catch (ProductDeletionException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return commentService.getCommentsByProductId(productId, direction);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
+            throw new ProductNotFoundException("Failed to retrieve comments for product with ID: " + productId);
         }
     }
 
-    @GetMapping("/images/{imageName}")
-    public ResponseEntity<?> serveImage(@PathVariable String imageName) {
+    @Override
+    public Resource getImageContent(String imageName) {
+
         try {
-            Resource resource = productService.getImageContent(imageName);
-            if (resource != null) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_PNG)
-                        .body(resource);
-            }else {
-                return ResponseEntity.notFound().build();
+            Path imagePath = Paths.get(directoryPath, imageName);
+            Resource resource = new UrlResource(imagePath.toUri());
+            if (resource.exists() && resource.isReadable()) {
+                return resource;
+            } else{
+                throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
             }
         } catch (ImageNotLoadedException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
     }
+
+    private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image,Long productId) throws IOException {
+        product.setProductName(productRequest.getProductName());
+        product.setDescription(productRequest.getDescription());
+        product.setStockQuantity(productRequest.getStockQuantity());
+        product.setPrice(productRequest.getPrice());
+
+        if (image != null && !image.isEmpty()) {
+            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
+            Path filePath = Paths.get(directoryPath, fileName);
+            Files.deleteIfExists(filePath);
+
+            try (InputStream inputStream = image.getInputStream()) {
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }  catch (IOException e) {
+                throw new ImageNotLoadedException("Image loading error");
+            }
+            product.setImageUrl(fileName);
+        } else
+            product.setImageUrl(productRepository.findImageUrlByProductId(productId));
+
+        updatePriceWithDiscount(product, productRequest.getDiscountPercentage());
+    }
+
+    private void updatePriceWithDiscount(Product product, BigDecimal discountPercentage) {
+        try {
+            Discount discount = discountRepository.findDiscountsByDiscountPercentage(discountPercentage)
+                    .orElseThrow(() -> new DiscountNotFoundException("Discount with percentage " + discountPercentage + " not found."));
+
+
+            BigDecimal originalPrice = product.getPrice();
+            BigDecimal discountAmount = originalPrice.multiply(discount.getDiscountPercentage())
+                    .divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+            BigDecimal discountedPrice = originalPrice.subtract(discountAmount);
+
+            product.setDiscountId(discount);
+            product.setPriceWithDiscount(discountedPrice);
+        } catch (Exception e) {
+            throw new DiscountNotFoundException("Failed to update product price with discount: " + e.getMessage());
+        }
+    }
+
+    private void updateProductCategories(Product product, List<Long> categoryIds) {
+        if(product.getProductId() != null)
+            productCategoryRepository.deleteByProductId(product);
+
+        for (Long categoryId : categoryIds) {
+            Category category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new CategoryNotFoundException("Category with ID " + categoryId + " not found."));
+            ProductCategory productCategory = new ProductCategory(product, category);
+            productCategoryRepository.save(productCategory);
+        }
+    }
+
+    private boolean isProductInRange(Product product, BigDecimal minPrice, BigDecimal maxPrice) {
+        if (minPrice != null && maxPrice != null) {
+            BigDecimal productPrice = product.getPriceWithDiscount();
+            return productPrice.compareTo(minPrice) >= 0 && productPrice.compareTo(maxPrice) <= 0;
+        }
+        return true;
+    }
+
+    public Double calculateAverageRating(Product product) {
+        Collection<CommentRequest> comments = commentService.getCommentsByProductId(product.getProductId());
+        if (comments == null || comments.isEmpty()) {
+            return null;
+        }
+
+        int sum = 0;
+        int count = 0;
+
+        for (CommentRequest comment : comments) {
+            if (comment.getRating() != null) {
+                sum += comment.getRating();
+                count++;
+            }
+        }
+
+        return count > 0 ? (double) sum / count : null;
+    }
+
+    private ProductRequest mapToProductDto(Product product) {
+        ProductRequest productRequest = new ProductRequest();
+        productRequest.setProductName(product.getProductName());
+        productRequest.setDescription(product.getDescription());
+        productRequest.setStockQuantity(product.getStockQuantity());
+        productRequest.setPrice(product.getPrice());
+        productRequest.setPriceWithDiscount(product.getPriceWithDiscount());
+        productRequest.setImageUrl(product.getImageUrl());
+        return productRequest;
+    }
+
 }
