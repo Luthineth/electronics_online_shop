@@ -5,6 +5,7 @@ import com.store.Online.Store.entity.Product;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.core.io.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +23,6 @@ public interface productService {
     void deleteProduct(Long productId);
 
     List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, Sort.Direction price, List<Product> products);
+
+    Resource getImageContent(String imageUrl);
 }
