@@ -16,6 +16,8 @@ services:
     ports:
       - "15432:5432"
     restart: always
+    networks:
+      - network
 
 
   backend:
@@ -27,6 +29,8 @@ services:
       - db
     ports:
       - "8080:8080"
+    networks:
+      - network
 
   frontend:
     build:
@@ -38,3 +42,9 @@ services:
     ports:
       - "8081:5173"
     restart: always
+    networks:
+      - network
+
+networks:
+  network:
+    name: network
