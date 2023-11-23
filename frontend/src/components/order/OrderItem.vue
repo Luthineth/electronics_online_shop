@@ -65,9 +65,11 @@
 
 <script setup>
 import {ref} from "vue";
-import {baseBackendUrl, cartItemCount, getImage} from "../../utils/utils";
+import {getImage} from "../../utils/utils";
+import {cartItemCount} from "../../utils/variables";
 import store from "../../stores/store";
 import AlertContainer from "../AlertContainer.vue";
+import {productsBackendUrl} from "../../utils/urls";
 const { product, quantity, productId } = defineProps(['product', 'quantity', 'productId']);
 const {
     productName,
@@ -82,7 +84,7 @@ let quantityRef = ref(quantity)
 let addToCartError = ref(false)
 
 const increaseOrderItemQuantity = async () => {
-    let currentStockQuantity = await fetch(baseBackendUrl + `/products/${productId}`)
+    let currentStockQuantity = await fetch(productsBackendUrl + `/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (quantityRef.value < currentStockQuantity) {

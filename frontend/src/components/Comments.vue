@@ -138,9 +138,11 @@
 </template>
 
 <script setup>
-import {baseBackendUrl, getImage, userAuthorized, userRole} from "../utils/utils";
+import {getImage} from "../utils/utils";
+import {userAuthorized, userRole} from "../utils/variables";
 import axios from "axios";
 import {computed, ref} from "vue";
+import {commentsBackendUrl, productsBackendUrl} from "../utils/urls";
 
 let { productId, comments } = defineProps({
     productId: String,
@@ -181,14 +183,14 @@ const addComment = async () => {
     formData.append('file', commentImage.value?.[0]);
 
     await axios
-        .post(baseBackendUrl + '/comments',
+        .post(commentsBackendUrl,
             formData,
             {headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data',
                 }})
 
-    commentsRef.value = await fetch(baseBackendUrl + `/products/${productId}`)
+    commentsRef.value = await fetch(productsBackendUrl + `/${productId}`)
         .then(res => res.json())
         .then(res => res.comments)
 
@@ -201,13 +203,13 @@ const deleteCommentPhoto = async (commentId) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .put(baseBackendUrl + `/comments/${commentId}/image`,
+        .put(commentsBackendUrl + `/${commentId}/image`,
             {},
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})
 
-    commentsRef.value = await fetch(baseBackendUrl + `/products/${productId}`)
+    commentsRef.value = await fetch(productsBackendUrl + `/${productId}`)
         .then(res => res.json())
         .then(res => res.comments)
 };
@@ -216,12 +218,12 @@ const deleteComment = async (commentId) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .delete(baseBackendUrl + `/comments/${commentId}`,
+        .delete(commentsBackendUrl + `/${commentId}`,
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})
 
-    commentsRef.value = await fetch(baseBackendUrl + `/products/${productId}`)
+    commentsRef.value = await fetch(productsBackendUrl + `/${productId}`)
         .then(res => res.json())
         .then(res => res.comments)
 };

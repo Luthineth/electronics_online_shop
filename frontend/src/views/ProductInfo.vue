@@ -74,9 +74,11 @@
 import {onMounted, ref} from "vue"
 import router from "../router/router";
 import Comments from "../components/Comments.vue";
-import {baseBackendUrl, cartItemCount, getImage, userAuthorized} from "../utils/utils";
+import {getImage} from "../utils/utils";
+import {cartItemCount, userAuthorized} from "../utils/variables.js";
 import store from "../stores/store";
 import AlertContainer from "../components/AlertContainer.vue";
+import {productsBackendUrl} from "../utils/urls";
 
 const productId = router.currentRoute.value.params.id
 const isFetchError = ref(false);
@@ -85,7 +87,7 @@ let product = ref([])
 
 onMounted(async () => {
     try {
-        const response = await fetch(baseBackendUrl + `/products/${productId}`);
+        const response = await fetch(productsBackendUrl + `/${productId}`);
 
         if (!response.ok) {
             isFetchError.value = true;
@@ -102,7 +104,7 @@ onMounted(async () => {
 });
 
 const addToCart = async () => {
-    let currentStockQuantity = await fetch(baseBackendUrl + `/products/${productId}`)
+    let currentStockQuantity = await fetch(productsBackendUrl + `/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (currentStockQuantity !== 0) {

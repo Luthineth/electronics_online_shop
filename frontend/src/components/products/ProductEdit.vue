@@ -103,8 +103,9 @@
 import {onMounted, ref} from "vue";
 import axios from "axios";
 import router from "../../router/router";
-import {baseBackendUrl, getImage} from "../../utils/utils";
+import {getImage} from "../../utils/utils";
 import {useField, useForm} from "vee-validate";
+import {mainBackendUrl, productsBackendUrl} from "../../utils/urls";
 
 const { oldProductInfo } = defineProps(['oldProductInfo']);
 
@@ -187,7 +188,7 @@ const addProduct = async () => {
     formData.append('file', newProductImage.value?.[0]);
 
     await axios
-        .post(baseBackendUrl + '/products',
+        .post(productsBackendUrl,
             formData,
             {headers: {
                     'Authorization': `Bearer ${token}`,
@@ -213,7 +214,7 @@ const editProduct = async () => {
         : formData.append('file', newProductImage.value?.[0]);
 
     await axios
-        .put(baseBackendUrl + `/products/${productId.value}`,
+        .put(productsBackendUrl + `/${productId.value}`,
             formData,
             {headers: {
                     'Authorization': `Bearer ${token}`,
@@ -224,7 +225,7 @@ const editProduct = async () => {
 };
 
 onMounted(async () => {
-    categoriesList.value = await fetch(baseBackendUrl + '/main')
+    categoriesList.value = await fetch(mainBackendUrl)
         .then(res => res.json())
     selectedCategories.value.push(parseInt(categoryId));
 });

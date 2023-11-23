@@ -1,12 +1,5 @@
-import {ref} from "vue";
-
-export const baseBackendUrl = 'http://localhost:8080'
-
-export let userAuthorized = ref(false);
-
-export let cartItemCount = ref(0);
-
-export let userRole = ref('USER')
+import {baseBackendUrl} from "./urls";
+import {userRole} from "./variables";
 
 export const loadNewPage = (pageType) => {
     const {protocol, hostname , port} = window.location

@@ -75,12 +75,13 @@
 </template>
 
 <script setup>
-import {baseBackendUrl, cartItemCount, userAuthorized} from "../utils/utils";
+import {cartItemCount, userAuthorized} from "../utils/variables.js";
 import {computed, onMounted, ref} from "vue";
 import store from "../stores/store";
 import OrderList from "../components/order/OrderList.vue";
 import axios from "axios";
 import AlertContainer from "../components/AlertContainer.vue";
+import {ordersBackendUrl, productsBackendUrl} from "../utils/urls";
 
 let placeOrderSuccess = ref(false)
 let processingOrder = ref(false)
@@ -96,7 +97,7 @@ const confirmOrder = async () => {
     problematicProductsNames.value = [];
 
     for (const cartItem of store.state.cart) {
-        let currentStockQuantity = await fetch(baseBackendUrl + `/products/${cartItem.productId}`)
+        let currentStockQuantity = await fetch(productsBackendUrl + `/${cartItem.productId}`)
             .then(res => res.json())
             .then(res => res.stockQuantity)
         if (cartItem.quantity <= currentStockQuantity) {
@@ -124,7 +125,7 @@ const sendOrderToServer = async (orderItemsArray) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .post(baseBackendUrl + '/orders',
+        .post(ordersBackendUrl,
             orderItemsArray,
             {headers: {
                     'Authorization': `Bearer ${token}`

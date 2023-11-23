@@ -32,7 +32,8 @@
 
 <script setup>
 import {onMounted} from "vue";
-import {cartItemCount, checkAuthorisation, loadNewPage, userAuthorized} from "../utils/utils.js";
+import {checkAuthorisation, loadNewPage} from "../utils/utils.js";
+import {cartItemCount, userAuthorized} from "../utils/variables.js";
 import store from "../stores/store";
 import AllCategoriesDropdown from "./categories/AllCategoriesDropdown.vue";
 
