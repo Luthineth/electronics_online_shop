@@ -149,7 +149,7 @@ function produceBreadCrumbs(category) {
 
     while (category) {
         categoryInfo.push({
-            href: `http://localhost:5173/product_category/${category.categoryId}`,
+            href: `/product_category/${category.categoryId}`,
             title: category.categoryName
         });
         category = category.parentCategoryId;
