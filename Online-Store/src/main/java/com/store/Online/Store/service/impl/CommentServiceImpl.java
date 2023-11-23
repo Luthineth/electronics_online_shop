@@ -38,9 +38,8 @@ public class CommentServiceImpl implements commentService{
     private final productRepository productRepository;
     private final userRepository userRepository;
 
-    @Value("Online-Store/commentImages")
+    @Value("Online-Store\\src\\main\\resources\\commentImages")
     private String directoryPath;
-
     @Autowired
     public CommentServiceImpl(commentRepository commentrepository, productRepository productRepository, userRepository userRepository){
         this.commentRepository =commentrepository;

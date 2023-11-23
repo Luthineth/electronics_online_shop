@@ -28,7 +28,7 @@ INSERT INTO Product (discount_id, product_name, description, stock_quantity, pri
                                             (1, 'Смартфон Apple iPhone 14', 'У iPhone 14 Pro ',0, 89988.00, 89988.00, 'iphone14_image.jpg'),
                                             (1, 'Смартфон Apple iPhone 13', 'iPhone 13', 200, 77999.00, 77999.00, 'iphone13_image.jpg'),
                                             (2, 'Смартфон Samsung Galaxy S21',  'Смартфон Samsung Galaxy S21', 300, 45499.00, 40949.10, 'samsung_s12FE_image.jpg'),
-                                            (2, 'Наушники Apple AirPods Pro',   'Наушники TWS Apple AirPods Pro', 0, 23699.00, 21329.10, 'airpods_pro_image.jpg'),
+                                            (2, 'Наушники Apple AirPods Pro',   'Наушники TWS Apple AirPods Pro', 0, 23699.00, 21329.10, 'airpods_pro_image.png'),
                                             (3, 'Чехол для Huawei P50','Чехол-книжка для HUAWEI P50', 100, 160.00, 136.00, 'huawei_p50_case_image.jpg'),
                                             (3, 'Смартфон Huawei P50', 'Смартфон HUAWEI P50', 100, 49299.00, 41904.15, 'huawei_p50_image.jpg'),
                                             (4, 'Умная колонка Яндекс Станция', 'Умная колонка Яндекс Станция 2',120, 17999.00, 14399.20, 'alica_image.jpg');

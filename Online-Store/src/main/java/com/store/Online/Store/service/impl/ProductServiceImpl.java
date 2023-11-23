@@ -42,7 +42,7 @@ public class ProductServiceImpl implements productService {
     private final commentService commentService;
     private final orderItemRepository orderItemRepository;
 
-    @Value("Online-Store/images")
+    @Value("Online-Store\\src\\main\\resources\\commentImages")
     private String directoryPath;
 
     @Autowired
