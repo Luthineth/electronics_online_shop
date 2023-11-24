@@ -1,16 +1,18 @@
 <template>
-    <AlertContainer
-        v-if="signUpSuccess"
-        :color="'success'"
-        :icon="'mdi-check-circle-outline'"
-        :message="'Поздравляем! Вы успешно зарегистрированы'"
-    />
-    <AlertContainer
-        v-if="logInError || signUpError"
-        :color="'error'"
-        :icon="'mdi-alert-circle-outline'"
-        :message="logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'"
-    />
+    <div class="alert-container">
+        <AlertTemplate
+            v-if="signUpSuccess"
+            :color="'green'"
+            :icon="'mdi-check-circle-outline'"
+            :message="'Поздравляем! Вы успешно зарегистрированы'"
+        />
+        <AlertTemplate
+            v-if="logInError || signUpError"
+            :color="'red'"
+            :icon="'mdi-alert-circle-outline'"
+            :message="logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'"
+        />
+    </div>
     <div class="authorization-container">
         <v-card
             variant="outlined"
@@ -127,9 +129,10 @@ import {useField, useForm} from 'vee-validate'
 import axios from "axios";
 import router from "../router/router";
 import {userAuthorized} from "../utils/variables.js";
-import AlertContainer from "../components/AlertContainer.vue";
+import AlertTemplate from "../components/AlertTemplate.vue";
 import {authBackendUrl, loginBackendUrl} from "../utils/urls";
 
+const alerts = ref([]);
 const isLogin = ref(true);
 const signUpSuccess = ref(false);
 const logInError = ref(false);

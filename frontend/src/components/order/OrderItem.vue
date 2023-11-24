@@ -1,11 +1,4 @@
 <template>
-    <AlertContainer
-        v-if="addToCartError"
-        :color="'error'"
-        :icon="'mdi-alert-circle-outline'"
-        :message="'Указанное количество нельзя добавить к заказу'"
-    />
-
     <div class="product">
         <v-card
                 class="product__info"
@@ -14,7 +7,8 @@
         >
             <v-img
                     class="product__picture"
-                    :src="getImage('products', imageUrl)"
+                    :src="orderItemImage"
+                    v-on:error="orderItemImage = '../../../public/no_img.png'"
             />
 
             <div class="product__description">
@@ -22,6 +16,9 @@
             </div>
 
             <div class="product__availability">
+                <span v-if="addToCartError">
+                    Нельзя добавить
+                </span>
                 <v-card-actions class="d-flex align-content-center">
                     <v-btn
                         class="font-weight-bold"
@@ -68,18 +65,18 @@ import {ref} from "vue";
 import {getImage} from "../../utils/utils";
 import {cartItemCount} from "../../utils/variables";
 import store from "../../stores/store";
-import AlertContainer from "../AlertContainer.vue";
 import {productsBackendUrl} from "../../utils/urls";
+
 const { product, quantity, productId } = defineProps(['product', 'quantity', 'productId']);
 const {
     productName,
     description,
-    stockQuantity,
     price,
     priceWithDiscount,
     imageUrl,
 } = product
 
+const orderItemImage = ref(getImage('products', imageUrl))
 let quantityRef = ref(quantity)
 let addToCartError = ref(false)
 

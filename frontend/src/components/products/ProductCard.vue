@@ -1,10 +1,12 @@
 <template>
-    <AlertContainer
-        v-if="addToCartError"
-        :color="'error'"
-        :icon="'mdi-alert-circle-outline'"
-        :message="'Товар уже раскупили:('"
-    />
+    <div class="alert-container">
+        <AlertTemplate
+            v-if="addToCartError"
+            :color="'red'"
+            :icon="'mdi-alert-circle-outline'"
+            :message="'Товар уже раскупили:('"
+        />
+    </div>
 
     <div class="product">
         <v-card
@@ -13,7 +15,8 @@
         >
             <v-img
                 class="product__picture"
-                :src="getImage('products', imageUrl)"
+                :src="productImage"
+                v-on:error="productImage = '../../../public/no_img.png'"
             />
 
             <div class="product__description">
@@ -97,9 +100,9 @@ import store from "../../stores/store";
 import {getImage, scrollToTop} from "../../utils/utils";
 import {cartItemCount, userAuthorized, userRole} from "../../utils/variables";
 import ProductEdit from "./ProductEdit.vue";
-import AlertContainer from "../AlertContainer.vue";
 import axios from "axios";
 import {productsBackendUrl} from "../../utils/urls";
+import AlertTemplate from "../AlertTemplate.vue";
 
 const { product } = defineProps(['product']);
 const {
@@ -112,9 +115,10 @@ const {
     imageUrl,
 } = product
 
+const productImage = ref(getImage('products', imageUrl))
 let admin = userRole.value === 'ADMIN';
-let addToCartError = ref(false)
-let isDescriptionShown = ref(false)
+const addToCartError = ref(false)
+const isDescriptionShown = ref(false)
 const descriptionSmall = description.length <= 300 ? description : description.slice(0, 300) + "..."
 
 function getProductStockStatus(stockQuantity) {

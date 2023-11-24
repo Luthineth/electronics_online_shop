@@ -25,7 +25,10 @@
                     <v-divider/>
                 </div>
 
-                <HierarchicalCategoriesList :hierarchyProductTree="hierarchy" v-if="hierarchy"/>
+                <HierarchicalCategoriesList
+                    :hierarchyProductTree="hierarchy"
+                    v-if="hierarchy"
+                />
             </div>
         </v-menu>
     </div>

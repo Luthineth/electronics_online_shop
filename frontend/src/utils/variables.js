@@ -5,3 +5,5 @@ export const userAuthorized = ref(false);
 export const cartItemCount = ref(0);
 
 export const userRole = ref('USER')
+
+export const tokenExpirationDate = ref(null)

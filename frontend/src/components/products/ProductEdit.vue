@@ -64,6 +64,10 @@
                 >
                 </v-file-input>
                 <div v-if="imageUrl">
+                    <i style="color: gray">
+                        !Если фото не видно, битая ссылка: не найдено фото!
+                    </i>
+
                     <span>
                         <v-img
                             :src="getImage('products', imageUrl)"
@@ -71,6 +75,7 @@
                         />
                         Текущее фото: {{ imageUrl }}
                     </span>
+
                     <v-switch
                         v-model="isOldPhotoSaved"
                         color="green-lighten-2"
@@ -95,6 +100,12 @@
                     </v-btn>
                 </v-card-actions>
             </form>
+            <v-snackbar
+                v-model="formNotCompleted"
+                :timeout="3000"
+            >
+                {{ formNotCompletedMessage }}
+            </v-snackbar>
         </v-card>
     </v-dialog>
 </template>
@@ -111,6 +122,7 @@ const { oldProductInfo } = defineProps(['oldProductInfo']);
 
 //errors
 const formNotCompleted = ref(false)
+const formNotCompletedMessage = ref('')
 
 //basic info
 const categoryId = router.currentRoute.value.params.id
@@ -168,8 +180,12 @@ const newProductImage = ref(null)
 const isOldPhotoSaved = ref(false)
 
 const submitChanges = handleSubmit(async () => {
-    if (!isOldPhotoSaved.value && !newProductImage.value || !selectedCategories.value) {
+    if (!isOldPhotoSaved.value && !newProductImage.value || selectedCategories.value.length === 0) {
         formNotCompleted.value = true
+        formNotCompletedMessage.value =
+            selectedCategories.value.length === 0
+                ? 'Не выбрано ни одной категории'
+                : 'Не выбрано фото: оставьте прежнее или добавьте новое'
     } else {
         productId.value ? await editProduct() : await addProduct()
     }
@@ -183,7 +199,6 @@ const addProduct = async () => {
     formData.append('description', description.value.value);
     formData.append('price', price.value.value);
     formData.append('stockQuantity', stockQuantity.value.value);
-    //formData.append('priceWithDiscount', priceWithDiscount.value.value);
     formData.append('categoryId', selectedCategories.value);
     formData.append('file', newProductImage.value?.[0]);
 
@@ -206,7 +221,6 @@ const editProduct = async () => {
     formData.append('description', description.value.value);
     formData.append('price', price.value.value);
     formData.append('stockQuantity', stockQuantity.value.value);
-    //formData.append('priceWithDiscount', priceWithDiscount.value.value);
     formData.append('discountPercentage', discountPercentage.value.value);
     formData.append('categoryId', selectedCategories.value);
     isOldPhotoSaved.value
