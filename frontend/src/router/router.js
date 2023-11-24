@@ -5,6 +5,7 @@ import Authorization from "../views/Authorization.vue";
 import ProductCategory from "../views/ProductCategory.vue";
 import ProductInfo from "../views/ProductInfo.vue";
 import Cart from "../views/Cart.vue";
+import About from "../views/About.vue";
 
 const routes = [
     {
@@ -31,6 +32,11 @@ const routes = [
         path: '/login',
         name: 'Authorization',
         component: Authorization
+    },
+    {
+        path: '/about',
+        name: 'About',
+        component: About
     },
     {
         path: '/:pathMatch(.*)',

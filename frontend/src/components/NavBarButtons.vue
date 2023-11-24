@@ -2,7 +2,7 @@
     <div class="mainNav wrapper__links">
         <router-link to="/">Главная</router-link>
         <AllCategoriesDropdown/>
-        <router-link to="/frsdejn">О нас</router-link>
+        <router-link to="/about">О нас</router-link>
     </div>
 
     <div class="mainNav wrapper__links actions">
