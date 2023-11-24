@@ -1,24 +1,26 @@
 <template>
-    <AlertContainer
-        v-if="placeOrderSuccess"
-        :color="'success'"
-        :icon="'mdi-check-circle-outline'"
-        :message="'Поздравляем! Заказ подтвержден, отправили письмо на вашу почту'"
-    />
+    <div class="alert-container">
+        <AlertTemplate
+            v-if="placeOrderSuccess"
+            :color="'green'"
+            :icon="'mdi-check-circle-outline'"
+            :message="'Поздравляем! Заказ подтвержден, отправили письмо на вашу почту'"
+        />
 
-    <AlertContainer
-        v-if="!userAuthorized"
-        :color="'info'"
-        :icon="'mdi-information-outline'"
-        :message="'Чтобы оформить заказ, нужно авторизоваться'"
-    />
+        <AlertTemplate
+            v-if="!userAuthorized"
+            :color="'blue'"
+            :icon="'mdi-information-outline'"
+            :message="'Чтобы оформить заказ, нужно авторизоваться'"
+        />
 
-    <AlertContainer
-        v-if="confirmationError || sendOrderError"
-        :color="confirmationError ? 'warning' : 'error'"
-        :icon="'mdi-alert-circle-outline'"
-        :message="confirmationError ? `Уменьшите количество товаров ` + problematicProductsNames.join(', ') : 'Заказ не удалось подтвердить'"
-    />
+        <AlertTemplate
+            v-if="confirmationError || sendOrderError"
+            :color="sendOrderError ? 'orange' : 'red'"
+            :icon="'mdi-alert-circle-outline'"
+            :message="confirmationError ? `Уменьшите количество товаров ` + problematicProductsNames.join(', ') : 'Заказ не удалось подтвердить'"
+        />
+    </div>
 
     <div class="order-info">
         <div class="order__items d-flex justify-center">
@@ -75,12 +77,13 @@
 </template>
 
 <script setup>
-import {baseBackendUrl, cartItemCount, userAuthorized} from "../utils/utils";
+import {cartItemCount, userAuthorized} from "../utils/variables.js";
 import {computed, onMounted, ref} from "vue";
 import store from "../stores/store";
 import OrderList from "../components/order/OrderList.vue";
 import axios from "axios";
-import AlertContainer from "../components/AlertContainer.vue";
+import {ordersBackendUrl, productsBackendUrl} from "../utils/urls";
+import AlertTemplate from "../components/AlertTemplate.vue";
 
 let placeOrderSuccess = ref(false)
 let processingOrder = ref(false)
@@ -96,7 +99,7 @@ const confirmOrder = async () => {
     problematicProductsNames.value = [];
 
     for (const cartItem of store.state.cart) {
-        let currentStockQuantity = await fetch(baseBackendUrl + `/products/${cartItem.productId}`)
+        let currentStockQuantity = await fetch(productsBackendUrl + `/${cartItem.productId}`)
             .then(res => res.json())
             .then(res => res.stockQuantity)
         if (cartItem.quantity <= currentStockQuantity) {
@@ -114,7 +117,7 @@ const confirmOrder = async () => {
     } else {
         setTimeout(() => {
             confirmationError.value = false;
-        }, 1000);
+        }, 3000);
     }
 };
 
@@ -124,7 +127,7 @@ const sendOrderToServer = async (orderItemsArray) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .post(baseBackendUrl + '/orders',
+        .post(ordersBackendUrl,
             orderItemsArray,
             {headers: {
                     'Authorization': `Bearer ${token}`
@@ -156,7 +159,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .order-info{
-    margin: 100px auto 0;
+    margin: 120px auto 0;
     width: 100%;
     max-width: 1390px;
     display: flex;

@@ -1,10 +1,12 @@
 <template>
-    <AlertContainer
-        v-if="addToCartError"
-        :color="'error'"
-        :icon="'mdi-alert-circle-outline'"
-        :message="'Товар уже раскупили:('"
-    />
+    <div class="alert-container">
+        <AlertTemplate
+            v-if="addToCartError"
+            :color="'red'"
+            :icon="'mdi-alert-circle-outline'"
+            :message="'Товар уже раскупили:('"
+        />
+    </div>
 
     <div
         class="product"
@@ -13,7 +15,8 @@
         <div class="product__info">
             <div class="product__image">
                 <v-img
-                    :src="getImage('products', product.imageUrl)"
+                    :src="productImage"
+                    v-on:error="productImage = '../../public/no_img.png'"
                 />
             </div>
 
@@ -74,23 +77,27 @@
 import {onMounted, ref} from "vue"
 import router from "../router/router";
 import Comments from "../components/Comments.vue";
-import {baseBackendUrl, cartItemCount, getImage, userAuthorized} from "../utils/utils";
+import {getImage} from "../utils/utils";
+import {cartItemCount, userAuthorized} from "../utils/variables.js";
 import store from "../stores/store";
-import AlertContainer from "../components/AlertContainer.vue";
+import {productsBackendUrl} from "../utils/urls";
+import AlertTemplate from "../components/AlertTemplate.vue";
 
 const productId = router.currentRoute.value.params.id
+const productImage = ref(null)
 const isFetchError = ref(false);
 let addToCartError = ref(false)
 let product = ref([])
 
 onMounted(async () => {
     try {
-        const response = await fetch(baseBackendUrl + `/products/${productId}`);
+        const response = await fetch(productsBackendUrl + `/${productId}`);
 
         if (!response.ok) {
             isFetchError.value = true;
         } else {
             product.value = await response.json();
+            productImage.value = getImage('products', product.value.imageUrl)
         }
     } catch (error) {
         isFetchError.value = true;
@@ -102,7 +109,7 @@ onMounted(async () => {
 });
 
 const addToCart = async () => {
-    let currentStockQuantity = await fetch(baseBackendUrl + `/products/${productId}`)
+    let currentStockQuantity = await fetch(productsBackendUrl + `/${productId}`)
         .then(res => res.json())
         .then(res => res.stockQuantity)
     if (currentStockQuantity !== 0) {
