@@ -1,5 +1,6 @@
 package com.store.Online.Store.service.impl;
 
+import com.store.Online.Store.config.MinioProperties;
 import com.store.Online.Store.dto.CommentRequest;
 import com.store.Online.Store.entity.Comment;
 import com.store.Online.Store.entity.Product;
@@ -9,27 +10,24 @@ import com.store.Online.Store.repository.productRepository;
 import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.repository.commentRepository;
+import io.minio.*;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class CommentServiceImpl implements commentService{
@@ -38,13 +36,16 @@ public class CommentServiceImpl implements commentService{
     private final productRepository productRepository;
     private final userRepository userRepository;
 
-    @Value("Online-Store\\src\\main\\resources\\commentImages")
-    private String directoryPath;
+    private final MinioClient minioClient;
+    private final MinioProperties minioProperties;
+
     @Autowired
-    public CommentServiceImpl(commentRepository commentrepository, productRepository productRepository, userRepository userRepository){
+    public CommentServiceImpl(commentRepository commentrepository, productRepository productRepository, userRepository userRepository, MinioClient minioClient, MinioProperties minioProperties){
         this.commentRepository =commentrepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
+        this.minioClient = minioClient;
+        this.minioProperties = minioProperties;
     }
 
     @Override
@@ -98,14 +99,7 @@ public class CommentServiceImpl implements commentService{
         comment.setRating(commentRequest.getRating());
 
         if (file != null) {
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            Path filePath = Paths.get(directoryPath, fileName);
-
-            try (InputStream inputStream = file.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }  catch (IOException e) {
-                throw new ImageNotLoadedException("Image loading error");
-            }
+            String fileName =upload(file);
             comment.setImageUrl(fileName);
         }
 
@@ -161,21 +155,21 @@ public class CommentServiceImpl implements commentService{
     }
 
     @Override
-    public Resource getImageContent(String imageName) {
+    public byte[] getFile(String fileName) {
         try {
-            Path imagePath = Paths.get(directoryPath, imageName);
-            Resource resource = new UrlResource(imagePath.toUri());
-            if (resource.exists() && resource.isReadable()) {
-                return resource;
-            } else{
-                throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
-            }
-        } catch (ImageNotLoadedException e) {
-            throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            InputStream inputStream;
+            inputStream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioProperties.getBucketImageComment())
+                            .object(fileName)
+                            .build());
+
+            return StreamUtils.copyToByteArray(inputStream);
+        } catch (Exception e) {
+            throw new ImageNotLoadedException("Error get file : " + e.getMessage());
         }
     }
+
     private CommentRequest mapToCommentRequest(Comment comment) {
         return CommentRequest.builder()
                 .firstName(comment.getUserId().getFirstName())
@@ -184,5 +178,56 @@ public class CommentServiceImpl implements commentService{
                 .imageUrl(comment.getImageUrl())
                 .commentId(comment.getCommentId())
                 .build();
+    }
+
+    public String upload (MultipartFile file) {
+        try {
+            createBucket();
+        } catch (Exception e) {
+            throw new ImageNotLoadedException("Image upload failed" + e.getMessage());
+        }
+        if (file.isEmpty() && file.getOriginalFilename() == null){
+            throw new ImageNotLoadedException("Image must have name.");
+        }
+        String fileName = generateFileName(file);
+        InputStream inputStream;
+        try {
+            inputStream = file.getInputStream();
+        } catch (Exception e){
+            throw new ImageNotLoadedException("Image upload failed" + e.getMessage());
+        }
+        saveImage(inputStream,fileName);
+        return fileName;
+    }
+
+    @SneakyThrows
+    private void createBucket(){
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder()
+                .bucket(minioProperties.getBucketImageComment())
+                .build());
+        if (!found){
+            minioClient.makeBucket(MakeBucketArgs.builder()
+                    .bucket(minioProperties.getBucketImageComment())
+                    .build());
+        }
+    }
+
+    private String generateFileName(MultipartFile file) {
+        String extension = getExtension(file);
+        return UUID.randomUUID() +"." +extension;
+    }
+
+    private String getExtension(MultipartFile file){
+        return  Objects.requireNonNull(file.getOriginalFilename())
+                .substring(file.getOriginalFilename().lastIndexOf(".")+1);
+    }
+
+    @SneakyThrows
+    private void saveImage(InputStream inputStream, String fileName){
+        minioClient.putObject(PutObjectArgs.builder()
+                .stream(inputStream, inputStream.available(), -1)
+                .bucket(minioProperties.getBucketImageComment())
+                .object(fileName)
+                .build());
     }
 }

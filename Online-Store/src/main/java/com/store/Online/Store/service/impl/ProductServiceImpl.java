@@ -1,5 +1,6 @@
 package com.store.Online.Store.service.impl;
 
+import com.store.Online.Store.config.MinioProperties;
 import com.store.Online.Store.dto.CommentRequest;
 import com.store.Online.Store.dto.ProductRequest;
 import com.store.Online.Store.entity.Category;
@@ -10,27 +11,18 @@ import com.store.Online.Store.exception.*;
 import com.store.Online.Store.repository.*;
 import com.store.Online.Store.service.commentService;
 import com.store.Online.Store.service.productService;
+import io.minio.*;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
-
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.*;
-
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ProductServiceImpl implements productService {
@@ -42,19 +34,21 @@ public class ProductServiceImpl implements productService {
     private final commentService commentService;
     private final orderItemRepository orderItemRepository;
 
-    @Value("Online-Store\\src\\main\\resources\\commentImages")
-    private String directoryPath;
+    private final MinioClient minioClient;
+    private final MinioProperties minioProperties;
 
     @Autowired
     public ProductServiceImpl(productRepository productRepository, productCategoryRepository productCategoryRepository,
                               categoryRepository categoryRepository, discountRepository discountRepository,
-                              commentService commentService, orderItemRepository orderItemRepository) {
+                              commentService commentService, orderItemRepository orderItemRepository, MinioClient minioClient, MinioProperties minioProperties) {
         this.productRepository = productRepository;
         this.productCategoryRepository = productCategoryRepository;
         this.categoryRepository = categoryRepository;
         this.discountRepository = discountRepository;
         this.commentService = commentService;
         this.orderItemRepository = orderItemRepository;
+        this.minioClient = minioClient;
+        this.minioProperties = minioProperties;
     }
 
     @Override
@@ -94,17 +88,10 @@ public class ProductServiceImpl implements productService {
             product.setPrice(productRequest.getPrice());
             product.setPriceWithDiscount(productRequest.getPrice());
             if (file == null) {
-                product.setImageUrl(directoryPath+"/2.png");
+                product.setImageUrl("default.png");
             } else {
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-                Path filePath = Paths.get(directoryPath, fileName);
-
-                try (InputStream inputStream = file.getInputStream()) {
-                    Files.copy(inputStream, filePath);
-                } catch (IOException e) {
-                    throw new ImageNotLoadedException("Image loading error");
-                }
-                product.setImageUrl(fileName);
+               String fileName =upload(file);
+               product.setImageUrl(fileName);
             }
 
             Discount defaultDiscount = new Discount();
@@ -184,6 +171,21 @@ public class ProductServiceImpl implements productService {
         return filteredProducts;
     }
 
+    @Override
+    public byte[] getFile(String fileName) {
+        try {
+            InputStream inputStream;
+            inputStream = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioProperties.getBucketImage())
+                            .object(fileName)
+                            .build());
+
+            return StreamUtils.copyToByteArray(inputStream);
+        } catch (Exception e) {
+            throw new ImageNotLoadedException("Error get file : " + e.getMessage());
+        }
+    }
 
     private List<CommentRequest> getCommentsForProduct(Long productId, Sort.Direction direction) {
         try {
@@ -193,40 +195,14 @@ public class ProductServiceImpl implements productService {
         }
     }
 
-    @Override
-    public Resource getImageContent(String imageName) {
-
-        try {
-            Path imagePath = Paths.get(directoryPath, imageName);
-            Resource resource = new UrlResource(imagePath.toUri());
-            if (resource.exists() && resource.isReadable()) {
-                return resource;
-            } else{
-                throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
-            }
-        } catch (ImageNotLoadedException e) {
-            throw new ImageNotLoadedException("Error accessing directory or file does not exist: " + imageName);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image,Long productId) throws IOException {
+    private void updateProductDetails(Product product, ProductRequest productRequest, MultipartFile image,Long productId){
         product.setProductName(productRequest.getProductName());
         product.setDescription(productRequest.getDescription());
         product.setStockQuantity(productRequest.getStockQuantity());
         product.setPrice(productRequest.getPrice());
 
         if (image != null && !image.isEmpty()) {
-            String fileName = System.currentTimeMillis() + "_" + image.getOriginalFilename();
-            Path filePath = Paths.get(directoryPath, fileName);
-            Files.deleteIfExists(filePath);
-
-            try (InputStream inputStream = image.getInputStream()) {
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            }  catch (IOException e) {
-                throw new ImageNotLoadedException("Image loading error");
-            }
+            String fileName = upload(image);
             product.setImageUrl(fileName);
         } else
             product.setImageUrl(productRepository.findImageUrlByProductId(productId));
@@ -302,4 +278,54 @@ public class ProductServiceImpl implements productService {
         return productRequest;
     }
 
+    public String upload (MultipartFile file) {
+        try {
+            createBucket();
+        } catch (Exception e) {
+            throw new ImageNotLoadedException("Image upload failed" + e.getMessage());
+        }
+        if (file.isEmpty() && file.getOriginalFilename() == null){
+            throw new ImageNotLoadedException("Image must have name.");
+        }
+        String fileName = generateFileName(file);
+        InputStream inputStream;
+        try {
+            inputStream = file.getInputStream();
+        } catch (Exception e){
+            throw new ImageNotLoadedException("Image upload failed" + e.getMessage());
+        }
+        saveImage(inputStream,fileName);
+        return fileName;
+    }
+
+    @SneakyThrows
+    private void createBucket(){
+        boolean found = minioClient.bucketExists(BucketExistsArgs.builder()
+                .bucket(minioProperties.getBucketImage())
+                .build());
+        if (!found){
+            minioClient.makeBucket(MakeBucketArgs.builder()
+                    .bucket(minioProperties.getBucketImage())
+                    .build());
+        }
+    }
+
+    private String generateFileName(MultipartFile file) {
+        String extension = getExtension(file);
+        return UUID.randomUUID() +"." +extension;
+    }
+
+    private String getExtension(MultipartFile file){
+        return  Objects.requireNonNull(file.getOriginalFilename())
+                .substring(file.getOriginalFilename().lastIndexOf(".")+1);
+    }
+
+    @SneakyThrows
+    private void saveImage(InputStream inputStream, String fileName){
+        minioClient.putObject(PutObjectArgs.builder()
+                .stream(inputStream, inputStream.available(), -1)
+                .bucket(minioProperties.getBucketImage())
+                .object(fileName)
+                .build());
+    }
 }
