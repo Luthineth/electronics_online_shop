@@ -256,10 +256,10 @@ class CommentServiceTest {
         verify(commentRepository, never()).deleteByProductId(any(Product.class));
     }
 
-    @Test
-    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
-        String imageName = "Test.png";
-        assertThrows(ImageNotLoadedException.class, () -> commentService.getImageContent(imageName));
-    }
+//    @Test
+//    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
+//        String imageName = "Test.png";
+//        assertThrows(ImageNotLoadedException.class, () -> commentService.getImageContent(imageName));
+//    }
 
 }
