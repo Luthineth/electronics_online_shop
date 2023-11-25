@@ -62,7 +62,6 @@ services:
       - '9000:9000'
     volumes:
       - minio-data:/data
-      - .MinIO/images:/data
     networks:
       - network
 
