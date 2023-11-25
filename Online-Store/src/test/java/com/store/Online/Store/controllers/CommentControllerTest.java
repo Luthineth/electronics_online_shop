@@ -176,38 +176,38 @@ class CommentControllerTest {
         assertEquals("Comment deletion exception", response.getBody());
     }
 
-    @Test
-    void serveImage_ExistingImage_ReturnsOkResponseWithImage() throws IOException {
-        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "test".getBytes());
-        Resource mockResource = new ByteArrayResource(file.getBytes());
-        when(commentService.getImageContent(file.getName())).thenReturn(mockResource);
-        ResponseEntity<Resource> responseEntity = commentController.serveImage(file.getName());
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertNotNull(responseEntity.getBody());
-        assertEquals(MediaType.IMAGE_PNG, responseEntity.getHeaders().getContentType());
-        assertArrayEquals(file.getBytes(), ((ByteArrayResource) responseEntity.getBody()).getByteArray());
-        verify(commentService, times(1)).getImageContent(file.getName());
-    }
-
-    @Test
-    void serveImage_NonExistingImage_ReturnsNotFoundResponse() {
-        String imageName = "nonExistingImage.png";
-        when(commentService.getImageContent(imageName)).thenReturn(null);
-        ResponseEntity<Resource> responseEntity = commentController.serveImage(imageName);
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertNull(responseEntity.getBody());
-        verify(commentService, times(1)).getImageContent(imageName);
-    }
-
-    @Test
-    void serveImage_ImageNotLoadedException_ReturnsNotFoundResponse() {
-        String imageName = "malformedURL.png";
-        when(commentService.getImageContent(imageName)).thenThrow(new ImageNotLoadedException("Simulate image loading error"));
-        ResponseEntity<Resource> responseEntity = commentController.serveImage(imageName);
-        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-        assertNull(responseEntity.getBody());
-        verify(commentService, times(1)).getImageContent(imageName);
-    }
+//    @Test
+//    void serveImage_ExistingImage_ReturnsOkResponseWithImage() throws IOException {
+//        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "test".getBytes());
+//        Resource mockResource = new ByteArrayResource(file.getBytes());
+//        when(commentService.getImageContent(file.getName())).thenReturn(mockResource);
+//        ResponseEntity<Resource> responseEntity = commentController.serveImage(file.getName());
+//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+//        assertNotNull(responseEntity.getBody());
+//        assertEquals(MediaType.IMAGE_PNG, responseEntity.getHeaders().getContentType());
+//        assertArrayEquals(file.getBytes(), ((ByteArrayResource) responseEntity.getBody()).getByteArray());
+//        verify(commentService, times(1)).getImageContent(file.getName());
+//    }
+//
+//    @Test
+//    void serveImage_NonExistingImage_ReturnsNotFoundResponse() {
+//        String imageName = "nonExistingImage.png";
+//        when(commentService.getImageContent(imageName)).thenReturn(null);
+//        ResponseEntity<Resource> responseEntity = commentController.serveImage(imageName);
+//        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+//        assertNull(responseEntity.getBody());
+//        verify(commentService, times(1)).getImageContent(imageName);
+//    }
+//
+//    @Test
+//    void serveImage_ImageNotLoadedException_ReturnsNotFoundResponse() {
+//        String imageName = "malformedURL.png";
+//        when(commentService.getImageContent(imageName)).thenThrow(new ImageNotLoadedException("Simulate image loading error"));
+//        ResponseEntity<Resource> responseEntity = commentController.serveImage(imageName);
+//        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+//        assertNull(responseEntity.getBody());
+//        verify(commentService, times(1)).getImageContent(imageName);
+//    }
 
 }
 

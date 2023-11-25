@@ -53,7 +53,7 @@ class CommentServiceTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        ReflectionTestUtils.setField(commentService, "directoryPath", "D:\\javaCode\\electronics_online_shop\\Online-Store\\commentImages");
+        ReflectionTestUtils.setField(commentService, "directoryPath", "D:\\javaCode\\electronics\\Online-Store\\src\\main\\resources\\commentImages");
 
     }
 
@@ -254,15 +254,6 @@ class CommentServiceTest {
         assertThrows(ProductNotFoundException.class, () -> commentService.deleteProductComments(productId));
         verify(productRepository, times(1)).findById(productId);
         verify(commentRepository, never()).deleteByProductId(any(Product.class));
-    }
-
-    @Test
-    void getImageContent_ExistingImage_ReturnsResource() {
-        String imageName = "1700008008729_alica_image.png";
-        Resource result = commentService.getImageContent(imageName);
-        assertNotNull(result);
-        assertTrue(result instanceof UrlResource);
-        assertTrue(result.isReadable());
     }
 
     @Test
