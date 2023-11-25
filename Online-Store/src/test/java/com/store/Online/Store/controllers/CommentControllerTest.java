@@ -8,12 +8,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
+import org.mockito.Mockito;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -22,6 +25,9 @@ import java.math.BigDecimal;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class CommentControllerTest {
 
@@ -30,6 +36,7 @@ class CommentControllerTest {
 
     @InjectMocks
     private CommentController commentController;
+
 
     @Mock
     User user = new User(
@@ -175,39 +182,5 @@ class CommentControllerTest {
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Comment deletion exception", response.getBody());
     }
-
-//    @Test
-//    void serveImage_ExistingImage_ReturnsOkResponseWithImage() throws IOException {
-//        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "test".getBytes());
-//        Resource mockResource = new ByteArrayResource(file.getBytes());
-//        when(commentService.getImageContent(file.getName())).thenReturn(mockResource);
-//        ResponseEntity<Resource> responseEntity = commentController.serveImage(file.getName());
-//        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-//        assertNotNull(responseEntity.getBody());
-//        assertEquals(MediaType.IMAGE_PNG, responseEntity.getHeaders().getContentType());
-//        assertArrayEquals(file.getBytes(), ((ByteArrayResource) responseEntity.getBody()).getByteArray());
-//        verify(commentService, times(1)).getImageContent(file.getName());
-//    }
-//
-//    @Test
-//    void serveImage_NonExistingImage_ReturnsNotFoundResponse() {
-//        String imageName = "nonExistingImage.png";
-//        when(commentService.getImageContent(imageName)).thenReturn(null);
-//        ResponseEntity<Resource> responseEntity = commentController.serveImage(imageName);
-//        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-//        assertNull(responseEntity.getBody());
-//        verify(commentService, times(1)).getImageContent(imageName);
-//    }
-//
-//    @Test
-//    void serveImage_ImageNotLoadedException_ReturnsNotFoundResponse() {
-//        String imageName = "malformedURL.png";
-//        when(commentService.getImageContent(imageName)).thenThrow(new ImageNotLoadedException("Simulate image loading error"));
-//        ResponseEntity<Resource> responseEntity = commentController.serveImage(imageName);
-//        assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
-//        assertNull(responseEntity.getBody());
-//        verify(commentService, times(1)).getImageContent(imageName);
-//    }
-
 }
 

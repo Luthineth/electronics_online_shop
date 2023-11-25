@@ -303,11 +303,4 @@ class ProductServiceTest {
                 "new_phone.jpg",
                 new Discount(new BigDecimal(5)));
     }
-
-//    @Test
-//    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
-//        String imageName = "Test.png";
-//        assertThrows(ImageNotLoadedException.class, () -> productService.getImageContent(imageName));
-//    }
-
 }
