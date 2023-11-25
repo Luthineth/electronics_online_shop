@@ -5,7 +5,7 @@ import com.store.Online.Store.entity.Comment;
 import com.store.Online.Store.exception.*;
 import com.store.Online.Store.service.commentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -70,18 +70,18 @@ public class CommentController {
     }
 
     @GetMapping("/images/{imageName}")
-    public ResponseEntity<Resource> serveImage(@PathVariable String imageName) {
-        try{
-            Resource resource = commentService.getImageContent(imageName);
-            if (resource != null) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_PNG)
-                        .body(resource);
-            }else {
-                return ResponseEntity.notFound().build();
-            }
+    public ResponseEntity<?> serveImage(@PathVariable String imageName) {
+        try {
+            byte[] imageBytes = commentService.getFile(imageName);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(imageBytes);
         } catch (ImageNotLoadedException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 

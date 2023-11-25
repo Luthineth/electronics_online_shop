@@ -2,6 +2,7 @@ package com.store.Online.Store.service;
 
 import com.store.Online.Store.dto.ProductRequest;
 import com.store.Online.Store.entity.Product;
+import lombok.SneakyThrows;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,5 +25,6 @@ public interface productService {
 
     List<Product> searchProducts(BigDecimal minPrice, BigDecimal maxPrice, Boolean inStock, Integer minRating, Sort.Direction price, List<Product> products);
 
-    Resource getImageContent(String imageUrl);
+    @SneakyThrows
+    byte[] getFile(String fileName);
 }

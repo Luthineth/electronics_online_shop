@@ -8,10 +8,13 @@ import com.store.Online.Store.repository.commentRepository;
 import com.store.Online.Store.repository.productRepository;
 import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.impl.CommentServiceImpl;
+import io.minio.*;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -22,6 +25,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -49,11 +54,18 @@ class CommentServiceTest {
 
     @Mock
     private SecurityContext securityContext;
+
+    @Mock
+    private MinioClient minioClient;
+
+    @Mock
+    private MinioProperties minioProperties;
+
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        ReflectionTestUtils.setField(commentService, "directoryPath", "D:\\javaCode\\electronics_online_shop\\Online-Store\\commentImages");
+        ReflectionTestUtils.setField(commentService, "directoryPath", "D:\\javaCode\\electronics\\Online-Store\\src\\main\\resources\\commentImages");
 
     }
 
@@ -255,20 +267,4 @@ class CommentServiceTest {
         verify(productRepository, times(1)).findById(productId);
         verify(commentRepository, never()).deleteByProductId(any(Product.class));
     }
-
-    @Test
-    void getImageContent_ExistingImage_ReturnsResource() {
-        String imageName = "1700008008729_alica_image.png";
-        Resource result = commentService.getImageContent(imageName);
-        assertNotNull(result);
-        assertTrue(result instanceof UrlResource);
-        assertTrue(result.isReadable());
-    }
-
-    @Test
-    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
-        String imageName = "Test.png";
-        assertThrows(ImageNotLoadedException.class, () -> commentService.getImageContent(imageName));
-    }
-
 }

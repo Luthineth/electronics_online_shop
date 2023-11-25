@@ -1,5 +1,9 @@
 version: '3.8'
 
+volumes:
+  minio-data:
+    driver: local
+
 services:
 
   db:
@@ -32,6 +36,7 @@ services:
     networks:
       - network
 
+
   frontend:
     build:
       context: .
@@ -39,12 +44,40 @@ services:
     container_name: frontend
     depends_on:
      - backend
+     - minio
     ports:
       - "8081:5173"
     restart: always
     networks:
       - network
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    entrypoint:
+      ["/bin/sh", "-c", "export MINIO_ROOT_USER=minioadmin && export MINIO_ROOT_PASSWORD=minioadmin && /usr/bin/docker-entrypoint.sh minio server /data --console-address :9090"]
+
+    ports:
+      - '9090:9090'
+      - '9000:9000'
+    volumes:
+      - minio-data:/data
+    networks:
+      - network
+
+  createbucket:
+      image: minio/mc
+      depends_on:
+        - minio
+      entrypoint: >
+        /bin/sh -c "
+          /usr/bin/mc config host add minio http://minio:9000 minioadmin minioadmin;
+          /usr/bin/mc mb minio/images;
+          /usr/bin/mc mb minio/commentimage;
+          exit 0;
+          "
+      networks:
+        - network
 networks:
   network:
     name: network

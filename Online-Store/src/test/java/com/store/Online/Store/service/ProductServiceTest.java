@@ -54,7 +54,7 @@ class ProductServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(productService, "directoryPath", "D:\\javaCode\\electronics_online_shop\\Online-Store\\images");
+        ReflectionTestUtils.setField(productService, "directoryPath", "D:\\javaCode\\electronics\\Online-Store\\src\\main\\resources\\images");
     }
 
     @Test
@@ -303,21 +303,4 @@ class ProductServiceTest {
                 "new_phone.jpg",
                 new Discount(new BigDecimal(5)));
     }
-
-
-    @Test
-    void getImageContent_ExistingImage_ReturnsResource() {
-        String imageName = "alica_image.png";
-        Resource result = productService.getImageContent(imageName);
-        assertNotNull(result);
-        assertTrue(result instanceof UrlResource);
-        assertTrue(result.isReadable());
-    }
-
-    @Test
-    void getImageContent_MalformedURL_ThrowsImageNotLoadedException(){
-        String imageName = "Test.png";
-        assertThrows(ImageNotLoadedException.class, () -> productService.getImageContent(imageName));
-    }
-
 }

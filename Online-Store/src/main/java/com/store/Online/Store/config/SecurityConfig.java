@@ -2,6 +2,10 @@ package com.store.Online.Store.config;
 
 import com.store.Online.Store.config.jwt.JwtSecurityConfigurer;
 import com.store.Online.Store.config.jwt.JwtTokenUtil;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
+import io.minio.MinioClient;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,8 +21,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-
     private final JwtTokenUtil jwtTokenUtil;
+    private final MinioProperties minioProperties;
 
     @Bean
     @Override
@@ -26,12 +30,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManager();
     }
 
-    @Autowired
-    public SecurityConfig(JwtTokenUtil jwtTokenProvider) {
-        this.jwtTokenUtil = jwtTokenProvider;
+    @Bean
+    @SneakyThrows
+    public MinioClient minioClient(){
+        return MinioClient.builder()
+                .endpoint(minioProperties.getUrl())
+                .credentials(minioProperties.getAccessKey(), minioProperties.getSecretKey())
+                .build();
     }
 
-
+    @Autowired
+    public SecurityConfig(JwtTokenUtil jwtTokenProvider, MinioProperties minioProperties) {
+        this.jwtTokenUtil = jwtTokenProvider;
+        this.minioProperties = minioProperties;
+    }
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.httpBasic().disable()

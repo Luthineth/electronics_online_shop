@@ -23,5 +23,5 @@ public interface commentService {
 
     void deleteProductComments(Long productId);
 
-    Resource getImageContent(String imageName);
+    byte[] getFile(String fileName);
 }

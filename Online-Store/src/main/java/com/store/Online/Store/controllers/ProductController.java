@@ -6,6 +6,7 @@ import com.store.Online.Store.exception.*;
 import com.store.Online.Store.service.productService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +48,7 @@ public class ProductController {
         try {
             Product addedProduct=productService.addProduct(productRequest,file);
             return ResponseEntity.ok(addedProduct);
-        } catch (ProductAdditionException e) {
+        } catch (ProductAdditionException | ImageNotLoadedException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred: " + e.getMessage());
@@ -87,16 +88,16 @@ public class ProductController {
     @GetMapping("/images/{imageName}")
     public ResponseEntity<?> serveImage(@PathVariable String imageName) {
         try {
-            Resource resource = productService.getImageContent(imageName);
-            if (resource != null) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.IMAGE_PNG)
-                        .body(resource);
-            }else {
-                return ResponseEntity.notFound().build();
-            }
+            byte[] imageBytes = productService.getFile(imageName);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(imageBytes);
         } catch (ImageNotLoadedException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
 }
