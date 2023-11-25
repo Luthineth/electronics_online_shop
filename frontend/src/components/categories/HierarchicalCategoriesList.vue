@@ -39,9 +39,11 @@
 </template>
 
 <script setup>
-import {baseBackendUrl, loadNewPage, userRole} from "../../utils/utils";
+import {loadNewPage} from "../../utils/utils";
+import {userRole} from "../../utils/variables";
 import CategoryEdit from "./CategoryEdit.vue";
 import axios from "axios";
+import {categoriesBackendUrl} from "../../utils/urls";
 
 const { hierarchyProductTree } = defineProps({
     hierarchyProductTree: Array
@@ -51,7 +53,7 @@ const deleteCategory = async (categoryId) => {
     const token = localStorage.getItem('token')
 
     await axios
-        .delete(baseBackendUrl + `/categories/${categoryId}`,
+        .delete(categoriesBackendUrl + `/${categoryId}`,
             {headers: {
                     'Authorization': `Bearer ${token}`
                 }})

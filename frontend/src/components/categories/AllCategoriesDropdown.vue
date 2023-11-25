@@ -25,7 +25,10 @@
                     <v-divider/>
                 </div>
 
-                <HierarchicalCategoriesList :hierarchyProductTree="hierarchy" v-if="hierarchy"/>
+                <HierarchicalCategoriesList
+                    :hierarchyProductTree="hierarchy"
+                    v-if="hierarchy"
+                />
             </div>
         </v-menu>
     </div>
@@ -35,7 +38,8 @@
 import HierarchicalCategoriesList from "./HierarchicalCategoriesList.vue";
 import {onMounted, ref} from "vue";
 import CategoryEdit from "./CategoryEdit.vue";
-import {baseBackendUrl, userRole} from "../../utils/utils";
+import {userRole} from "../../utils/variables";
+import {mainBackendUrl} from "../../utils/urls";
 
 let categories = ref([])
 let hierarchy = ref([])
@@ -62,7 +66,7 @@ function buildHierarchyTree(categories){
 }
 
 onMounted(async () => {
-    categories.value = await fetch(baseBackendUrl + '/main')
+    categories.value = await fetch(mainBackendUrl)
         .then(res => res.json())
     hierarchy = buildHierarchyTree(categories.value)
 });

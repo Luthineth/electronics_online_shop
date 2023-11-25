@@ -1,16 +1,18 @@
 <template>
-    <AlertContainer
-        v-if="signUpSuccess"
-        :color="'success'"
-        :icon="'mdi-check-circle-outline'"
-        :message="'Поздравляем! Вы успешно зарегистрированы'"
-    />
-    <AlertContainer
-        v-if="logInError || signUpError"
-        :color="'error'"
-        :icon="'mdi-alert-circle-outline'"
-        :message="logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'"
-    />
+    <div class="alert-container">
+        <AlertTemplate
+            v-if="signUpSuccess"
+            :color="'green'"
+            :icon="'mdi-check-circle-outline'"
+            :message="'Поздравляем! Вы успешно зарегистрированы'"
+        />
+        <AlertTemplate
+            v-if="logInError || signUpError"
+            :color="'red'"
+            :icon="'mdi-alert-circle-outline'"
+            :message="logInError ? 'Неправильный e-mail или пароль' : 'Такой пользователь уже существует'"
+        />
+    </div>
     <div class="authorization-container">
         <v-card
             variant="outlined"
@@ -126,9 +128,11 @@ import {ref} from 'vue';
 import {useField, useForm} from 'vee-validate'
 import axios from "axios";
 import router from "../router/router";
-import {baseBackendUrl, userAuthorized} from "../utils/utils";
-import AlertContainer from "../components/AlertContainer.vue";
+import {userAuthorized} from "../utils/variables.js";
+import AlertTemplate from "../components/AlertTemplate.vue";
+import {authBackendUrl, loginBackendUrl} from "../utils/urls";
 
+const alerts = ref([]);
 const isLogin = ref(true);
 const signUpSuccess = ref(false);
 const logInError = ref(false);
@@ -172,7 +176,7 @@ const userLogIn = async () => {
     }
 
     await axios
-        .post(baseBackendUrl + '/login', user)
+        .post(loginBackendUrl, user)
         .catch(() => {
             logInError.value = true
         })
@@ -200,7 +204,7 @@ const userSignUp = handleSubmit(async () => {
     }
 
     await axios
-        .post(baseBackendUrl + '/authenticate', user)
+        .post(authBackendUrl, user)
         .catch(() => {
             signUpError.value = true
         })

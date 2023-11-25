@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Handjet:wght@400;500;800&family=Montserrat&display=swap');
 
 :root{
-  max-width: 1500px;
   margin: auto;
   background: #faf8f5;
   color: #333;
@@ -20,14 +19,15 @@ a {
 }
 .alert-container{
   position: fixed;
-  z-index: 1;
-  top: 90px;
+  z-index: 4;
   left: 0;
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: 10px;
   align-items: center;
 }
 .v-alert{
   max-width: fit-content;
+  margin: auto;
 }

@@ -1,12 +1,5 @@
-import {ref} from "vue";
-
-export const baseBackendUrl = 'http://localhost:8080'
-
-export let userAuthorized = ref(false);
-
-export let cartItemCount = ref(0);
-
-export let userRole = ref('USER')
+import {baseBackendUrl} from "./urls";
+import {tokenExpirationDate, userRole} from "./variables";
 
 export const loadNewPage = (pageType) => {
     const {protocol, hostname , port} = window.location
@@ -26,6 +19,7 @@ export const checkAuthorisation = () => {
     if (localStorage.getItem('token') !== null){
         let token = localStorage.getItem('token')
         userRole.value = JSON.parse(atob(token.split('.')[1])).role
+        tokenExpirationDate.value = JSON.parse(atob(token.split('.')[1])).exp
         return true
     } else {
         return false
@@ -51,6 +45,6 @@ export function getFilterUrl(categoryId, range, inStock, minRating, direction) {
 }
 
 export function getImage(type, src) {
-    //'../../public/no_img.png'
+    //'../../../public/no_img.png'
     return baseBackendUrl + `/${type}/images/${src}`
 }

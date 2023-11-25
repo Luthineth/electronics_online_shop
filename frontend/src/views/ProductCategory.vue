@@ -121,8 +121,10 @@
 import {onMounted, ref} from "vue"
 import ProductList from "../components/products/ProductList.vue";
 import router from "../router/router";
-import {baseBackendUrl, getFilterUrl, userRole} from "../utils/utils";
+import {getFilterUrl} from "../utils/utils";
+import {userRole} from "../utils/variables.js";
 import ProductEdit from "../components/products/ProductEdit.vue";
+import {categoryBackendUrl, mainBackendUrl} from "../utils/urls";
 
 const categoryId = router.currentRoute.value.params.id
 
@@ -181,7 +183,7 @@ const applyFiltersToProducts = async () => {
 
 onMounted(async () => {
     try {
-        const response = await fetch(baseBackendUrl + `/products_category/${categoryId}`);
+        const response = await fetch(categoryBackendUrl + `/${categoryId}`);
 
         if (!response.ok) {
             isFetchError.value = true;
@@ -201,7 +203,7 @@ onMounted(async () => {
     if (isFetchError.value) {
         await router.push('/404');
     } else {
-        categoryWithParents.value = await fetch(baseBackendUrl + '/main')
+        categoryWithParents.value = await fetch(mainBackendUrl)
             .then(res => res.json())
             .then(res => res.filter(each => each.categoryId === parseInt(categoryId)))
         parentCategories.value = produceBreadCrumbs(categoryWithParents.value[0])

@@ -13,7 +13,7 @@ import NavBarButtons from "./NavBarButtons.vue";
 
 <style scoped lang="scss">
 .container{
-    margin-bottom: 6rem;
+    margin-bottom: 3rem;
     display: flex;
     justify-content: center;
 }
