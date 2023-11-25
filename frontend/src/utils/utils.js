@@ -45,6 +45,5 @@ export function getFilterUrl(categoryId, range, inStock, minRating, direction) {
 }
 
 export function getImage(type, src) {
-    //'../../../public/no_img.png'
     return baseBackendUrl + `/${type}/images/${src}`
 }
