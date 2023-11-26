@@ -7,7 +7,6 @@ import com.store.Online.Store.exception.UserCreationException;
 import com.store.Online.Store.exception.UserNotFoundException;
 import com.store.Online.Store.service.userService;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;

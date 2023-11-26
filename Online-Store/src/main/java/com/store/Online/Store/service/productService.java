@@ -5,8 +5,6 @@ import com.store.Online.Store.entity.Product;
 import lombok.SneakyThrows;
 import org.springframework.data.domain.Sort;
 import org.springframework.web.multipart.MultipartFile;
-
-import org.springframework.core.io.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;

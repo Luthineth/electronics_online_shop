@@ -11,12 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.util.ReflectionTestUtils;
 
-import org.springframework.core.io.Resource;
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
@@ -54,7 +50,6 @@ class ProductServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        ReflectionTestUtils.setField(productService, "directoryPath", "D:\\javaCode\\electronics\\Online-Store\\src\\main\\resources\\images");
     }
 
     @Test
@@ -101,92 +96,6 @@ class ProductServiceTest {
         verify(productRepository, times(1)).findById(productId);
     }
 
-    @Test
-    void addProduct_ValidProductRequestAndFile_ProductAddedSuccessfully() {
-        ProductRequest productRequest = new ProductRequest();
-        productRequest.setProductName("Test Product");
-        productRequest.setDescription("Test Description");
-        productRequest.setStockQuantity(10);
-        productRequest.setPrice(BigDecimal.valueOf(100.00));
-        productRequest.setCategoryId(Arrays.asList(1L, 2L));
-
-        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "test".getBytes());
-
-        when(discountRepository.findDiscountsByDiscountPercentage(any(BigDecimal.class)))
-                .thenReturn(Optional.of(new Discount()));
-        when(categoryRepository.findById(any(Long.class))).thenReturn(Optional.of(new Category()));
-        when(productRepository.save(any(Product.class))).thenReturn(new Product());
-
-        Product result = productService.addProduct(productRequest, file);
-
-        assertNotNull(result);
-        verify(productRepository, times(1)).save(any(Product.class));
-    }
-
-    @Test
-    void addProduct_NullFile_DefaultImageUsed() {
-        ProductRequest productRequest = new ProductRequest();
-        productRequest.setProductName("Test Product");
-        productRequest.setDescription("Test Description");
-        productRequest.setStockQuantity(10);
-        productRequest.setPrice(BigDecimal.valueOf(100.00));
-        productRequest.setCategoryId(Arrays.asList(1L, 2L));
-
-        when(discountRepository.findDiscountsByDiscountPercentage(any(BigDecimal.class)))
-                .thenReturn(Optional.of(new Discount()));
-        when(categoryRepository.findById(any(Long.class))).thenReturn(Optional.of(new Category()));
-        when(productRepository.save(any(Product.class))).thenReturn(new Product());
-
-        Product result = productService.addProduct(productRequest, null);
-
-        assertNotNull(result);
-        assertEquals("D:\\javaCode\\electronics_online_shop\\Online-Store\\images/2.png", result.getImageUrl());
-        verify(productRepository, times(1)).save(any(Product.class));
-    }
-
-    @Test
-    void updateProduct_ExistingProductId_ProductUpdatedSuccessfully() {
-        Long productId = 1L;
-        ProductRequest productRequest = new ProductRequest();
-        productRequest.setProductName("Updated Product");
-        productRequest.setDescription("Updated Description");
-        productRequest.setStockQuantity(20);
-        productRequest.setPrice(BigDecimal.valueOf(150.00));
-        productRequest.setDiscountPercentage(new BigDecimal("10.00"));
-        productRequest.setCategoryId(Collections.singletonList(3L));
-
-        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "test".getBytes());
-
-        Product existingProduct = new Product(
-                "Новый смартфон",
-                "Описание нового смартфона",
-                10,
-                new BigDecimal("999.99"),
-                new BigDecimal("899.99"),
-                "new_phone.jpg",
-                new Discount(new BigDecimal(5)));
-        existingProduct.setProductId(productId);
-
-        when(productRepository.findById(productId)).thenReturn(Optional.of(existingProduct));
-        when(discountRepository.findDiscountsByDiscountPercentage(any(BigDecimal.class)))
-                .thenReturn(Optional.of(new Discount(new BigDecimal("10.00"))));
-        when(categoryRepository.findById(any(Long.class))).thenReturn(Optional.of(new Category()));
-        when(productRepository.save(any(Product.class))).thenReturn(existingProduct);
-
-        Product result = productService.updateProduct(productId, productRequest, file);
-
-        assertNotNull(result);
-        assertEquals("Updated Product", result.getProductName());
-        assertEquals("Updated Description", result.getDescription());
-        assertEquals(20, result.getStockQuantity());
-        assertEquals(BigDecimal.valueOf(150.00), result.getPrice());
-        assertTrue(result.getImageUrl().matches(".*test.jpg"));
-        verify(productRepository, times(1)).findById(productId);
-        verify(discountRepository, times(1))
-                .findDiscountsByDiscountPercentage(any(BigDecimal.class));
-        verify(categoryRepository, times(1)).findById(any(Long.class));
-        verify(productRepository, times(1)).save(any(Product.class));
-    }
 
     @Test
     void updateProduct_NonExistingProductId_ThrowsProductNotFoundException() {

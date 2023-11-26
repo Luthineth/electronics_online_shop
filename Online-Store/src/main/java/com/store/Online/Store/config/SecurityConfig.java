@@ -2,8 +2,6 @@ package com.store.Online.Store.config;
 
 import com.store.Online.Store.config.jwt.JwtSecurityConfigurer;
 import com.store.Online.Store.config.jwt.JwtTokenUtil;
-import io.minio.BucketExistsArgs;
-import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;

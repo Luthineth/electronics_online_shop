@@ -1,6 +1,5 @@
 package com.store.Online.Store.dto;
 
-import com.store.Online.Store.entity.Comment;
 import lombok.*;
 
 import java.math.BigDecimal;

@@ -8,26 +8,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 class CommentControllerTest {
 
@@ -37,47 +26,54 @@ class CommentControllerTest {
     @InjectMocks
     private CommentController commentController;
 
+    @Mock
+    private User user;
 
     @Mock
-    User user = new User(
-            "Artem",
-            "Lihachev",
-            "sofaross228@gmail.com",
-            "504598",
-            new Role(2L, "ADMIN"));
+    private Product product;
 
     @Mock
-    Product product = new Product(
-            "Новый смартфон",
-            "Описание нового смартфона",
-            10,
-            new BigDecimal("999.99"),
-            new BigDecimal("899.99"),
-            "new_phone.jpg",
-            new Discount(new BigDecimal(5)));
+    private Comment comment;
 
     @Mock
-    Comment comment = new Comment(
-            user,
-            product,
-                "Отличный смартфон, работает быстро и камера супер!",
-                    5,
-                    "image.txt");
-
-    @Mock
-    CommentRequest commentRequest = new CommentRequest(
-            "Artem",
-            product.getProductId(),
-            "Отличный смартфон, работает быстро и камера супер!",
-            5,
-            "image.txt",
-            1L);
+    private CommentRequest commentRequest;
 
     @BeforeEach
     void setUp() {
         openMocks(this);
+
+        user = new User(
+                "Artem",
+                "Lihachev",
+                "sofaross228@gmail.com",
+                "504598",
+                new Role(2L, "ADMIN"));
         user.setUserId(1L);
+
+        product  = new Product(
+                "Новый смартфон",
+                "Описание нового смартфона",
+                10,
+                new BigDecimal("999.99"),
+                new BigDecimal("899.99"),
+                "new_phone.jpg",
+                new Discount(new BigDecimal(5)));
         product.setProductId(1L);
+
+        CommentRequest commentRequest = new CommentRequest(
+                "Artem",
+                product.getProductId(),
+                "Отличный смартфон, работает быстро и камера супер!",
+                5,
+                "image.txt",
+                1L);
+
+        comment= new Comment (
+                user,
+                product,
+                "Отличный смартфон, работает быстро и камера супер!",
+                5,
+                "image.txt");
         comment.setCommentId(1L);
     }
 
@@ -169,7 +165,8 @@ class CommentControllerTest {
 
     @Test
     void testDeleteComment_CommentNotFound_ReturnHttpStatusNOT_FOUND() {
-        doThrow(new CommentNotFoundException("Comment not found")).when(commentService).deleteComment(comment.getCommentId());
+        doThrow(new CommentNotFoundException("Comment not found")).when(commentService)
+                .deleteComment(comment.getCommentId());
         ResponseEntity<?> response = commentController.deleteComment(comment.getCommentId());
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals("Comment not found", response.getBody());
@@ -177,7 +174,8 @@ class CommentControllerTest {
 
     @Test
     void testDeleteComment_CommentDeletionException_ReturnHttpStatusINTERNAL_SERVER_ERROR() {
-        doThrow(new CommentDeletionException("Comment deletion exception")).when(commentService).deleteComment(comment.getCommentId());
+        doThrow(new CommentDeletionException("Comment deletion exception")).when(commentService)
+                .deleteComment(comment.getCommentId());
         ResponseEntity<?> response = commentController.deleteComment(comment.getCommentId());
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Comment deletion exception", response.getBody());

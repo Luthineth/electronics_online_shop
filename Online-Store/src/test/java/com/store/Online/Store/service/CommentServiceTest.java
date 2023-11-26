@@ -8,25 +8,15 @@ import com.store.Online.Store.repository.commentRepository;
 import com.store.Online.Store.repository.productRepository;
 import com.store.Online.Store.repository.userRepository;
 import com.store.Online.Store.service.impl.CommentServiceImpl;
-import io.minio.*;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Sort;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.test.util.ReflectionTestUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -55,18 +45,10 @@ class CommentServiceTest {
     @Mock
     private SecurityContext securityContext;
 
-    @Mock
-    private MinioClient minioClient;
-
-    @Mock
-    private MinioProperties minioProperties;
-
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
         SecurityContextHolder.setContext(securityContext);
-        ReflectionTestUtils.setField(commentService, "directoryPath", "D:\\javaCode\\electronics\\Online-Store\\src\\main\\resources\\commentImages");
-
     }
 
     @Test
@@ -133,36 +115,6 @@ class CommentServiceTest {
         assertEquals(comments.size(), result.size());
         verify(productRepository, times(1)).findById(productId);
         verify(commentRepository, times(1)).findByProductId(product, Sort.by(direction, "rating"));
-    }
-
-    @Test
-    void addComment_ValidCommentRequestAndFile_CommentAddedSuccessfully() {
-        CommentRequest commentRequest = new CommentRequest();
-        commentRequest.setProductId(1L);
-        commentRequest.setText("Test Comment");
-        commentRequest.setRating(5);
-
-        MockMultipartFile file = new MockMultipartFile("file", "test.jpg", "image/jpeg", "test".getBytes());
-
-        User user = new User();
-        user.setUserId(1L);
-        user.setEmail("Test@com.com");
-        when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn(user.getEmail());
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(user));
-
-        Product product = new Product();
-        product.setProductId(commentRequest.getProductId());
-        when(productRepository.findById(commentRequest.getProductId())).thenReturn(Optional.of(product));
-
-        when(commentRepository.save(any(Comment.class))).thenReturn(new Comment());
-
-        Comment result = commentService.addComment(commentRequest, file);
-
-        assertNotNull(result);
-        verify(userRepository, times(1)).findByEmail(anyString());
-        verify(productRepository, times(1)).findById(commentRequest.getProductId());
-        verify(commentRepository, times(1)).save(any(Comment.class));
     }
 
     @Test

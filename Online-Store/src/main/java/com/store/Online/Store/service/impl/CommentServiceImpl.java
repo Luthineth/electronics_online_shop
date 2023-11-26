@@ -21,12 +21,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
-import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 
 @Service
@@ -180,6 +175,7 @@ public class CommentServiceImpl implements commentService{
                 .build();
     }
 
+    @Override
     public String upload (MultipartFile file) {
         try {
             createBucket();

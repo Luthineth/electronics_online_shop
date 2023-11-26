@@ -18,7 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @Configuration
-@DependsOn("securityConfig") // Указываем зависимость от SecurityConfig
+@DependsOn("securityConfig")
 public class MinioInitializerConfig {
 
     @Autowired
