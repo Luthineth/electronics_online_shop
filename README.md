@@ -68,6 +68,9 @@
    Действие: Конфигурирует и создает бакеты в MinIO.
 
 ## Архитектура базы данных
-1) Дамб ![Дамб](https://github.com/Luthineth/electronics_online_shop/blob/main/Online-Store/src/main/resources/db/01_model.sql).
-2) Схема ![Схема базы данных](./schema_data_base.png).
+1) Дамб [Дамб](https://github.com/Luthineth/electronics_online_shop/blob/main/Online-Store/src/main/resources/db/01_model.sql).
+2) Схема ![Схема базы данных](./schema_data_base.png)
 
+## Тесты бекенд части
+1) Перейдите в директорию проекта: `cd Online-Store`.
+2) Выполнить следующую команду в корневой директории вашего проекта: `mvn test`
