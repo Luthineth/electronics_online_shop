@@ -28,13 +28,13 @@
 * Mac: (https://docs.docker.com/desktop/install/mac-install/)
 
 ### 2) Запуск сервисов
-1)Склонируйте репозиторий, выполнив команду: `git clone https://github.com/Luthineth/electronics_online_shop.git`.
-2)Перейдите в корневую директорию проекта: `cd electronics_online_shop`.
-3)Запустите сервисы с помощью Docker Compose: `docker-compose up --build`.
+1) Склонируйте репозиторий, выполнив команду: `git clone https://github.com/Luthineth/electronics_online_shop.git`.
+2) Перейдите в корневую директорию проекта: `cd electronics_online_shop`.
+3) Запустите сервисы с помощью Docker Compose: `docker-compose up --build`.
 
 После развертывания, приложение будет доступно по адресу: http://localhost:8081/.
-1)Для проверки статуса запущенных контейнеров, выполните команду: `docker ps -a`.
-2)Если требуется просмотреть логи конкретного контейнера, используйте команду: `docker logs <container_name_or_id>`.
+1) Для проверки статуса запущенных контейнеров, выполните команду: `docker ps -a`.
+2) Если требуется просмотреть логи конкретного контейнера, используйте команду: `docker logs <container_name_or_id>`.
 
 ## Структура приложения 
 1) db (PostgreSQL):
