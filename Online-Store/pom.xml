@@ -80,7 +80,7 @@
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
             <artifactId>jetty-util</artifactId>
-            <version>9.4.46.v20220331</version>
+            <version>9.4.51.v20230217</version>
         </dependency>
 
         <dependency>
@@ -96,12 +96,6 @@
         </dependency>
 
         <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>1.27</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
             <version> 8.5.90</version>
@@ -111,6 +105,7 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>
+            <version>2.2.224</version>
         </dependency>
 
         <dependency>
