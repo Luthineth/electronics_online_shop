@@ -13,9 +13,6 @@
     </div>
 </template>
 
-<script setup>
-</script>
-
 <style scoped lang="scss">
 @import url('https://fonts.googleapis.com/css2?family=Handjet:wght@100&display=swap');
 .landing{

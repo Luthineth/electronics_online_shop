@@ -1,7 +1,7 @@
 <template>
     <v-alert
         closable
-        :icon="icon"
+        :icon="`${icon}`"
         :color="`${color}-lighten-2`"
     >
         {{ message }}
