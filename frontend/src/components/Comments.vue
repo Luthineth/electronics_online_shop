@@ -25,7 +25,7 @@
         <v-file-input
             v-model="commentImage"
             variant="underlined"
-            accept=".png, .jpeg, .bmp"
+            accept=".png"
             placeholder="Выберите изображение"
             prepend-icon="mdi-camera-plus-outline"
             label="Добавьте фото к отзыву"
