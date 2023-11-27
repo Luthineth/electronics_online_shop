@@ -57,7 +57,7 @@
                 <v-file-input
                     v-model="newProductImage"
                     variant="underlined"
-                    accept=".png, .jpeg, .bmp"
+                    accept=".png"
                     placeholder="Выберите изображение"
                     prepend-icon="mdi-camera-plus-outline"
                     label="Прикрепите фото товара"
